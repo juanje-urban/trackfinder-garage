@@ -12,5 +12,17 @@ services:
     volumes:
       - mariadb_data:/var/lib/mysql
 
+  backend:
+    build: ./backend
+    container_name: trackfinder-backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mariadb://db:3306/trackfinder
+      SPRING_DATASOURCE_USERNAME: trackuser
+      SPRING_DATASOURCE_PASSWORD: trackpass
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+
 volumes:
   mariadb_data:
