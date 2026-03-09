@@ -13,7 +13,7 @@ services:
       - mariadb_data:/var/lib/mysql
 
   backend:
-    build: ./backend
+    image: ghcr.io/juanje-urban/trackfinder-garage-backend:latest
     container_name: trackfinder-backend
     environment:
       SPRING_DATASOURCE_URL: jdbc:mariadb://db:3306/trackfinder
