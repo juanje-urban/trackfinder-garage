@@ -1,0 +1,43 @@
+package com.trackfindergarage.backend.infrastructure.adapter.out.persistence;
+
+import com.trackfindergarage.backend.application.port.out.TrackPersistencePort;
+import com.trackfindergarage.backend.domain.model.Track;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Optional;
+
+@Component
+public class TrackPersistenceAdapter implements TrackPersistencePort {
+
+    private final SpringDataTrackRepository springDataTrackRepository;
+
+    public TrackPersistenceAdapter(SpringDataTrackRepository springDataTrackRepository) {
+        this.springDataTrackRepository = springDataTrackRepository;
+    }
+
+    @Override
+    public Track save(Track track) {
+        return springDataTrackRepository.save(track);
+    }
+
+    @Override
+    public Optional<Track> findById(Long id) {
+        return springDataTrackRepository.findById(id);
+    }
+
+    @Override
+    public List<Track> findAll() {
+        return springDataTrackRepository.findAll();
+    }
+
+    @Override
+    public void delete(Track track) {
+        springDataTrackRepository.delete(track);
+    }
+
+    @Override
+    public boolean existsById(Long id) {
+        return springDataTrackRepository.existsById(id);
+    }
+}

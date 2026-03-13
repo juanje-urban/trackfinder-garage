@@ -1,9 +1,6 @@
-package com.trackfindergarage.backend.entity;
-
+package com.trackfindergarage.backend.domain.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -23,24 +20,14 @@ public class Track {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false, updatable = false)
-    private Integer id;
+    private Long id;
 
-    @NotBlank
-    @Size(max = 255)
     @Column(name = "name", length = 255, nullable = false)
     private String name;
 
-    @NotBlank
-    @Size(max = 255)
     @Column(name = "location", length = 255, nullable = false)
     private String location;
 
-    @NotBlank
-    @Size(max = 500)
     @Column(name = "description", length = 500, nullable = false)
     private String description;
-
-
-
-
 }
