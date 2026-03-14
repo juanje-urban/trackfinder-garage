@@ -11,6 +11,8 @@ public interface RolePersistencePort {
 
     Optional<Role> findById(Long id);
 
+    Optional<Role> findByName(String name);
+
     List<Role> findAll();
 
     void delete(Role role);

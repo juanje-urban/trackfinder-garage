@@ -2,6 +2,7 @@ package com.trackfindergarage.backend.application.service;
 
 import com.trackfindergarage.backend.application.port.in.RoleUseCase;
 import com.trackfindergarage.backend.application.port.out.RolePersistencePort;
+import com.trackfindergarage.backend.common.exception.DuplicateResourceException;
 import com.trackfindergarage.backend.common.exception.ResourceNotFoundException;
 import com.trackfindergarage.backend.domain.model.Role;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,11 @@ public class RoleService implements RoleUseCase {
 
     @Override
     public Role createRole(Role role) {
+        rolePersistencePort.findByName(role.getName())
+                .ifPresent(existingRole -> {
+                    throw new DuplicateResourceException("Role with name '" + role.getName() + "' already exists");
+                });
+
         return rolePersistencePort.save(role);
     }
 

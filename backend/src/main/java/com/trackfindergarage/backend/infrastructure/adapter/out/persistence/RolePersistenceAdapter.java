@@ -35,4 +35,9 @@ public class RolePersistenceAdapter implements RolePersistencePort {
     public void delete(Role role) {
         springDataRoleRepository.delete(role);
     }
+
+    @Override
+    public Optional<Role> findByName(String name) {
+        return springDataRoleRepository.findByName(name);
+    }
 }
