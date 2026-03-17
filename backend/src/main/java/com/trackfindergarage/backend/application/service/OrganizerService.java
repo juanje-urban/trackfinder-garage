@@ -186,7 +186,7 @@ public class OrganizerService implements OrganizerUseCase {
     private void validateLegalNameForUpdate(Long organizerId, String legalName) {
         organizerPersistencePort.findByLegalName(legalName)
                 .ifPresent(existingOrganizer -> {
-                    if (!existingOrganizer.getId().equals(organizerId)) {
+                    if (!existingOrganizer.getIdUser().equals(organizerId)) {
                         throw new DuplicateResourceException(
                                 "Organizer with legal name '" + legalName + "' already exists"
                         );
@@ -197,7 +197,7 @@ public class OrganizerService implements OrganizerUseCase {
     private void validateCifForUpdate(Long organizerId, String cif) {
         organizerPersistencePort.findByCif(cif)
                 .ifPresent(existingOrganizer -> {
-                    if (!existingOrganizer.getId().equals(organizerId)) {
+                    if (!existingOrganizer.getIdUser().equals(organizerId)) {
                         throw new DuplicateResourceException(
                                 "Organizer with cif '" + cif + "' already exists"
                         );

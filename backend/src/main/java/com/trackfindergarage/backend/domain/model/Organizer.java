@@ -20,7 +20,7 @@ public class Organizer {
 
     @Id
     @Column(name = "id_user", nullable = false, updatable = false)
-    private Long id;
+    private Long idUser;
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @MapsId
