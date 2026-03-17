@@ -1,6 +1,7 @@
 package com.trackfindergarage.backend.application.service;
 
 import com.trackfindergarage.backend.application.port.in.UserUseCase;
+import com.trackfindergarage.backend.application.port.out.OrganizerPersistencePort;
 import com.trackfindergarage.backend.application.port.out.RolePersistencePort;
 import com.trackfindergarage.backend.application.port.out.UserPersistencePort;
 import com.trackfindergarage.backend.common.exception.DuplicateResourceException;
@@ -13,32 +14,32 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set;
 
 @Service
 @Transactional
 public class UserService implements UserUseCase {
 
-    private static final Set<String> ALLOWED_ROLES = Set.of("USER", "ORGANIZER");
-
     private final UserPersistencePort userPersistencePort;
     private final RolePersistencePort rolePersistencePort;
+    private final OrganizerPersistencePort organizerPersistencePort;
     private final PasswordEncoder passwordEncoder;
 
     public UserService(UserPersistencePort userPersistencePort,
                        RolePersistencePort rolePersistencePort,
+                       OrganizerPersistencePort organizerPersistencePort,
                        PasswordEncoder passwordEncoder) {
         this.userPersistencePort = userPersistencePort;
         this.rolePersistencePort = rolePersistencePort;
+        this.organizerPersistencePort = organizerPersistencePort;
         this.passwordEncoder = passwordEncoder;
     }
 
     @Override
-    public User createUser(User user, String rawPassword, Long roleId) {
+    public User createUser(User user, String rawPassword) {
         validateDisplayNameForCreate(user.getDisplayName());
         validateEmailForCreate(user.getEmail());
 
-        Role role = getRoleById(roleId);
+        Role role = getUserRole();
 
         user.setRole(role);
         user.setPasswordHash(passwordEncoder.encode(rawPassword));
@@ -49,13 +50,17 @@ public class UserService implements UserUseCase {
     }
 
     @Override
-    public User updateUser(Long id, User user, Long roleId) {
+    public User updateUser(Long id, User user) {
         User existingUser = getUserById(id);
+
+        if (isOrganizerUser(existingUser)) {
+            throw new IllegalArgumentException(
+                    "Organizer users must be managed through OrganizerService"
+            );
+        }
 
         validateDisplayNameForUpdate(id, user.getDisplayName());
         validateEmailForUpdate(id, user.getEmail());
-
-        Role role = getRoleById(roleId);
 
         existingUser.setDisplayName(user.getDisplayName());
         existingUser.setEmail(user.getEmail());
@@ -63,7 +68,6 @@ public class UserService implements UserUseCase {
         existingUser.setSurname(user.getSurname());
         existingUser.setAddress(user.getAddress());
         existingUser.setPhone(user.getPhone());
-        existingUser.setRole(role);
 
         return userPersistencePort.save(existingUser);
     }
@@ -71,6 +75,10 @@ public class UserService implements UserUseCase {
     @Override
     public void deleteUser(Long id) {
         User existingUser = getUserById(id);
+
+        organizerPersistencePort.findById(id)
+                .ifPresent(organizerPersistencePort::delete);
+
         userPersistencePort.delete(existingUser);
     }
 
@@ -98,22 +106,25 @@ public class UserService implements UserUseCase {
     public User disableUser(Long id) {
         User existingUser = getUserById(id);
         existingUser.setEnabled(false);
+
+        organizerPersistencePort.findById(id)
+                .ifPresent(organizer -> {
+                    organizer.setEnabled(false);
+                    organizerPersistencePort.save(organizer);
+                });
+
         return userPersistencePort.save(existingUser);
     }
 
-    private Role getRoleById(Long roleId) {
-        Role role = rolePersistencePort.findById(roleId)
-                .orElseThrow(() -> new ResourceNotFoundException("Role not found with id: " + roleId));
+    private Role getUserRole() {
+        return rolePersistencePort.findByRole("USER")
+                .orElseThrow(() -> new ResourceNotFoundException("Role not found: USER"));
+    }
 
-        String roleName = role.getRole() == null ? "" : role.getRole().trim().toUpperCase();
-
-        if (!ALLOWED_ROLES.contains(roleName)) {
-            throw new IllegalArgumentException(
-                    "Only USER and ORGANIZER roles are allowed in UserService"
-            );
-        }
-
-        return role;
+    private boolean isOrganizerUser(User user) {
+        return user.getRole() != null
+                && user.getRole().getRole() != null
+                && "ORGANIZER".equalsIgnoreCase(user.getRole().getRole().trim());
     }
 
     private void validateDisplayNameForCreate(String displayName) {

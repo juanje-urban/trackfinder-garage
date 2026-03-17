@@ -6,9 +6,9 @@ import java.util.List;
 
 public interface UserUseCase {
 
-    User createUser(User user, String rawPassword, Long roleId);
+    User createUser(User user, String rawPassword);
 
-    User updateUser(Long id, User user, Long roleId);
+    User updateUser(Long id, User user);
 
     void deleteUser(Long id);
 

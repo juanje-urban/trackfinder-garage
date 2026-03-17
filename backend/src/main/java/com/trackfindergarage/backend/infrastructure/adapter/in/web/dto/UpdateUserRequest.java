@@ -34,6 +34,4 @@ public class UpdateUserRequest {
     @NotBlank
     @Size(max = 20)
     private String phone;
-
-    private Long roleId;
 }

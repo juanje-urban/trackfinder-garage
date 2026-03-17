@@ -31,8 +31,7 @@ public class UserController {
 
         User createdUser = userUseCase.createUser(
                 userToCreate,
-                request.getPassword(),
-                request.getRoleId()
+                request.getPassword()
         );
 
         return userWebMapper.toResponse(createdUser);
@@ -46,8 +45,7 @@ public class UserController {
 
         User updatedUser = userUseCase.updateUser(
                 id,
-                userToUpdate,
-                request.getRoleId()
+                userToUpdate
         );
 
         return userWebMapper.toResponse(updatedUser);
