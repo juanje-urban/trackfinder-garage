@@ -11,18 +11,18 @@ public class RoleWebMapper {
 
     public Role toDomain(CreateRoleRequest request) {
         Role role = new Role();
-        role.setName(request.getName());
+        role.setRole(request.getRole());
         return role;
     }
 
     public void updateDomain(Role role, UpdateRoleRequest request) {
-        role.setName(request.getName());
+        role.setRole(request.getRole());
     }
 
     public RoleResponse toResponse(Role role) {
         return RoleResponse.builder()
                 .id(role.getId())
-                .name(role.getName())
+                .role(role.getRole())
                 .build();
     }
 }

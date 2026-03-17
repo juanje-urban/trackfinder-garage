@@ -11,5 +11,5 @@ public class UpdateRoleRequest {
 
     @NotBlank
     @Size(max = 100)
-    private String name;
+    private String role;
 }

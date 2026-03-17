@@ -7,5 +7,5 @@ import java.util.Optional;
 
 public interface SpringDataRoleRepository extends JpaRepository<Role, Long> {
 
-    Optional<Role> findByName(String name);
+    Optional<Role> findByRole(String role);
 }

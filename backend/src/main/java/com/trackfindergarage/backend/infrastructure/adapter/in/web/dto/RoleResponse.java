@@ -8,5 +8,5 @@ import lombok.Getter;
 public class RoleResponse {
 
     private Long id;
-    private String name;
+    private String role;
 }

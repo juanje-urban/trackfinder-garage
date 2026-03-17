@@ -9,7 +9,7 @@ import lombok.Setter;
 @Table(
         name = "roles",
         uniqueConstraints = {
-                @UniqueConstraint(name = "uk_roles_name", columnNames = "name")
+                @UniqueConstraint(name = "uk_roles_role", columnNames = "role")
         }
 )
 @Getter
@@ -22,6 +22,6 @@ public class Role {
     @Column(name = "id", nullable = false, updatable = false)
     private Long id;
 
-    @Column(name = "name", length = 100, nullable = false)
-    private String name;
+    @Column(name = "role", length = 100, nullable = false)
+    private String role;
 }

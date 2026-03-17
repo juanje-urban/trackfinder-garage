@@ -27,6 +27,11 @@ public class RolePersistenceAdapter implements RolePersistencePort {
     }
 
     @Override
+    public Optional<Role> findByRole(String role) {
+        return springDataRoleRepository.findByRole(role);
+    }
+
+    @Override
     public List<Role> findAll() {
         return springDataRoleRepository.findAll();
     }
@@ -34,10 +39,5 @@ public class RolePersistenceAdapter implements RolePersistencePort {
     @Override
     public void delete(Role role) {
         springDataRoleRepository.delete(role);
-    }
-
-    @Override
-    public Optional<Role> findByName(String name) {
-        return springDataRoleRepository.findByName(name);
     }
 }
