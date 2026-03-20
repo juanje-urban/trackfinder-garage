@@ -125,7 +125,8 @@ class UserServiceTest {
 
         when(userPersistencePort.findById(10L)).thenReturn(Optional.of(existingUser));
 
-        assertThrows(IllegalArgumentException.class, () -> userService.updateUser(10L, new User()));
+        User updateRequest = new User();
+        assertThrows(IllegalArgumentException.class, () -> userService.updateUser(10L, updateRequest));
     }
 
     @Test
