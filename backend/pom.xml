@@ -28,6 +28,8 @@
 	</scm>
 	<properties>
 		<java.version>21</java.version>
+		<sonar.projectKey>juanje-urban_trackfinder-garage</sonar.projectKey>
+		<sonar.organization>juanje-urban</sonar.organization>
 	</properties>
 	<dependencies>
 		<dependency>

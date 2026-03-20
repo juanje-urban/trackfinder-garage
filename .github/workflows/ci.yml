@@ -21,4 +21,6 @@ jobs:
           java-version: "21"
           cache: maven
       - name: Build & test
-        run: mvn -q test package
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
