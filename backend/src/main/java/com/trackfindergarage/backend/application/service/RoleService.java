@@ -34,7 +34,7 @@ public class RoleService implements RoleUseCase {
 
     @Override
     public Role updateRole(Long id, Role role) {
-        Role existingRole = getRoleById(id);
+        Role existingRole = findRoleOrThrow(id);
 
         rolePersistencePort.findByRoleName(role.getRoleName())
                 .ifPresent(foundRole -> {
@@ -52,7 +52,7 @@ public class RoleService implements RoleUseCase {
 
     @Override
     public void deleteRole(Long id) {
-        Role existingRole = getRoleById(id);
+        Role existingRole = findRoleOrThrow(id);
         rolePersistencePort.delete(existingRole);
     }
 
@@ -65,6 +65,12 @@ public class RoleService implements RoleUseCase {
     @Override
     @Transactional(readOnly = true)
     public Role getRoleById(Long id) {
+        return rolePersistencePort.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Role not found with id: " + id));
+    }
+
+    //Función privada que hace lo mismo que getRoleById. Los métodos con proxy de Spring no deben ser llamados desde dentro del propio bean. (Da error sonar)
+    private Role findRoleOrThrow(Long id) {
         return rolePersistencePort.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Role not found with id: " + id));
     }

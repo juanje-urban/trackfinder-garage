@@ -26,7 +26,7 @@ public class TrackService implements TrackUseCase {
 
     @Override
     public Track updateTrack(Long id, Track track) {
-        Track existingTrack = getTrackById(id);
+        Track existingTrack = findTrackOrThrow(id);
 
         existingTrack.setName(track.getName());
         existingTrack.setLocation(track.getLocation());
@@ -37,7 +37,7 @@ public class TrackService implements TrackUseCase {
 
     @Override
     public void deleteTrack(Long id) {
-        Track existingTrack = getTrackById(id);
+        Track existingTrack = findTrackOrThrow(id);
         trackPersistencePort.delete(existingTrack);
     }
 
@@ -53,4 +53,11 @@ public class TrackService implements TrackUseCase {
         return trackPersistencePort.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Track not found with id: " + id));
     }
+
+    //Función privada que hace lo mismo que getTrackById. Los métodos con proxy de Spring no deben ser llamados desde dentro del propio bean. (Da error sonar)
+    private Track findTrackOrThrow(Long id) {
+        return trackPersistencePort.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Track not found with id: " + id));
+    }
+
 }

@@ -51,7 +51,7 @@ public class UserService implements UserUseCase {
 
     @Override
     public User updateUser(Long id, User user) {
-        User existingUser = getUserById(id);
+        User existingUser = findUserOrThrow(id);
 
         if (isOrganizerUser(existingUser)) {
             throw new IllegalArgumentException(
@@ -74,7 +74,7 @@ public class UserService implements UserUseCase {
 
     @Override
     public void deleteUser(Long id) {
-        User existingUser = getUserById(id);
+        User existingUser = findUserOrThrow(id);
 
         organizerPersistencePort.findById(id)
                 .ifPresent(organizerPersistencePort::delete);
@@ -97,14 +97,14 @@ public class UserService implements UserUseCase {
 
     @Override
     public User enableUser(Long id) {
-        User existingUser = getUserById(id);
+        User existingUser = findUserOrThrow(id);
         existingUser.setEnabled(true);
         return userPersistencePort.save(existingUser);
     }
 
     @Override
     public User disableUser(Long id) {
-        User existingUser = getUserById(id);
+        User existingUser = findUserOrThrow(id);
         existingUser.setEnabled(false);
 
         organizerPersistencePort.findById(id)
@@ -165,5 +165,11 @@ public class UserService implements UserUseCase {
                         );
                     }
                 });
+    }
+
+    //Función privada que hace lo mismo que getUserById. Los métodos con proxy de Spring no deben ser llamados desde dentro del propio bean. (Da error sonar)
+    private User findUserOrThrow(Long id) {
+        return userPersistencePort.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
     }
 }

@@ -205,7 +205,7 @@ public class OrganizerService implements OrganizerUseCase {
                 });
     }
 
-    //Función privad que hace lo mismo que getOrganizerById. Los métodos con proxy de Spring no deben ser llamados desde dentro del propio bean. (Da error sonar)
+    //Función privada que hace lo mismo que getOrganizerById. Los métodos con proxy de Spring no deben ser llamados desde dentro del propio bean. (Da error sonar)
     private Organizer findOrganizerOrThrow(Long id) {
         return organizerPersistencePort.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Organizer not found"));
