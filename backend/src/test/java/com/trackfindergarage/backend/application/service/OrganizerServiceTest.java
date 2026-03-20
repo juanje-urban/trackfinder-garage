@@ -54,7 +54,7 @@ class OrganizerServiceTest {
         when(userPersistencePort.findByEmail("promoter@example.com")).thenReturn(Optional.empty());
         when(organizerPersistencePort.findByLegalName("Track Finder S.L.")).thenReturn(Optional.empty());
         when(organizerPersistencePort.findByCif("B12345678")).thenReturn(Optional.empty());
-        when(rolePersistencePort.findByRole("ORGANIZER")).thenReturn(Optional.of(organizerRole));
+        when(rolePersistencePort.findByRoleName("ORGANIZER")).thenReturn(Optional.of(organizerRole));
         when(passwordEncoder.encode("plain-pass")).thenReturn("hashed-pass");
         when(userPersistencePort.save(organizer.getUser())).thenAnswer(invocation -> {
             User savedUser = invocation.getArgument(0);
@@ -207,7 +207,7 @@ class OrganizerServiceTest {
     private Role roleWithId(Long id, String value) {
         Role role = new Role();
         role.setId(id);
-        role.setRole(value);
+        role.setRoleName(value);
         return role;
     }
 }

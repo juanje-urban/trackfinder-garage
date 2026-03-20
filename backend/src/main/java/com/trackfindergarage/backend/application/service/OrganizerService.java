@@ -121,7 +121,7 @@ public class OrganizerService implements OrganizerUseCase {
     }
 
     private Role getOrganizerRole() {
-        return rolePersistencePort.findByRole("ORGANIZER")
+        return rolePersistencePort.findByRoleName("ORGANIZER")
                 .orElseThrow(() -> new ResourceNotFoundException("Role not found: ORGANIZER"));
     }
 

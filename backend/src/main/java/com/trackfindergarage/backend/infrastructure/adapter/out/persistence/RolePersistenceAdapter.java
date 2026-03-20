@@ -27,8 +27,8 @@ public class RolePersistenceAdapter implements RolePersistencePort {
     }
 
     @Override
-    public Optional<Role> findByRole(String role) {
-        return springDataRoleRepository.findByRole(role);
+    public Optional<Role> findByRoleName(String role) {
+        return springDataRoleRepository.findByRoleName(role);
     }
 
     @Override

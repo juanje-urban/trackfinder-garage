@@ -22,10 +22,10 @@ public class RoleService implements RoleUseCase {
 
     @Override
     public Role createRole(Role role) {
-        rolePersistencePort.findByRole(role.getRole())
+        rolePersistencePort.findByRoleName(role.getRoleName())
                 .ifPresent(existingRole -> {
                     throw new DuplicateResourceException(
-                            "Role with value '" + role.getRole() + "' already exists"
+                            "Role with value '" + role.getRoleName() + "' already exists"
                     );
                 });
 
@@ -36,16 +36,16 @@ public class RoleService implements RoleUseCase {
     public Role updateRole(Long id, Role role) {
         Role existingRole = getRoleById(id);
 
-        rolePersistencePort.findByRole(role.getRole())
+        rolePersistencePort.findByRoleName(role.getRoleName())
                 .ifPresent(foundRole -> {
                     if (!foundRole.getId().equals(id)) {
                         throw new DuplicateResourceException(
-                                "Role with value '" + role.getRole() + "' already exists"
+                                "Role with value '" + role.getRoleName() + "' already exists"
                         );
                     }
                 });
 
-        existingRole.setRole(role.getRole());
+        existingRole.setRoleName(role.getRoleName());
 
         return rolePersistencePort.save(existingRole);
     }

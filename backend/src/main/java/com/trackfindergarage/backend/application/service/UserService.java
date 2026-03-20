@@ -117,14 +117,14 @@ public class UserService implements UserUseCase {
     }
 
     private Role getUserRole() {
-        return rolePersistencePort.findByRole("USER")
+        return rolePersistencePort.findByRoleName("USER")
                 .orElseThrow(() -> new ResourceNotFoundException("Role not found: USER"));
     }
 
     private boolean isOrganizerUser(User user) {
         return user.getRole() != null
-                && user.getRole().getRole() != null
-                && "ORGANIZER".equalsIgnoreCase(user.getRole().getRole().trim());
+                && user.getRole().getRoleName() != null
+                && "ORGANIZER".equalsIgnoreCase(user.getRole().getRoleName().trim());
     }
 
     private void validateDisplayNameForCreate(String displayName) {

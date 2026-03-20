@@ -11,7 +11,7 @@ public interface RolePersistencePort {
 
     Optional<Role> findById(Long id);
 
-    Optional<Role> findByRole(String role);
+    Optional<Role> findByRoleName(String role);
 
     List<Role> findAll();
 

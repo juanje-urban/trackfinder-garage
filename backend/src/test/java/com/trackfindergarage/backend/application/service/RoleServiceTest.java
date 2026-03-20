@@ -33,7 +33,7 @@ class RoleServiceTest {
     void createRoleSavesWhenRoleDoesNotExist() {
         Role role = roleWithId(1L, "USER");
 
-        when(rolePersistencePort.findByRole("USER")).thenReturn(Optional.empty());
+        when(rolePersistencePort.findByRoleName("USER")).thenReturn(Optional.empty());
         when(rolePersistencePort.save(role)).thenReturn(role);
 
         Role createdRole = roleService.createRole(role);
@@ -46,7 +46,7 @@ class RoleServiceTest {
     void createRoleThrowsWhenRoleAlreadyExists() {
         Role role = roleWithId(1L, "USER");
 
-        when(rolePersistencePort.findByRole("USER")).thenReturn(Optional.of(role));
+        when(rolePersistencePort.findByRoleName("USER")).thenReturn(Optional.of(role));
 
         assertThrows(DuplicateResourceException.class, () -> roleService.createRole(role));
         verify(rolePersistencePort, never()).save(role);
@@ -58,13 +58,13 @@ class RoleServiceTest {
         Role updateRequest = roleWithId(null, "ADMIN");
 
         when(rolePersistencePort.findById(5L)).thenReturn(Optional.of(existingRole));
-        when(rolePersistencePort.findByRole("ADMIN")).thenReturn(Optional.empty());
+        when(rolePersistencePort.findByRoleName("ADMIN")).thenReturn(Optional.empty());
         when(rolePersistencePort.save(existingRole)).thenReturn(existingRole);
 
         Role updatedRole = roleService.updateRole(5L, updateRequest);
 
         assertSame(existingRole, updatedRole);
-        assertEquals("ADMIN", existingRole.getRole());
+        assertEquals("ADMIN", existingRole.getRoleName());
         verify(rolePersistencePort).save(existingRole);
     }
 
@@ -75,7 +75,7 @@ class RoleServiceTest {
         Role updateRequest = roleWithId(null, "ADMIN");
 
         when(rolePersistencePort.findById(5L)).thenReturn(Optional.of(existingRole));
-        when(rolePersistencePort.findByRole("ADMIN")).thenReturn(Optional.of(otherRole));
+        when(rolePersistencePort.findByRoleName("ADMIN")).thenReturn(Optional.of(otherRole));
 
         assertThrows(DuplicateResourceException.class, () -> roleService.updateRole(5L, updateRequest));
         verify(rolePersistencePort, never()).save(existingRole);
@@ -111,7 +111,7 @@ class RoleServiceTest {
     private Role roleWithId(Long id, String value) {
         Role role = new Role();
         role.setId(id);
-        role.setRole(value);
+        role.setRoleName(value);
         return role;
     }
 }

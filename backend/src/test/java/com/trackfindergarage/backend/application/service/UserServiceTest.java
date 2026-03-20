@@ -53,7 +53,7 @@ class UserServiceTest {
 
         when(userPersistencePort.findByDisplayName("driver")).thenReturn(Optional.empty());
         when(userPersistencePort.findByEmail("driver@example.com")).thenReturn(Optional.empty());
-        when(rolePersistencePort.findByRole("USER")).thenReturn(Optional.of(userRole));
+        when(rolePersistencePort.findByRoleName("USER")).thenReturn(Optional.of(userRole));
         when(passwordEncoder.encode("plain-pass")).thenReturn("hashed-pass");
         when(userPersistencePort.save(user)).then(returnsFirstArg());
 
@@ -83,7 +83,7 @@ class UserServiceTest {
 
         when(userPersistencePort.findByDisplayName("driver")).thenReturn(Optional.empty());
         when(userPersistencePort.findByEmail("driver@example.com")).thenReturn(Optional.empty());
-        when(rolePersistencePort.findByRole("USER")).thenReturn(Optional.empty());
+        when(rolePersistencePort.findByRoleName("USER")).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> userService.createUser(user, "plain-pass"));
         verify(userPersistencePort, never()).save(user);
@@ -211,7 +211,7 @@ class UserServiceTest {
     private Role roleWithId(Long id, String value) {
         Role role = new Role();
         role.setId(id);
-        role.setRole(value);
+        role.setRoleName(value);
         return role;
     }
 }
