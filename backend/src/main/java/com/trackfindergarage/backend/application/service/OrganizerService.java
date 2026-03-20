@@ -61,7 +61,7 @@ public class OrganizerService implements OrganizerUseCase {
 
     @Override
     public Organizer updateOrganizer(Long id, Organizer organizer) {
-        Organizer existingOrganizer = getOrganizerById(id);
+        Organizer existingOrganizer = findOrganizerOrThrow(id);
         User existingUser = existingOrganizer.getUser();
         User user = organizer.getUser();
 
@@ -86,7 +86,7 @@ public class OrganizerService implements OrganizerUseCase {
 
     @Override
     public void deleteOrganizer(Long id) {
-        Organizer existingOrganizer = getOrganizerById(id);
+        Organizer existingOrganizer = findOrganizerOrThrow(id);
         User existingUser = existingOrganizer.getUser();
 
         organizerPersistencePort.delete(existingOrganizer);
@@ -108,14 +108,14 @@ public class OrganizerService implements OrganizerUseCase {
 
     @Override
     public Organizer enableOrganizer(Long id) {
-        Organizer existingOrganizer = getOrganizerById(id);
+        Organizer existingOrganizer = findOrganizerOrThrow(id);
         existingOrganizer.setEnabled(true);
         return organizerPersistencePort.save(existingOrganizer);
     }
 
     @Override
     public Organizer disableOrganizer(Long id) {
-        Organizer existingOrganizer = getOrganizerById(id);
+        Organizer existingOrganizer = findOrganizerOrThrow(id);
         existingOrganizer.setEnabled(false);
         return organizerPersistencePort.save(existingOrganizer);
     }
@@ -203,5 +203,11 @@ public class OrganizerService implements OrganizerUseCase {
                         );
                     }
                 });
+    }
+
+    //Función privad que hace lo mismo que getOrganizerById. Los métodos con proxy de Spring no deben ser llamados desde dentro del propio bean. (Da error sonar)
+    private Organizer findOrganizerOrThrow(Long id) {
+        return organizerPersistencePort.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Organizer not found"));
     }
 }
