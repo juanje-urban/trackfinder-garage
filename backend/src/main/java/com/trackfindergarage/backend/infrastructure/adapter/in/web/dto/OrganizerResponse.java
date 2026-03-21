@@ -17,6 +17,7 @@ public class OrganizerResponse {
     private Boolean userEnabled;
     private Long roleId;
 
+    //Atributos exclusivos de los organizadores
     private String legalName;
     private String cif;
     private Boolean organizerEnabled;
