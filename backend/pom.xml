@@ -31,6 +31,8 @@
 		<jacoco.version>0.8.12</jacoco.version>
 		<sonar.projectKey>juanje-urban_trackfinder-garage</sonar.projectKey>
 		<sonar.organization>juanje-urban</sonar.organization>
+		<!--Esto excluye del sonar las líneas duplicadas de los DTO, pero mantiene el análisis sobre ellos -->
+		<sonar.cpd.exclusions>**/dto/**</sonar.cpd.exclusions>
 	</properties>
 	<dependencies>
 		<dependency>
