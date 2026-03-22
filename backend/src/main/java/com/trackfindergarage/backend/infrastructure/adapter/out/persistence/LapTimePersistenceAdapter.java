@@ -1,0 +1,53 @@
+package com.trackfindergarage.backend.infrastructure.adapter.out.persistence;
+
+import com.trackfindergarage.backend.application.port.out.LapTimePersistencePort;
+import com.trackfindergarage.backend.domain.model.LapTime;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Optional;
+
+@Component
+public class LapTimePersistenceAdapter implements LapTimePersistencePort {
+
+    private final SpringDataLapTimeRepository lapTimeRepository;
+
+    public LapTimePersistenceAdapter(SpringDataLapTimeRepository lapTimeRepository) {
+        this.lapTimeRepository = lapTimeRepository;
+    }
+
+    @Override
+    public LapTime save(LapTime lapTime) {
+        return lapTimeRepository.save(lapTime);
+    }
+
+    @Override
+    public Optional<LapTime> findById(Long id) {
+        return lapTimeRepository.findById(id);
+    }
+
+    @Override
+    public List<LapTime> findAll() {
+        return lapTimeRepository.findAll();
+    }
+
+    @Override
+    public List<LapTime> findByUserId(Long userId) {
+        return lapTimeRepository.findByUserId(userId);
+    }
+
+    @Override
+    public List<LapTime> findByTrackId(Long trackId) {
+        return lapTimeRepository.findByTrackId(trackId);
+    }
+
+    @Override
+    public List<LapTime> findByUserIdAndTrackId(Long userId, Long trackId) {
+        return lapTimeRepository.findByUserIdAndTrackId(userId, trackId);
+    }
+
+    @Override
+    public void delete(LapTime lapTime) {
+        lapTimeRepository.delete(lapTime);
+    }
+}
