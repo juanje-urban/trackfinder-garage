@@ -64,6 +64,62 @@ class LapTimeServiceTest {
     }
 
     @Test
+    void createLapTimeThrowsWhenUserIdIsMissing() {
+        LapTime lapTime = new LapTime();
+        lapTime.setTrack(trackWithId(2L));
+        lapTime.setLapDate(LocalDate.now());
+        lapTime.setLapTimeMs(91000L);
+
+        assertThrows(IllegalArgumentException.class, () -> lapTimeService.createLapTime(lapTime));
+    }
+
+    @Test
+    void createLapTimeThrowsWhenTrackIdIsMissing() {
+        LapTime lapTime = new LapTime();
+        lapTime.setUser(userWithId(1L));
+        lapTime.setLapDate(LocalDate.now());
+        lapTime.setLapTimeMs(91000L);
+
+        assertThrows(IllegalArgumentException.class, () -> lapTimeService.createLapTime(lapTime));
+    }
+
+    @Test
+    void createLapTimeThrowsWhenLapDateIsMissing() {
+        LapTime lapTime = new LapTime();
+        lapTime.setUser(userWithId(1L));
+        lapTime.setTrack(trackWithId(2L));
+        lapTime.setLapTimeMs(91000L);
+
+        assertThrows(IllegalArgumentException.class, () -> lapTimeService.createLapTime(lapTime));
+    }
+
+    @Test
+    void createLapTimeThrowsWhenLapTimeIsNotPositive() {
+        LapTime lapTime = lapTimeWithIds(1L, 2L, 0L, LocalDate.now());
+
+        assertThrows(IllegalArgumentException.class, () -> lapTimeService.createLapTime(lapTime));
+    }
+
+    @Test
+    void createLapTimeThrowsWhenUserDoesNotExist() {
+        LapTime lapTime = lapTimeWithIds(1L, 2L, 91000L, LocalDate.now());
+
+        when(userPersistencePort.findById(1L)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> lapTimeService.createLapTime(lapTime));
+    }
+
+    @Test
+    void createLapTimeThrowsWhenTrackDoesNotExist() {
+        LapTime lapTime = lapTimeWithIds(1L, 2L, 91000L, LocalDate.now());
+
+        when(userPersistencePort.findById(1L)).thenReturn(Optional.of(userWithId(1L)));
+        when(trackPersistencePort.findById(2L)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> lapTimeService.createLapTime(lapTime));
+    }
+
+    @Test
     void updateLapTimeCopiesMutableFieldsAndSaves() {
         LapTime existingLapTime = lapTimeWithIds(1L, 2L, 95000L, LocalDate.now().minusDays(2));
         existingLapTime.setId(5L);
@@ -89,6 +145,15 @@ class LapTimeServiceTest {
     }
 
     @Test
+    void updateLapTimeThrowsWhenLapTimeDoesNotExist() {
+        LapTime updateRequest = lapTimeWithIds(1L, 2L, 90000L, LocalDate.now());
+
+        when(lapTimePersistencePort.findById(5L)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> lapTimeService.updateLapTime(5L, updateRequest));
+    }
+
+    @Test
     void getBestLapTimeByTrackIdReturnsFastestLap() {
         LapTime slow = lapTimeWithIds(1L, 2L, 95000L, LocalDate.now().minusDays(2));
         slow.setId(1L);
@@ -104,6 +169,14 @@ class LapTimeServiceTest {
     }
 
     @Test
+    void getBestLapTimeByTrackIdThrowsWhenNoLapTimesExist() {
+        when(trackPersistencePort.findById(2L)).thenReturn(Optional.of(trackWithId(2L)));
+        when(lapTimePersistencePort.findByTrackId(2L)).thenReturn(List.of());
+
+        assertThrows(ResourceNotFoundException.class, () -> lapTimeService.getBestLapTimeByTrackId(2L));
+    }
+
+    @Test
     void getBestLapTimeByUserIdAndTrackIdReturnsFastestLapForUserOnTrack() {
         LapTime slow = lapTimeWithIds(1L, 2L, 95000L, LocalDate.now().minusDays(2));
         LapTime fast = lapTimeWithIds(1L, 2L, 90000L, LocalDate.now().minusDays(1));
@@ -115,6 +188,15 @@ class LapTimeServiceTest {
         LapTime best = lapTimeService.getBestLapTimeByUserIdAndTrackId(1L, 2L);
 
         assertSame(fast, best);
+    }
+
+    @Test
+    void getBestLapTimeByUserIdAndTrackIdThrowsWhenNoLapTimesExist() {
+        when(userPersistencePort.findById(1L)).thenReturn(Optional.of(userWithId(1L)));
+        when(trackPersistencePort.findById(2L)).thenReturn(Optional.of(trackWithId(2L)));
+        when(lapTimePersistencePort.findByUserIdAndTrackId(1L, 2L)).thenReturn(List.of());
+
+        assertThrows(ResourceNotFoundException.class, () -> lapTimeService.getBestLapTimeByUserIdAndTrackId(1L, 2L));
     }
 
     @Test
@@ -135,6 +217,77 @@ class LapTimeServiceTest {
         assertSame(userTwoFast, ranking.get(0));
         assertSame(userOneFast, ranking.get(1));
         assertSame(userOneSlow, ranking.get(2));
+    }
+
+    @Test
+    void getRankingByTrackIdBreaksTiesByOlderDateFirst() {
+        LapTime older = lapTimeWithIds(1L, 2L, 90000L, LocalDate.now().minusDays(3));
+        older.setId(1L);
+        LapTime newer = lapTimeWithIds(2L, 2L, 90000L, LocalDate.now().minusDays(1));
+        newer.setId(2L);
+
+        when(trackPersistencePort.findById(2L)).thenReturn(Optional.of(trackWithId(2L)));
+        when(lapTimePersistencePort.findByTrackId(2L)).thenReturn(List.of(newer, older));
+
+        List<LapTime> ranking = lapTimeService.getRankingByTrackId(2L);
+
+        assertSame(older, ranking.get(0));
+        assertSame(newer, ranking.get(1));
+    }
+
+    @Test
+    void deleteLapTimeDelegatesToPersistenceAfterLoadingExistingLapTime() {
+        LapTime lapTime = lapTimeWithIds(1L, 2L, 91000L, LocalDate.now());
+        lapTime.setId(8L);
+
+        when(lapTimePersistencePort.findById(8L)).thenReturn(Optional.of(lapTime));
+
+        lapTimeService.deleteLapTime(8L);
+
+        verify(lapTimePersistencePort).delete(lapTime);
+    }
+
+    @Test
+    void getAllLapTimesReturnsPersistenceResult() {
+        List<LapTime> lapTimes = List.of(lapTimeWithIds(1L, 2L, 91000L, LocalDate.now()));
+
+        when(lapTimePersistencePort.findAll()).thenReturn(lapTimes);
+
+        assertEquals(lapTimes, lapTimeService.getAllLapTimes());
+    }
+
+    @Test
+    void getLapTimesByUserIdReturnsPersistenceResultWhenUserExists() {
+        List<LapTime> lapTimes = List.of(lapTimeWithIds(1L, 2L, 91000L, LocalDate.now()));
+
+        when(userPersistencePort.findById(1L)).thenReturn(Optional.of(userWithId(1L)));
+        when(lapTimePersistencePort.findByUserId(1L)).thenReturn(lapTimes);
+
+        assertEquals(lapTimes, lapTimeService.getLapTimesByUserId(1L));
+    }
+
+    @Test
+    void getLapTimesByUserIdThrowsWhenUserDoesNotExist() {
+        when(userPersistencePort.findById(1L)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> lapTimeService.getLapTimesByUserId(1L));
+    }
+
+    @Test
+    void getLapTimesByTrackIdReturnsPersistenceResultWhenTrackExists() {
+        List<LapTime> lapTimes = List.of(lapTimeWithIds(1L, 2L, 91000L, LocalDate.now()));
+
+        when(trackPersistencePort.findById(2L)).thenReturn(Optional.of(trackWithId(2L)));
+        when(lapTimePersistencePort.findByTrackId(2L)).thenReturn(lapTimes);
+
+        assertEquals(lapTimes, lapTimeService.getLapTimesByTrackId(2L));
+    }
+
+    @Test
+    void getLapTimesByTrackIdThrowsWhenTrackDoesNotExist() {
+        when(trackPersistencePort.findById(2L)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> lapTimeService.getLapTimesByTrackId(2L));
     }
 
     @Test

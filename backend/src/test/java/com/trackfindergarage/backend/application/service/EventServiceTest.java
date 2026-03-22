@@ -84,6 +84,174 @@ class EventServiceTest {
     }
 
     @Test
+    void updateEventPersistsWhenExistingEventIsFuture() {
+        Event existing = eventWithIds(1L, 2L, LocalDate.now().plusDays(5), new BigDecimal("30.00"));
+        existing.setId(5L);
+        Event updateRequest = eventWithIds(3L, 4L, LocalDate.now().plusDays(10), new BigDecimal("35.00"));
+        Organizer organizer = organizerWithId(3L);
+        Track track = trackWithId(4L);
+
+        when(eventPersistencePort.findById(5L)).thenReturn(Optional.of(existing));
+        when(organizerPersistencePort.findById(3L)).thenReturn(Optional.of(organizer));
+        when(trackPersistencePort.findById(4L)).thenReturn(Optional.of(track));
+        when(eventPersistencePort.findByTrackIdAndEventDate(4L, updateRequest.getEventDate())).thenReturn(Optional.empty());
+        when(eventPersistencePort.save(existing)).thenReturn(existing);
+
+        Event updated = eventService.updateEvent(5L, updateRequest);
+
+        assertSame(existing, updated);
+        assertSame(organizer, existing.getOrganizer());
+        assertSame(track, existing.getTrack());
+        assertEquals(updateRequest.getEventDate(), existing.getEventDate());
+        assertEquals(updateRequest.getBasePrice(), existing.getBasePrice());
+        verify(eventPersistencePort).save(existing);
+    }
+
+    @Test
+    void updateEventAllowsSameTrackAndDateForCurrentEvent() {
+        Event existing = eventWithIds(1L, 2L, LocalDate.now().plusDays(5), new BigDecimal("30.00"));
+        existing.setId(5L);
+        Event updateRequest = eventWithIds(1L, 2L, existing.getEventDate(), new BigDecimal("35.00"));
+        Event sameEventFound = eventWithIds(1L, 2L, existing.getEventDate(), new BigDecimal("30.00"));
+        sameEventFound.setId(5L);
+
+        when(eventPersistencePort.findById(5L)).thenReturn(Optional.of(existing));
+        when(organizerPersistencePort.findById(1L)).thenReturn(Optional.of(organizerWithId(1L)));
+        when(trackPersistencePort.findById(2L)).thenReturn(Optional.of(trackWithId(2L)));
+        when(eventPersistencePort.findByTrackIdAndEventDate(2L, existing.getEventDate())).thenReturn(Optional.of(sameEventFound));
+        when(eventPersistencePort.save(existing)).thenReturn(existing);
+
+        Event updated = eventService.updateEvent(5L, updateRequest);
+
+        assertSame(existing, updated);
+    }
+
+    @Test
+    void createEventThrowsWhenOrganizerDoesNotExist() {
+        Event event = eventWithIds(1L, 2L, LocalDate.now().plusDays(10), new BigDecimal("30.00"));
+
+        when(organizerPersistencePort.findById(1L)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> eventService.createEvent(event));
+    }
+
+    @Test
+    void createEventThrowsWhenTrackDoesNotExist() {
+        Event event = eventWithIds(1L, 2L, LocalDate.now().plusDays(10), new BigDecimal("30.00"));
+
+        when(organizerPersistencePort.findById(1L)).thenReturn(Optional.of(organizerWithId(1L)));
+        when(trackPersistencePort.findById(2L)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> eventService.createEvent(event));
+    }
+
+    @Test
+    void createEventThrowsWhenOrganizerIdIsMissing() {
+        Event event = new Event();
+        event.setTrack(trackWithId(2L));
+        event.setEventDate(LocalDate.now().plusDays(10));
+        event.setBasePrice(new BigDecimal("30.00"));
+
+        assertThrows(IllegalArgumentException.class, () -> eventService.createEvent(event));
+    }
+
+    @Test
+    void createEventThrowsWhenTrackIdIsMissing() {
+        Event event = new Event();
+        event.setOrganizer(organizerWithId(1L));
+        event.setEventDate(LocalDate.now().plusDays(10));
+        event.setBasePrice(new BigDecimal("30.00"));
+
+        assertThrows(IllegalArgumentException.class, () -> eventService.createEvent(event));
+    }
+
+    @Test
+    void createEventThrowsWhenEventDateIsMissing() {
+        Event event = new Event();
+        event.setOrganizer(organizerWithId(1L));
+        event.setTrack(trackWithId(2L));
+        event.setBasePrice(new BigDecimal("30.00"));
+
+        assertThrows(IllegalArgumentException.class, () -> eventService.createEvent(event));
+    }
+
+    @Test
+    void createEventThrowsWhenEventDateIsNotFuture() {
+        Event event = eventWithIds(1L, 2L, LocalDate.now(), new BigDecimal("30.00"));
+
+        assertThrows(IllegalArgumentException.class, () -> eventService.createEvent(event));
+    }
+
+    @Test
+    void createEventThrowsWhenBasePriceIsMissing() {
+        Event event = eventWithIds(1L, 2L, LocalDate.now().plusDays(10), null);
+
+        assertThrows(IllegalArgumentException.class, () -> eventService.createEvent(event));
+    }
+
+    @Test
+    void createEventThrowsWhenBasePriceIsNotPositive() {
+        Event event = eventWithIds(1L, 2L, LocalDate.now().plusDays(10), BigDecimal.ZERO);
+
+        assertThrows(IllegalArgumentException.class, () -> eventService.createEvent(event));
+    }
+
+    @Test
+    void deleteEventDelegatesToPersistenceAfterLoadingExistingEvent() {
+        Event event = eventWithIds(1L, 2L, LocalDate.now().plusDays(10), new BigDecimal("30.00"));
+        event.setId(8L);
+
+        when(eventPersistencePort.findById(8L)).thenReturn(Optional.of(event));
+
+        eventService.deleteEvent(8L);
+
+        verify(eventPersistencePort).delete(event);
+    }
+
+    @Test
+    void getAllEventsReturnsPersistenceResult() {
+        List<Event> events = List.of(eventWithIds(1L, 2L, LocalDate.now().plusDays(10), new BigDecimal("30.00")));
+
+        when(eventPersistencePort.findAll()).thenReturn(events);
+
+        assertEquals(events, eventService.getAllEvents());
+    }
+
+    @Test
+    void getEventsByOrganizerIdReturnsPersistenceResultWhenOrganizerExists() {
+        List<Event> events = List.of(eventWithIds(1L, 2L, LocalDate.now().plusDays(10), new BigDecimal("30.00")));
+
+        when(organizerPersistencePort.findById(1L)).thenReturn(Optional.of(organizerWithId(1L)));
+        when(eventPersistencePort.findByOrganizerIdUser(1L)).thenReturn(events);
+
+        assertEquals(events, eventService.getEventsByOrganizerId(1L));
+    }
+
+    @Test
+    void getEventsByOrganizerIdThrowsWhenOrganizerDoesNotExist() {
+        when(organizerPersistencePort.findById(1L)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> eventService.getEventsByOrganizerId(1L));
+    }
+
+    @Test
+    void getEventsByTrackIdReturnsPersistenceResultWhenTrackExists() {
+        List<Event> events = List.of(eventWithIds(1L, 2L, LocalDate.now().plusDays(10), new BigDecimal("30.00")));
+
+        when(trackPersistencePort.findById(2L)).thenReturn(Optional.of(trackWithId(2L)));
+        when(eventPersistencePort.findByTrackId(2L)).thenReturn(events);
+
+        assertEquals(events, eventService.getEventsByTrackId(2L));
+    }
+
+    @Test
+    void getEventsByTrackIdThrowsWhenTrackDoesNotExist() {
+        when(trackPersistencePort.findById(2L)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> eventService.getEventsByTrackId(2L));
+    }
+
+    @Test
     void getEventsByDateRangeReturnsPersistenceResult() {
         List<Event> events = List.of(eventWithIds(1L, 2L, LocalDate.now().plusDays(10), new BigDecimal("30.00")));
         LocalDate start = LocalDate.now().plusDays(1);
@@ -92,6 +260,22 @@ class EventServiceTest {
         when(eventPersistencePort.findByEventDateBetween(start, end)).thenReturn(events);
 
         assertEquals(events, eventService.getEventsByDateRange(start, end));
+    }
+
+    @Test
+    void getEventsByDateRangeThrowsWhenStartDateIsNull() {
+        assertThrows(IllegalArgumentException.class, () -> eventService.getEventsByDateRange(null, LocalDate.now().plusDays(1)));
+    }
+
+    @Test
+    void getEventsByDateRangeThrowsWhenEndDateIsNull() {
+        assertThrows(IllegalArgumentException.class, () -> eventService.getEventsByDateRange(LocalDate.now(), null));
+    }
+
+    @Test
+    void getEventsByDateRangeThrowsWhenStartDateIsAfterEndDate() {
+        assertThrows(IllegalArgumentException.class,
+                () -> eventService.getEventsByDateRange(LocalDate.now().plusDays(3), LocalDate.now().plusDays(1)));
     }
 
     @Test
