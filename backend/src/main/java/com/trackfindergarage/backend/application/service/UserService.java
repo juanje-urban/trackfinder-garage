@@ -19,6 +19,12 @@ import java.util.List;
 @Transactional
 public class UserService implements UserUseCase {
 
+    private static final String USER_NOT_FOUND_WITH_ID = "User not found with id: ";
+    private static final String USER_DISPLAY_NAME_ALREADY_EXISTS = "User with display name '%s' already exists";
+    private static final String USER_EMAIL_ALREADY_EXISTS = "User with email '%s' already exists";
+    private static final String ORGANIZER_USERS_MANAGED_THROUGH_ORGANIZER_SERVICE =
+            "Organizer users must be managed through OrganizerService";
+
     private final UserPersistencePort userPersistencePort;
     private final RolePersistencePort rolePersistencePort;
     private final OrganizerPersistencePort organizerPersistencePort;
@@ -54,9 +60,7 @@ public class UserService implements UserUseCase {
         User existingUser = findUserOrThrow(id);
 
         if (isOrganizerUser(existingUser)) {
-            throw new IllegalArgumentException(
-                    "Organizer users must be managed through OrganizerService"
-            );
+            throw new IllegalArgumentException(ORGANIZER_USERS_MANAGED_THROUGH_ORGANIZER_SERVICE);
         }
 
         validateDisplayNameForUpdate(id, user.getDisplayName());
@@ -92,7 +96,7 @@ public class UserService implements UserUseCase {
     @Transactional(readOnly = true)
     public User getUserById(Long id) {
         return userPersistencePort.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND_WITH_ID + id));
     }
 
     @Override
@@ -130,18 +134,14 @@ public class UserService implements UserUseCase {
     private void validateDisplayNameForCreate(String displayName) {
         userPersistencePort.findByDisplayName(displayName)
                 .ifPresent(existingUser -> {
-                    throw new DuplicateResourceException(
-                            "User with display name '" + displayName + "' already exists"
-                    );
+                    throw new DuplicateResourceException(USER_DISPLAY_NAME_ALREADY_EXISTS.formatted(displayName));
                 });
     }
 
     private void validateEmailForCreate(String email) {
         userPersistencePort.findByEmail(email)
                 .ifPresent(existingUser -> {
-                    throw new DuplicateResourceException(
-                            "User with email '" + email + "' already exists"
-                    );
+                    throw new DuplicateResourceException(USER_EMAIL_ALREADY_EXISTS.formatted(email));
                 });
     }
 
@@ -149,9 +149,7 @@ public class UserService implements UserUseCase {
         userPersistencePort.findByDisplayName(displayName)
                 .ifPresent(existingUser -> {
                     if (!existingUser.getId().equals(userId)) {
-                        throw new DuplicateResourceException(
-                                "User with display name '" + displayName + "' already exists"
-                        );
+                        throw new DuplicateResourceException(USER_DISPLAY_NAME_ALREADY_EXISTS.formatted(displayName));
                     }
                 });
     }
@@ -160,9 +158,7 @@ public class UserService implements UserUseCase {
         userPersistencePort.findByEmail(email)
                 .ifPresent(existingUser -> {
                     if (!existingUser.getId().equals(userId)) {
-                        throw new DuplicateResourceException(
-                                "User with email '" + email + "' already exists"
-                        );
+                        throw new DuplicateResourceException(USER_EMAIL_ALREADY_EXISTS.formatted(email));
                     }
                 });
     }
@@ -170,6 +166,6 @@ public class UserService implements UserUseCase {
     //Función privada que hace lo mismo que getUserById. Los métodos con proxy de Spring no deben ser llamados desde dentro del propio bean. (Da error sonar)
     private User findUserOrThrow(Long id) {
         return userPersistencePort.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND_WITH_ID + id));
     }
 }

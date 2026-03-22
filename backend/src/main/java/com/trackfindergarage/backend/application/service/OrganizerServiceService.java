@@ -8,14 +8,24 @@ import com.trackfindergarage.backend.common.exception.DuplicateResourceException
 import com.trackfindergarage.backend.common.exception.ResourceNotFoundException;
 import com.trackfindergarage.backend.domain.model.Organizer;
 import com.trackfindergarage.backend.domain.model.OrganizerService;
-import org.springframework.stereotype.Service;
+import com.trackfindergarage.backend.domain.model.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-@Service
+@org.springframework.stereotype.Service
 @Transactional
 public class OrganizerServiceService implements OrganizerServiceUseCase {
+
+    private static final String ORGANIZER_NOT_FOUND_WITH_ID = "Organizer not found with id: ";
+    private static final String SERVICE_NOT_FOUND_WITH_ID = "Service not found with id: ";
+    private static final String ORGANIZER_SERVICE_NOT_FOUND_WITH_ID = "Organizer service not found with id: ";
+    private static final String ORGANIZER_ID_REQUIRED = "Organizer id is required";
+    private static final String SERVICE_ID_REQUIRED = "Service id is required";
+    private static final String ORGANIZER_SERVICE_ALREADY_EXISTS =
+            "Organizer service already exists for organizer id %d and service id %d";
+    private static final String SERVICE_NOT_ALLOWED_FOR_ORGANIZERS =
+            "Service with id %d is not allowed for organizers";
 
     private final OrganizerServicePersistencePort organizerServicePersistencePort;
     private final OrganizerPersistencePort organizerPersistencePort;
@@ -37,16 +47,15 @@ public class OrganizerServiceService implements OrganizerServiceUseCase {
         organizerServicePersistencePort.findByOrganizerIdUserAndServiceId(organizerId, serviceId)
                 .ifPresent(existingAssignment -> {
                     throw new DuplicateResourceException(
-                            "Organizer service already exists for organizer id " + organizerId
-                                    + " and service id " + serviceId
+                            ORGANIZER_SERVICE_ALREADY_EXISTS.formatted(organizerId, serviceId)
                     );
                 });
 
         Organizer organizer = organizerPersistencePort.findById(organizerId)
-                .orElseThrow(() -> new ResourceNotFoundException("Organizer not found with id: " + organizerId));
+                .orElseThrow(() -> new ResourceNotFoundException(ORGANIZER_NOT_FOUND_WITH_ID + organizerId));
 
-        com.trackfindergarage.backend.domain.model.Service service = servicePersistencePort.findById(serviceId)
-                .orElseThrow(() -> new ResourceNotFoundException("Service not found with id: " + serviceId));
+        Service service = servicePersistencePort.findById(serviceId)
+                .orElseThrow(() -> new ResourceNotFoundException(SERVICE_NOT_FOUND_WITH_ID + serviceId));
 
         validateServiceAllowedForOrganizer(service);
 
@@ -72,14 +81,14 @@ public class OrganizerServiceService implements OrganizerServiceUseCase {
     @Transactional(readOnly = true)
     public OrganizerService getOrganizerServiceById(Long id) {
         return organizerServicePersistencePort.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Organizer service not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException(ORGANIZER_SERVICE_NOT_FOUND_WITH_ID + id));
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<OrganizerService> getOrganizerServicesByOrganizerId(Long organizerId) {
         organizerPersistencePort.findById(organizerId)
-                .orElseThrow(() -> new ResourceNotFoundException("Organizer not found with id: " + organizerId));
+                .orElseThrow(() -> new ResourceNotFoundException(ORGANIZER_NOT_FOUND_WITH_ID + organizerId));
 
         return organizerServicePersistencePort.findByOrganizerIdUser(organizerId);
     }
@@ -88,35 +97,33 @@ public class OrganizerServiceService implements OrganizerServiceUseCase {
     @Transactional(readOnly = true)
     public List<OrganizerService> getOrganizerServicesByServiceId(Long serviceId) {
         servicePersistencePort.findById(serviceId)
-                .orElseThrow(() -> new ResourceNotFoundException("Service not found with id: " + serviceId));
+                .orElseThrow(() -> new ResourceNotFoundException(SERVICE_NOT_FOUND_WITH_ID + serviceId));
 
         return organizerServicePersistencePort.findByServiceId(serviceId);
     }
 
     private Long extractOrganizerId(OrganizerService organizerService) {
         if (organizerService.getOrganizer() == null || organizerService.getOrganizer().getIdUser() == null) {
-            throw new IllegalArgumentException("Organizer id is required");
+            throw new IllegalArgumentException(ORGANIZER_ID_REQUIRED);
         }
         return organizerService.getOrganizer().getIdUser();
     }
 
     private Long extractServiceId(OrganizerService organizerService) {
         if (organizerService.getService() == null || organizerService.getService().getId() == null) {
-            throw new IllegalArgumentException("Service id is required");
+            throw new IllegalArgumentException(SERVICE_ID_REQUIRED);
         }
         return organizerService.getService().getId();
     }
 
-    private void validateServiceAllowedForOrganizer(com.trackfindergarage.backend.domain.model.Service service) {
+    private void validateServiceAllowedForOrganizer(Service service) {
         if (!Boolean.TRUE.equals(service.getAllowedForOrganizer())) {
-            throw new IllegalArgumentException(
-                    "Service with id " + service.getId() + " is not allowed for organizers"
-            );
+            throw new IllegalArgumentException(SERVICE_NOT_ALLOWED_FOR_ORGANIZERS.formatted(service.getId()));
         }
     }
 
     private OrganizerService findOrganizerServiceOrThrow(Long id) {
         return organizerServicePersistencePort.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Organizer service not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException(ORGANIZER_SERVICE_NOT_FOUND_WITH_ID + id));
     }
 }

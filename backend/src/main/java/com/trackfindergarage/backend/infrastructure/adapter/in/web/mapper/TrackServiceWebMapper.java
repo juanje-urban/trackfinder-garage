@@ -1,5 +1,6 @@
 package com.trackfindergarage.backend.infrastructure.adapter.in.web.mapper;
 
+import com.trackfindergarage.backend.domain.model.Service;
 import com.trackfindergarage.backend.domain.model.Track;
 import com.trackfindergarage.backend.domain.model.TrackService;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.CreateTrackServiceRequest;
@@ -13,8 +14,7 @@ public class TrackServiceWebMapper {
         Track track = new Track();
         track.setId(request.getTrackId());
 
-        com.trackfindergarage.backend.domain.model.Service service =
-                new com.trackfindergarage.backend.domain.model.Service();
+        Service service = new Service();
         service.setId(request.getServiceId());
 
         TrackService trackService = new TrackService();

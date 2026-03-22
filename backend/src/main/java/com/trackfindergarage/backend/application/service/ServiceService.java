@@ -4,14 +4,17 @@ import com.trackfindergarage.backend.application.port.in.ServiceUseCase;
 import com.trackfindergarage.backend.application.port.out.ServicePersistencePort;
 import com.trackfindergarage.backend.common.exception.DuplicateResourceException;
 import com.trackfindergarage.backend.common.exception.ResourceNotFoundException;
-import org.springframework.stereotype.Service;
+import com.trackfindergarage.backend.domain.model.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-@Service
+@org.springframework.stereotype.Service
 @Transactional
 public class ServiceService implements ServiceUseCase {
+
+    private static final String SERVICE_NOT_FOUND_WITH_ID = "Service not found with id: ";
+    private static final String SERVICE_NAME_ALREADY_EXISTS = "Service with name '%s' already exists";
 
     private final ServicePersistencePort servicePersistencePort;
 
@@ -20,14 +23,10 @@ public class ServiceService implements ServiceUseCase {
     }
 
     @Override
-    public com.trackfindergarage.backend.domain.model.Service createService(
-            com.trackfindergarage.backend.domain.model.Service service
-    ) {
+    public Service createService(Service service) {
         servicePersistencePort.findByName(service.getName())
                 .ifPresent(existingService -> {
-                    throw new DuplicateResourceException(
-                            "Service with name '" + service.getName() + "' already exists"
-                    );
+                    throw new DuplicateResourceException(SERVICE_NAME_ALREADY_EXISTS.formatted(service.getName()));
                 });
 
         service.setEnabled(true);
@@ -35,18 +34,13 @@ public class ServiceService implements ServiceUseCase {
     }
 
     @Override
-    public com.trackfindergarage.backend.domain.model.Service updateService(
-            Long id,
-            com.trackfindergarage.backend.domain.model.Service service
-    ) {
-        com.trackfindergarage.backend.domain.model.Service existingService = findServiceOrThrow(id);
+    public Service updateService(Long id, Service service) {
+        Service existingService = findServiceOrThrow(id);
 
         servicePersistencePort.findByName(service.getName())
                 .ifPresent(foundService -> {
                     if (!foundService.getId().equals(id)) {
-                        throw new DuplicateResourceException(
-                                "Service with name '" + service.getName() + "' already exists"
-                        );
+                        throw new DuplicateResourceException(SERVICE_NAME_ALREADY_EXISTS.formatted(service.getName()));
                     }
                 });
 
@@ -60,52 +54,52 @@ public class ServiceService implements ServiceUseCase {
 
     @Override
     public void deleteService(Long id) {
-        com.trackfindergarage.backend.domain.model.Service existingService = findServiceOrThrow(id);
+        Service existingService = findServiceOrThrow(id);
         servicePersistencePort.delete(existingService);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<com.trackfindergarage.backend.domain.model.Service> getAllServices() {
+    public List<Service> getAllServices() {
         return servicePersistencePort.findAll();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<com.trackfindergarage.backend.domain.model.Service> getAllServicesAllowedForTrack() {
+    public List<Service> getAllServicesAllowedForTrack() {
         return servicePersistencePort.findAllByAllowedForTrackTrue();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<com.trackfindergarage.backend.domain.model.Service> getAllServicesAllowedForOrganizer() {
+    public List<Service> getAllServicesAllowedForOrganizer() {
         return servicePersistencePort.findAllByAllowedForOrganizerTrue();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public com.trackfindergarage.backend.domain.model.Service getServiceById(Long id) {
+    public Service getServiceById(Long id) {
         return servicePersistencePort.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Service not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException(SERVICE_NOT_FOUND_WITH_ID + id));
     }
 
     @Override
-    public com.trackfindergarage.backend.domain.model.Service enableService(Long id) {
-        com.trackfindergarage.backend.domain.model.Service existingService = findServiceOrThrow(id);
+    public Service enableService(Long id) {
+        Service existingService = findServiceOrThrow(id);
         existingService.setEnabled(true);
         return servicePersistencePort.save(existingService);
     }
 
     @Override
-    public com.trackfindergarage.backend.domain.model.Service disableService(Long id) {
-        com.trackfindergarage.backend.domain.model.Service existingService = findServiceOrThrow(id);
+    public Service disableService(Long id) {
+        Service existingService = findServiceOrThrow(id);
         existingService.setEnabled(false);
         return servicePersistencePort.save(existingService);
     }
 
     //Función privada que hace lo mismo que getServiceById. Los métodos con proxy de Spring no deben ser llamados desde dentro del propio bean.
-    private com.trackfindergarage.backend.domain.model.Service findServiceOrThrow(Long id) {
+    private Service findServiceOrThrow(Long id) {
         return servicePersistencePort.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Service not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException(SERVICE_NOT_FOUND_WITH_ID + id));
     }
 }

@@ -13,6 +13,8 @@ import java.util.List;
 @Transactional
 public class TrackService implements TrackUseCase {
 
+    private static final String TRACK_NOT_FOUND_WITH_ID = "Track not found with id: ";
+
     private final TrackPersistencePort trackPersistencePort;
 
     public TrackService(TrackPersistencePort trackPersistencePort) {
@@ -51,13 +53,13 @@ public class TrackService implements TrackUseCase {
     @Transactional(readOnly = true)
     public Track getTrackById(Long id) {
         return trackPersistencePort.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Track not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException(TRACK_NOT_FOUND_WITH_ID + id));
     }
 
     //Función privada que hace lo mismo que getTrackById. Los métodos con proxy de Spring no deben ser llamados desde dentro del propio bean. (Da error sonar)
     private Track findTrackOrThrow(Long id) {
         return trackPersistencePort.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Track not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException(TRACK_NOT_FOUND_WITH_ID + id));
     }
 
 }

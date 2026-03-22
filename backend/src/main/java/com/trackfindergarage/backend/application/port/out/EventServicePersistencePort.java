@@ -1,0 +1,23 @@
+package com.trackfindergarage.backend.application.port.out;
+
+import com.trackfindergarage.backend.domain.model.EventService;
+
+import java.util.List;
+import java.util.Optional;
+
+public interface EventServicePersistencePort {
+
+    EventService save(EventService eventService);
+
+    Optional<EventService> findById(Long id);
+
+    List<EventService> findAll();
+
+    List<EventService> findByEventId(Long eventId);
+
+    Optional<EventService> findByEventIdAndTrackServiceId(Long eventId, Long trackServiceId);
+
+    Optional<EventService> findByEventIdAndOrganizerServiceId(Long eventId, Long organizerServiceId);
+
+    void delete(EventService eventService);
+}

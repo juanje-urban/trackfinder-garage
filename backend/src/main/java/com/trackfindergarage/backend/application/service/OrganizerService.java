@@ -20,6 +20,12 @@ import java.util.List;
 @Transactional
 public class OrganizerService implements OrganizerUseCase {
 
+    private static final String ORGANIZER_NOT_FOUND_WITH_ID = "Organizer not found with id: ";
+    private static final String USER_DISPLAY_NAME_ALREADY_EXISTS = "User with display name '%s' already exists";
+    private static final String USER_EMAIL_ALREADY_EXISTS = "User with email '%s' already exists";
+    private static final String ORGANIZER_LEGAL_NAME_ALREADY_EXISTS = "Organizer with legal name '%s' already exists";
+    private static final String ORGANIZER_CIF_ALREADY_EXISTS = "Organizer with cif '%s' already exists";
+
     private final OrganizerPersistencePort organizerPersistencePort;
     private final UserPersistencePort userPersistencePort;
     private final RolePersistencePort rolePersistencePort;
@@ -103,7 +109,7 @@ public class OrganizerService implements OrganizerUseCase {
     @Transactional(readOnly = true)
     public Organizer getOrganizerById(Long id) {
         return organizerPersistencePort.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Organizer not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException(ORGANIZER_NOT_FOUND_WITH_ID + id));
     }
 
     @Override
@@ -128,36 +134,28 @@ public class OrganizerService implements OrganizerUseCase {
     private void validateDisplayNameForCreate(String displayName) {
         userPersistencePort.findByDisplayName(displayName)
                 .ifPresent(existingUser -> {
-                    throw new DuplicateResourceException(
-                            "User with display name '" + displayName + "' already exists"
-                    );
+                    throw new DuplicateResourceException(USER_DISPLAY_NAME_ALREADY_EXISTS.formatted(displayName));
                 });
     }
 
     private void validateEmailForCreate(String email) {
         userPersistencePort.findByEmail(email)
                 .ifPresent(existingUser -> {
-                    throw new DuplicateResourceException(
-                            "User with email '" + email + "' already exists"
-                    );
+                    throw new DuplicateResourceException(USER_EMAIL_ALREADY_EXISTS.formatted(email));
                 });
     }
 
     private void validateLegalNameForCreate(String legalName) {
         organizerPersistencePort.findByLegalName(legalName)
                 .ifPresent(existingOrganizer -> {
-                    throw new DuplicateResourceException(
-                            "Organizer with legal name '" + legalName + "' already exists"
-                    );
+                    throw new DuplicateResourceException(ORGANIZER_LEGAL_NAME_ALREADY_EXISTS.formatted(legalName));
                 });
     }
 
     private void validateCifForCreate(String cif) {
         organizerPersistencePort.findByCif(cif)
                 .ifPresent(existingOrganizer -> {
-                    throw new DuplicateResourceException(
-                            "Organizer with cif '" + cif + "' already exists"
-                    );
+                    throw new DuplicateResourceException(ORGANIZER_CIF_ALREADY_EXISTS.formatted(cif));
                 });
     }
 
@@ -165,9 +163,7 @@ public class OrganizerService implements OrganizerUseCase {
         userPersistencePort.findByDisplayName(displayName)
                 .ifPresent(existingUser -> {
                     if (!existingUser.getId().equals(organizerId)) {
-                        throw new DuplicateResourceException(
-                                "User with display name '" + displayName + "' already exists"
-                        );
+                        throw new DuplicateResourceException(USER_DISPLAY_NAME_ALREADY_EXISTS.formatted(displayName));
                     }
                 });
     }
@@ -176,9 +172,7 @@ public class OrganizerService implements OrganizerUseCase {
         userPersistencePort.findByEmail(email)
                 .ifPresent(existingUser -> {
                     if (!existingUser.getId().equals(organizerId)) {
-                        throw new DuplicateResourceException(
-                                "User with email '" + email + "' already exists"
-                        );
+                        throw new DuplicateResourceException(USER_EMAIL_ALREADY_EXISTS.formatted(email));
                     }
                 });
     }
@@ -187,9 +181,7 @@ public class OrganizerService implements OrganizerUseCase {
         organizerPersistencePort.findByLegalName(legalName)
                 .ifPresent(existingOrganizer -> {
                     if (!existingOrganizer.getIdUser().equals(organizerId)) {
-                        throw new DuplicateResourceException(
-                                "Organizer with legal name '" + legalName + "' already exists"
-                        );
+                        throw new DuplicateResourceException(ORGANIZER_LEGAL_NAME_ALREADY_EXISTS.formatted(legalName));
                     }
                 });
     }
@@ -198,9 +190,7 @@ public class OrganizerService implements OrganizerUseCase {
         organizerPersistencePort.findByCif(cif)
                 .ifPresent(existingOrganizer -> {
                     if (!existingOrganizer.getIdUser().equals(organizerId)) {
-                        throw new DuplicateResourceException(
-                                "Organizer with cif '" + cif + "' already exists"
-                        );
+                        throw new DuplicateResourceException(ORGANIZER_CIF_ALREADY_EXISTS.formatted(cif));
                     }
                 });
     }
@@ -208,6 +198,6 @@ public class OrganizerService implements OrganizerUseCase {
     //Función privada que hace lo mismo que getOrganizerById. Los métodos con proxy de Spring no deben ser llamados desde dentro del propio bean. (Da error sonar)
     private Organizer findOrganizerOrThrow(Long id) {
         return organizerPersistencePort.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Organizer not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(ORGANIZER_NOT_FOUND_WITH_ID + id));
     }
 }

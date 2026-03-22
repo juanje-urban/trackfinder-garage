@@ -6,16 +6,26 @@ import com.trackfindergarage.backend.application.port.out.TrackPersistencePort;
 import com.trackfindergarage.backend.application.port.out.TrackServicePersistencePort;
 import com.trackfindergarage.backend.common.exception.DuplicateResourceException;
 import com.trackfindergarage.backend.common.exception.ResourceNotFoundException;
+import com.trackfindergarage.backend.domain.model.Service;
 import com.trackfindergarage.backend.domain.model.Track;
 import com.trackfindergarage.backend.domain.model.TrackService;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-@Service
+@org.springframework.stereotype.Service
 @Transactional
 public class TrackServiceService implements TrackServiceUseCase {
+
+    private static final String TRACK_NOT_FOUND_WITH_ID = "Track not found with id: ";
+    private static final String SERVICE_NOT_FOUND_WITH_ID = "Service not found with id: ";
+    private static final String TRACK_SERVICE_NOT_FOUND_WITH_ID = "Track service not found with id: ";
+    private static final String TRACK_ID_REQUIRED = "Track id is required";
+    private static final String SERVICE_ID_REQUIRED = "Service id is required";
+    private static final String TRACK_SERVICE_ALREADY_EXISTS =
+            "Track service already exists for track id %d and service id %d";
+    private static final String SERVICE_NOT_ALLOWED_FOR_TRACKS =
+            "Service with id %d is not allowed for tracks";
 
     private final TrackServicePersistencePort trackServicePersistencePort;
     private final TrackPersistencePort trackPersistencePort;
@@ -36,17 +46,14 @@ public class TrackServiceService implements TrackServiceUseCase {
 
         trackServicePersistencePort.findByTrackIdAndServiceId(trackId, serviceId)
                 .ifPresent(existingAssignment -> {
-                    throw new DuplicateResourceException(
-                            "Track service already exists for track id " + trackId
-                                    + " and service id " + serviceId
-                    );
+                    throw new DuplicateResourceException(TRACK_SERVICE_ALREADY_EXISTS.formatted(trackId, serviceId));
                 });
 
         Track track = trackPersistencePort.findById(trackId)
-                .orElseThrow(() -> new ResourceNotFoundException("Track not found with id: " + trackId));
+                .orElseThrow(() -> new ResourceNotFoundException(TRACK_NOT_FOUND_WITH_ID + trackId));
 
-        com.trackfindergarage.backend.domain.model.Service service = servicePersistencePort.findById(serviceId)
-                .orElseThrow(() -> new ResourceNotFoundException("Service not found with id: " + serviceId));
+        Service service = servicePersistencePort.findById(serviceId)
+                .orElseThrow(() -> new ResourceNotFoundException(SERVICE_NOT_FOUND_WITH_ID + serviceId));
 
         validateServiceAllowedForTrack(service);
 
@@ -72,14 +79,14 @@ public class TrackServiceService implements TrackServiceUseCase {
     @Transactional(readOnly = true)
     public TrackService getTrackServiceById(Long id) {
         return trackServicePersistencePort.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Track service not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException(TRACK_SERVICE_NOT_FOUND_WITH_ID + id));
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<TrackService> getTrackServicesByTrackId(Long trackId) {
         trackPersistencePort.findById(trackId)
-                .orElseThrow(() -> new ResourceNotFoundException("Track not found with id: " + trackId));
+                .orElseThrow(() -> new ResourceNotFoundException(TRACK_NOT_FOUND_WITH_ID + trackId));
 
         return trackServicePersistencePort.findByTrackId(trackId);
     }
@@ -88,35 +95,33 @@ public class TrackServiceService implements TrackServiceUseCase {
     @Transactional(readOnly = true)
     public List<TrackService> getTrackServicesByServiceId(Long serviceId) {
         servicePersistencePort.findById(serviceId)
-                .orElseThrow(() -> new ResourceNotFoundException("Service not found with id: " + serviceId));
+                .orElseThrow(() -> new ResourceNotFoundException(SERVICE_NOT_FOUND_WITH_ID + serviceId));
 
         return trackServicePersistencePort.findByServiceId(serviceId);
     }
 
     private Long extractTrackId(TrackService trackService) {
         if (trackService.getTrack() == null || trackService.getTrack().getId() == null) {
-            throw new IllegalArgumentException("Track id is required");
+            throw new IllegalArgumentException(TRACK_ID_REQUIRED);
         }
         return trackService.getTrack().getId();
     }
 
     private Long extractServiceId(TrackService trackService) {
         if (trackService.getService() == null || trackService.getService().getId() == null) {
-            throw new IllegalArgumentException("Service id is required");
+            throw new IllegalArgumentException(SERVICE_ID_REQUIRED);
         }
         return trackService.getService().getId();
     }
 
-    private void validateServiceAllowedForTrack(com.trackfindergarage.backend.domain.model.Service service) {
+    private void validateServiceAllowedForTrack(Service service) {
         if (!Boolean.TRUE.equals(service.getAllowedForTrack())) {
-            throw new IllegalArgumentException(
-                    "Service with id " + service.getId() + " is not allowed for tracks"
-            );
+            throw new IllegalArgumentException(SERVICE_NOT_ALLOWED_FOR_TRACKS.formatted(service.getId()));
         }
     }
 
     private TrackService findTrackServiceOrThrow(Long id) {
         return trackServicePersistencePort.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Track service not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException(TRACK_SERVICE_NOT_FOUND_WITH_ID + id));
     }
 }

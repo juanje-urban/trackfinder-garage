@@ -14,6 +14,9 @@ import java.util.List;
 @Transactional
 public class RoleService implements RoleUseCase {
 
+    private static final String ROLE_NOT_FOUND_WITH_ID = "Role not found with id: ";
+    private static final String ROLE_ALREADY_EXISTS = "Role with value '%s' already exists";
+
     private final RolePersistencePort rolePersistencePort;
 
     public RoleService(RolePersistencePort rolePersistencePort) {
@@ -24,9 +27,7 @@ public class RoleService implements RoleUseCase {
     public Role createRole(Role role) {
         rolePersistencePort.findByRoleName(role.getRoleName())
                 .ifPresent(existingRole -> {
-                    throw new DuplicateResourceException(
-                            "Role with value '" + role.getRoleName() + "' already exists"
-                    );
+                    throw new DuplicateResourceException(ROLE_ALREADY_EXISTS.formatted(role.getRoleName()));
                 });
 
         return rolePersistencePort.save(role);
@@ -39,9 +40,7 @@ public class RoleService implements RoleUseCase {
         rolePersistencePort.findByRoleName(role.getRoleName())
                 .ifPresent(foundRole -> {
                     if (!foundRole.getId().equals(id)) {
-                        throw new DuplicateResourceException(
-                                "Role with value '" + role.getRoleName() + "' already exists"
-                        );
+                        throw new DuplicateResourceException(ROLE_ALREADY_EXISTS.formatted(role.getRoleName()));
                     }
                 });
 
@@ -66,12 +65,12 @@ public class RoleService implements RoleUseCase {
     @Transactional(readOnly = true)
     public Role getRoleById(Long id) {
         return rolePersistencePort.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Role not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException(ROLE_NOT_FOUND_WITH_ID + id));
     }
 
     //Función privada que hace lo mismo que getRoleById. Los métodos con proxy de Spring no deben ser llamados desde dentro del propio bean. (Da error sonar)
     private Role findRoleOrThrow(Long id) {
         return rolePersistencePort.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Role not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException(ROLE_NOT_FOUND_WITH_ID + id));
     }
 }
