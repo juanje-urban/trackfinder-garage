@@ -135,10 +135,10 @@ public class MessageService implements MessageUseCase {
         if (message.getSubject().length() > 255) {
             throw new IllegalArgumentException(SUBJECT_TOO_LONG);
         }
-        if (message.getMessage() == null || message.getMessage().isBlank()) {
+        if (message.getContent() == null || message.getContent().isBlank()) {
             throw new IllegalArgumentException(MESSAGE_TEXT_REQUIRED);
         }
-        if (message.getMessage().length() > 500) {
+        if (message.getContent().length() > 500) {
             throw new IllegalArgumentException(MESSAGE_TEXT_TOO_LONG);
         }
     }

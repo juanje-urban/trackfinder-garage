@@ -91,7 +91,7 @@ class MessageServiceTest {
     @Test
     void createMessageThrowsWhenBodyIsBlank() {
         Message message = messageWithSenderAndReceiver(1L, 2L);
-        message.setMessage(" ");
+        message.setContent(" ");
 
         assertThrows(IllegalArgumentException.class, () -> messageService.createMessage(message));
     }
@@ -195,7 +195,7 @@ class MessageServiceTest {
         message.setSender(userWithId(senderId, "sender-" + senderId));
         message.setReceiver(userWithId(receiverId, "receiver-" + receiverId));
         message.setSubject("Subject");
-        message.setMessage("Body");
+        message.setContent("Body");
         return message;
     }
 

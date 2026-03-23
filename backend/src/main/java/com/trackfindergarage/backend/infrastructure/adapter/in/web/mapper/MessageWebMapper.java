@@ -20,7 +20,7 @@ public class MessageWebMapper {
         message.setSender(sender);
         message.setReceiver(receiver);
         message.setSubject(request.getSubject());
-        message.setMessage(request.getMessage());
+        message.setContent(request.getMessage());
 
         return message;
     }
@@ -35,7 +35,7 @@ public class MessageWebMapper {
                 .sentAt(message.getSentAt())
                 .isRead(message.getIsRead())
                 .subject(message.getSubject())
-                .message(message.getMessage())
+                .message(message.getContent())
                 .build();
     }
 }

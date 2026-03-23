@@ -37,5 +37,5 @@ public class Message {
     private String subject;
 
     @Column(name = "message", length = 500, nullable = false)
-    private String message;
+    private String content;
 }

@@ -264,18 +264,25 @@ class EventServiceTest {
 
     @Test
     void getEventsByDateRangeThrowsWhenStartDateIsNull() {
-        assertThrows(IllegalArgumentException.class, () -> eventService.getEventsByDateRange(null, LocalDate.now().plusDays(1)));
+        LocalDate endDate = LocalDate.now().plusDays(1);
+
+        assertThrows(IllegalArgumentException.class, () -> eventService.getEventsByDateRange(null, endDate));
     }
 
     @Test
     void getEventsByDateRangeThrowsWhenEndDateIsNull() {
-        assertThrows(IllegalArgumentException.class, () -> eventService.getEventsByDateRange(LocalDate.now(), null));
+        LocalDate startDate = LocalDate.now();
+
+        assertThrows(IllegalArgumentException.class, () -> eventService.getEventsByDateRange(startDate, null));
     }
 
     @Test
     void getEventsByDateRangeThrowsWhenStartDateIsAfterEndDate() {
+        LocalDate startDate = LocalDate.now().plusDays(3);
+        LocalDate endDate = LocalDate.now().plusDays(1);
+
         assertThrows(IllegalArgumentException.class,
-                () -> eventService.getEventsByDateRange(LocalDate.now().plusDays(3), LocalDate.now().plusDays(1)));
+                () -> eventService.getEventsByDateRange(startDate, endDate));
     }
 
     @Test

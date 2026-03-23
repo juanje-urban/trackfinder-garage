@@ -78,7 +78,7 @@ class MessageControllerTest {
         message.setSentAt(LocalDateTime.of(2026, 3, 22, 10, 0));
         message.setIsRead(false);
         message.setSubject("Hola");
-        message.setMessage("Que tal");
+        message.setContent("Que tal");
         return message;
     }
 }

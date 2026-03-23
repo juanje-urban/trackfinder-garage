@@ -27,7 +27,7 @@ class MessageWebMapperTest {
         assertEquals(1L, message.getSender().getId());
         assertEquals(2L, message.getReceiver().getId());
         assertEquals("Hola", message.getSubject());
-        assertEquals("Mensaje", message.getMessage());
+        assertEquals("Mensaje", message.getContent());
     }
 
     @Test
@@ -47,7 +47,7 @@ class MessageWebMapperTest {
         message.setSentAt(LocalDateTime.of(2026, 3, 22, 10, 0));
         message.setIsRead(false);
         message.setSubject("Hola");
-        message.setMessage("Mensaje");
+        message.setContent("Mensaje");
 
         MessageResponse response = messageWebMapper.toResponse(message);
 
