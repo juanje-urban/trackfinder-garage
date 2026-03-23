@@ -19,18 +19,18 @@ class UserWebMapperTest {
     @Test
     void toDomainMapsCreateRequestToUser() {
         CreateUserRequest request = new CreateUserRequest();
-        request.setDisplayName("juan");
-        request.setEmail("juan@example.com");
-        request.setName("Juan");
+        request.setDisplayName("Juanje");
+        request.setEmail("juanje@example.com");
+        request.setName("Juanje");
         request.setSurname("Urban");
         request.setAddress("Street");
         request.setPhone("123");
 
         User user = userWebMapper.toDomain(request);
 
-        assertEquals("juan", user.getDisplayName());
-        assertEquals("juan@example.com", user.getEmail());
-        assertEquals("Juan", user.getName());
+        assertEquals("Juanje", user.getDisplayName());
+        assertEquals("juanje@example.com", user.getEmail());
+        assertEquals("Juanje", user.getName());
         assertEquals("Urban", user.getSurname());
         assertEquals("Street", user.getAddress());
         assertEquals("123", user.getPhone());
@@ -64,11 +64,11 @@ class UserWebMapperTest {
 
         User user = new User();
         user.setId(8L);
-        user.setDisplayName("juan");
-        user.setEmail("juan@example.com");
+        user.setDisplayName("Juanje");
+        user.setEmail("juanje@example.com");
         user.setCreated(LocalDateTime.of(2026, 3, 21, 10, 0));
         user.setEnabled(true);
-        user.setName("Juan");
+        user.setName("Juanje");
         user.setSurname("Urban");
         user.setAddress("Street");
         user.setPhone("123");
@@ -77,8 +77,8 @@ class UserWebMapperTest {
         UserResponse response = userWebMapper.toResponse(user);
 
         assertEquals(8L, response.getId());
-        assertEquals("juan", response.getDisplayName());
-        assertEquals("juan@example.com", response.getEmail());
+        assertEquals("Juanje", response.getDisplayName());
+        assertEquals("juanje@example.com", response.getEmail());
         assertEquals(7L, response.getRoleId());
     }
 

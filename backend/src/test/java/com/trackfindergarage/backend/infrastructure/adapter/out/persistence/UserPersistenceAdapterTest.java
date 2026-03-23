@@ -35,13 +35,13 @@ class UserPersistenceAdapterTest {
         List<User> users = List.of(user);
 
         when(repository.findById(1L)).thenReturn(Optional.of(user));
-        when(repository.findByDisplayName("juan")).thenReturn(Optional.of(user));
-        when(repository.findByEmail("juan@example.com")).thenReturn(Optional.of(user));
+        when(repository.findByDisplayName("Juanje")).thenReturn(Optional.of(user));
+        when(repository.findByEmail("juanje@example.com")).thenReturn(Optional.of(user));
         when(repository.findAll()).thenReturn(users);
 
         assertTrue(adapter.findById(1L).isPresent());
-        assertTrue(adapter.findByDisplayName("juan").isPresent());
-        assertTrue(adapter.findByEmail("juan@example.com").isPresent());
+        assertTrue(adapter.findByDisplayName("Juanje").isPresent());
+        assertTrue(adapter.findByEmail("juanje@example.com").isPresent());
         assertEquals(users, adapter.findAll());
     }
 

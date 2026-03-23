@@ -27,20 +27,20 @@ class UserControllerTest {
     @Test
     void createUserDelegatesToUseCaseAndReturnsMappedResponse() {
         CreateUserRequest request = new CreateUserRequest();
-        request.setDisplayName("juan");
+        request.setDisplayName("Juanje");
         request.setPassword("secret");
-        request.setEmail("juan@example.com");
-        request.setName("Juan");
+        request.setEmail("juanje@example.com");
+        request.setName("Juanje");
         request.setSurname("Urban");
         request.setAddress("Street");
         request.setPhone("123");
 
-        when(userUseCase.createUser(any(User.class), eq("secret"))).thenReturn(userWithId(1L, "juan"));
+        when(userUseCase.createUser(any(User.class), eq("secret"))).thenReturn(userWithId(1L, "Juanje"));
 
         UserResponse response = userController.createUser(request);
 
         assertEquals(1L, response.getId());
-        assertEquals("juan", response.getDisplayName());
+        assertEquals("Juanje", response.getDisplayName());
         verify(userUseCase).createUser(any(User.class), eq("secret"));
     }
 
@@ -65,20 +65,20 @@ class UserControllerTest {
 
     @Test
     void getAllUsersMapsUseCaseResult() {
-        when(userUseCase.getAllUsers()).thenReturn(List.of(userWithId(1L, "juan")));
+        when(userUseCase.getAllUsers()).thenReturn(List.of(userWithId(1L, "Juanje")));
 
         List<UserResponse> response = userController.getAllUsers();
 
         assertEquals(1, response.size());
-        assertEquals("juan", response.getFirst().getDisplayName());
+        assertEquals("Juanje", response.getFirst().getDisplayName());
     }
 
     @Test
     void getByIdAndEnableDisableReturnMappedResponses() {
-        User user = userWithId(3L, "juan");
-        User enabled = userWithId(3L, "juan");
+        User user = userWithId(3L, "Juanje");
+        User enabled = userWithId(3L, "Juanje");
         enabled.setEnabled(true);
-        User disabled = userWithId(3L, "juan");
+        User disabled = userWithId(3L, "Juanje");
         disabled.setEnabled(false);
 
         when(userUseCase.getUserById(3L)).thenReturn(user);

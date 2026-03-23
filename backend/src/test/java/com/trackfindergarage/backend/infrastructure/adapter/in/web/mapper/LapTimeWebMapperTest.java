@@ -57,7 +57,7 @@ class LapTimeWebMapperTest {
     void toResponseMapsLapTimeToResponse() {
         User user = new User();
         user.setId(1L);
-        user.setDisplayName("juan");
+        user.setDisplayName("Juanje");
 
         Track track = new Track();
         track.setId(2L);
@@ -75,7 +75,7 @@ class LapTimeWebMapperTest {
 
         assertEquals(10L, response.getId());
         assertEquals(1L, response.getUserId());
-        assertEquals("juan", response.getUserDisplayName());
+        assertEquals("Juanje", response.getUserDisplayName());
         assertEquals(2L, response.getTrackId());
         assertEquals("Jarama", response.getTrackName());
         assertEquals(LocalDate.of(2026, 3, 20), response.getLapDate());
