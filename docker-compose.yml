@@ -16,6 +16,7 @@ services:
     image: ghcr.io/juanje-urban/trackfinder-garage-backend:latest
     container_name: trackfinder-backend
     environment:
+      SPRING_PROFILES_ACTIVE: demo
       SPRING_DATASOURCE_URL: jdbc:mariadb://db:3306/trackfinder
       SPRING_DATASOURCE_USERNAME: trackuser
       SPRING_DATASOURCE_PASSWORD: trackpass
