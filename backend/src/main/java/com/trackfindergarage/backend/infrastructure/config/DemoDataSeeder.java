@@ -62,9 +62,9 @@ public class DemoDataSeeder implements CommandLineRunner {
     private static final String COPILOT_INSURANCE_SERVICE_NAME = "Seguro para copiloto";
     private static final String TRANSPONDER_TIMING_SERVICE_NAME = "Cronometraje con transponder";
     private static final String UNREAD_MESSAGE_SUBJECT = "Consulta sobre tandas en Jarama";
-    private static final String UNREAD_MESSAGE_CONTENT_TEXT =
-            "Hola, me interesa una tanda en Jarama para abril. \u00BFTen\u00E9is previsto organizar alguna? Gracias.";
     private static final String UNREAD_MESSAGE_CONTENT =
+            "Hola, me interesa una tanda en Jarama para abril. \u00BFTen\u00E9is previsto organizar alguna? Gracias.";
+    private static final String LEGACY_UNREAD_MESSAGE_CONTENT =
             "Hola, me interesa una tanda en Jarama para abril. ¿Tenéis previsto organizar alguna? Gracias.";
 
     private final SpringDataRoleRepository roleRepository;
@@ -107,14 +107,19 @@ public class DemoDataSeeder implements CommandLineRunner {
         Role organizerRole = createRoleIfMissing("ORGANIZER");
 
         createUser("admin", "admin@example.com", "Admin", "Demo", "admin123", adminRole);
-        createUser("juanje", "juanje@example.com", "Juanje", "Demo", DEFAULT_STANDARD_USER_LOGIN, userRole);
-        createUser("maria", "maria@example.com", "Maria", "Demo", DEFAULT_STANDARD_USER_LOGIN, userRole);
-        createUser("carlos", "carlos@example.com", "Carlos", "Demo", DEFAULT_STANDARD_USER_LOGIN, userRole);
-        createUser("fernando.alonso", "fernando.alonso@example.com", "Fernando", "Alonso", DEFAULT_STANDARD_USER_LOGIN, userRole);
-        createUser("alex.palau", "alex.palau@example.com", "Alex", "Palou", DEFAULT_STANDARD_USER_LOGIN, userRole);
+        createUser(JUANJE_DISPLAY_NAME, "juanje@example.com", "Juanje", "Demo", DEFAULT_STANDARD_USER_LOGIN, userRole);
+        createUser(MARIA_DISPLAY_NAME, "maria@example.com", "Maria", "Demo", DEFAULT_STANDARD_USER_LOGIN, userRole);
+        createUser(CARLOS_DISPLAY_NAME, "carlos@example.com", "Carlos", "Demo", DEFAULT_STANDARD_USER_LOGIN, userRole);
+        createUser(FERNANDO_ALONSO_DISPLAY_NAME,
+                "fernando.alonso@example.com",
+                "Fernando",
+                "Alonso",
+                DEFAULT_STANDARD_USER_LOGIN,
+                userRole);
+        createUser(ALEX_PALAU_DISPLAY_NAME, "alex.palau@example.com", "Alex", "Palou", DEFAULT_STANDARD_USER_LOGIN, userRole);
 
         createOrganizer(
-                "trackevents",
+                TRACKEVENTS_DISPLAY_NAME,
                 "trackevents@example.com",
                 "Trackevents",
                 "Demo",
@@ -406,8 +411,15 @@ public class DemoDataSeeder implements CommandLineRunner {
                 LocalDateTime.of(2026, 3, 24, 18, 30),
                 false,
                 UNREAD_MESSAGE_SUBJECT,
-                UNREAD_MESSAGE_CONTENT_TEXT
+                resolveUnreadMessageContent()
         );
+    }
+
+    private String resolveUnreadMessageContent() {
+        if (LEGACY_UNREAD_MESSAGE_CONTENT.contains("\u00C2")) {
+            return UNREAD_MESSAGE_CONTENT;
+        }
+        return LEGACY_UNREAD_MESSAGE_CONTENT.contains("Â") ? UNREAD_MESSAGE_CONTENT : LEGACY_UNREAD_MESSAGE_CONTENT;
     }
 
     private void createOrganizerServiceIfMissing(String legalName, String serviceName) {
