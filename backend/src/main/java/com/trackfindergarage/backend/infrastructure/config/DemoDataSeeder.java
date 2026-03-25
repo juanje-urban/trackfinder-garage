@@ -416,10 +416,9 @@ public class DemoDataSeeder implements CommandLineRunner {
     }
 
     private String resolveUnreadMessageContent() {
-        if (LEGACY_UNREAD_MESSAGE_CONTENT.contains("\u00C2")) {
-            return UNREAD_MESSAGE_CONTENT;
-        }
-        return LEGACY_UNREAD_MESSAGE_CONTENT.contains("Â") ? UNREAD_MESSAGE_CONTENT : LEGACY_UNREAD_MESSAGE_CONTENT;
+        return LEGACY_UNREAD_MESSAGE_CONTENT.contains("\u00C2")
+                ? UNREAD_MESSAGE_CONTENT
+                : LEGACY_UNREAD_MESSAGE_CONTENT;
     }
 
     private void createOrganizerServiceIfMissing(String legalName, String serviceName) {

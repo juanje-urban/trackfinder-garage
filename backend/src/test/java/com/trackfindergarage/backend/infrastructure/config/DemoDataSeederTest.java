@@ -282,23 +282,29 @@ class DemoDataSeederTest {
         state.rolesByName.put("USER", role("USER"));
         state.rolesByName.put("ORGANIZER", role("ORGANIZER"));
 
-        User juanje = user(1L, "juanje");
-        User maria = user(2L, "maria");
-        User carlos = user(3L, "carlos");
-        User fernando = user(4L, "fernando.alonso");
-        User alex = user(5L, "alex.palau");
-        User trackevents = user(6L, "trackevents");
+        User admin = user(1L, "admin");
+        User juanje = user(2L, "juanje");
+        User maria = user(3L, "maria");
+        User carlos = user(4L, "carlos");
+        User fernando = user(5L, "fernando.alonso");
+        User alex = user(6L, "alex.palau");
+        User trackevents = user(7L, "trackevents");
+        User racingpro = user(8L, "racingpro");
+        User iberianMotorsport = user(9L, "iberianmotorsport");
 
+        state.usersByDisplayName.put(admin.getDisplayName(), admin);
         state.usersByDisplayName.put(juanje.getDisplayName(), juanje);
         state.usersByDisplayName.put(maria.getDisplayName(), maria);
         state.usersByDisplayName.put(carlos.getDisplayName(), carlos);
         state.usersByDisplayName.put(fernando.getDisplayName(), fernando);
         state.usersByDisplayName.put(alex.getDisplayName(), alex);
         state.usersByDisplayName.put(trackevents.getDisplayName(), trackevents);
+        state.usersByDisplayName.put(racingpro.getDisplayName(), racingpro);
+        state.usersByDisplayName.put(iberianMotorsport.getDisplayName(), iberianMotorsport);
 
         state.organizersByLegalName.put("TrackEvents S.L.", organizer(trackevents, "TrackEvents S.L."));
-        state.organizersByLegalName.put("RacingPro S.L.", organizer(user(7L, "racingpro"), "RacingPro S.L."));
-        state.organizersByLegalName.put("Iberian Motorsport Events S.L.", organizer(user(8L, "iberianmotorsport"), "Iberian Motorsport Events S.L."));
+        state.organizersByLegalName.put("RacingPro S.L.", organizer(racingpro, "RacingPro S.L."));
+        state.organizersByLegalName.put("Iberian Motorsport Events S.L.", organizer(iberianMotorsport, "Iberian Motorsport Events S.L."));
 
         Track calafat = track(1L, "Circuit Calafat");
         Track jarama = track(2L, "Circuito de Madrid Jarama - RACE");
