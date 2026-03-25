@@ -28,6 +28,8 @@ public class DemoDataSeeder implements CommandLineRunner {
     private static final String TRACKEVENTS_LEGAL_NAME = "TrackEvents S.L.";
     private static final String RACINGPRO_LEGAL_NAME = "RacingPro S.L.";
     private static final String IBERIAN_MOTORSPORT_LEGAL_NAME = "Iberian Motorsport Events S.L.";
+    private static final String DEFAULT_STANDARD_USER_PASSWORD = "user123";
+    private static final String DEFAULT_ORGANIZER_PASSWORD = "org123";
 
     private static final String CALAFAT_TRACK_NAME = "Circuit Calafat";
     private static final String JARAMA_TRACK_NAME = "Circuito de Madrid Jarama - RACE";
@@ -83,18 +85,17 @@ public class DemoDataSeeder implements CommandLineRunner {
         Role organizerRole = createRoleIfMissing("ORGANIZER");
 
         createUser("admin", "admin@example.com", "Admin", "Demo", "admin123", adminRole);
-        createUser("juanje", "juanje@example.com", "Juanje", "Demo", "user123", userRole);
-        createUser("maria", "maria@example.com", "Maria", "Demo", "user123", userRole);
-        createUser("carlos", "carlos@example.com", "Carlos", "Demo", "user123", userRole);
-        createUser("fernando.alonso", "fernando.alonso@example.com", "Fernando", "Alonso", "user123", userRole);
-        createUser("alex.palau", "alex.palau@example.com", "Alex", "Palou", "user123", userRole);
+        createUser("juanje", "juanje@example.com", "Juanje", "Demo", DEFAULT_STANDARD_USER_PASSWORD, userRole);
+        createUser("maria", "maria@example.com", "Maria", "Demo", DEFAULT_STANDARD_USER_PASSWORD, userRole);
+        createUser("carlos", "carlos@example.com", "Carlos", "Demo", DEFAULT_STANDARD_USER_PASSWORD, userRole);
+        createUser("fernando.alonso", "fernando.alonso@example.com", "Fernando", "Alonso", DEFAULT_STANDARD_USER_PASSWORD, userRole);
+        createUser("alex.palau", "alex.palau@example.com", "Alex", "Palou", DEFAULT_STANDARD_USER_PASSWORD, userRole);
 
         createOrganizer(
                 "trackevents",
                 "trackevents@example.com",
                 "Trackevents",
                 "Demo",
-                "org123",
                 TRACKEVENTS_LEGAL_NAME,
                 "B00000001",
                 organizerRole
@@ -104,7 +105,6 @@ public class DemoDataSeeder implements CommandLineRunner {
                 "racingpro@example.com",
                 "Racingpro",
                 "Demo",
-                "org123",
                 RACINGPRO_LEGAL_NAME,
                 "B00000002",
                 organizerRole
@@ -114,7 +114,6 @@ public class DemoDataSeeder implements CommandLineRunner {
                 "iberianmotorsport@example.com",
                 "Iberian",
                 "Motorsport",
-                "org123",
                 IBERIAN_MOTORSPORT_LEGAL_NAME,
                 "B00000003",
                 organizerRole
@@ -263,11 +262,10 @@ public class DemoDataSeeder implements CommandLineRunner {
                                  String email,
                                  String name,
                                  String surname,
-                                 String rawPassword,
                                  String legalName,
                                  String cif,
                                  Role organizerRole) {
-        User user = createUser(displayName, email, name, surname, rawPassword, organizerRole);
+        User user = createUser(displayName, email, name, surname, DEFAULT_ORGANIZER_PASSWORD, organizerRole);
 
         Organizer organizer = new Organizer();
         organizer.setUser(user);
@@ -279,30 +277,32 @@ public class DemoDataSeeder implements CommandLineRunner {
     }
 
     private void createTrackIfMissing(String name, String location, String description) {
-        trackRepository.findByName(name)
-                .orElseGet(() -> {
-                    Track track = new Track();
-                    track.setName(name);
-                    track.setLocation(location);
-                    track.setDescription(description);
-                    return trackRepository.save(track);
-                });
+        if (trackRepository.findByName(name).isPresent()) {
+            return;
+        }
+
+        Track track = new Track();
+        track.setName(name);
+        track.setLocation(location);
+        track.setDescription(description);
+        trackRepository.save(track);
     }
 
     private void createServiceIfMissing(String name,
                                         String description,
                                         boolean allowedForTrack,
                                         boolean allowedForOrganizer) {
-        serviceRepository.findByName(name)
-                .orElseGet(() -> {
-                    Service service = new Service();
-                    service.setName(name);
-                    service.setDescription(description);
-                    service.setAllowedForTrack(allowedForTrack);
-                    service.setAllowedForOrganizer(allowedForOrganizer);
-                    service.setEnabled(true);
-                    return serviceRepository.save(service);
-                });
+        if (serviceRepository.findByName(name).isPresent()) {
+            return;
+        }
+
+        Service service = new Service();
+        service.setName(name);
+        service.setDescription(description);
+        service.setAllowedForTrack(allowedForTrack);
+        service.setAllowedForOrganizer(allowedForOrganizer);
+        service.setEnabled(true);
+        serviceRepository.save(service);
     }
 
     private void seedOrganizerServices() {
@@ -362,26 +362,28 @@ public class DemoDataSeeder implements CommandLineRunner {
         Organizer organizer = findOrganizerByLegalNameOrThrow(legalName);
         Service service = findServiceByNameOrThrow(serviceName);
 
-        organizerServiceRepository.findByOrganizerIdUserAndServiceId(organizer.getIdUser(), service.getId())
-                .orElseGet(() -> {
-                    OrganizerService organizerService = new OrganizerService();
-                    organizerService.setOrganizer(organizer);
-                    organizerService.setService(service);
-                    return organizerServiceRepository.save(organizerService);
-                });
+        if (organizerServiceRepository.findByOrganizerIdUserAndServiceId(organizer.getIdUser(), service.getId()).isPresent()) {
+            return;
+        }
+
+        OrganizerService organizerService = new OrganizerService();
+        organizerService.setOrganizer(organizer);
+        organizerService.setService(service);
+        organizerServiceRepository.save(organizerService);
     }
 
     private void createTrackServiceIfMissing(String trackName, String serviceName) {
         Track track = findTrackByNameOrThrow(trackName);
         Service service = findServiceByNameOrThrow(serviceName);
 
-        trackServiceRepository.findByTrackIdAndServiceId(track.getId(), service.getId())
-                .orElseGet(() -> {
-                    TrackService trackService = new TrackService();
-                    trackService.setTrack(track);
-                    trackService.setService(service);
-                    return trackServiceRepository.save(trackService);
-                });
+        if (trackServiceRepository.findByTrackIdAndServiceId(track.getId(), service.getId()).isPresent()) {
+            return;
+        }
+
+        TrackService trackService = new TrackService();
+        trackService.setTrack(track);
+        trackService.setService(service);
+        trackServiceRepository.save(trackService);
     }
 
     private Organizer findOrganizerByLegalNameOrThrow(String legalName) {
