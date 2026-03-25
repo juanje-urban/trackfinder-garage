@@ -37,6 +37,15 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
+    void handleConflictReturnsConflictResponse() {
+        ResponseEntity<Map<String, String>> response =
+                globalExceptionHandler.handleConflict(new ConflictException("conflict"));
+
+        assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
+        assertEquals("conflict", response.getBody().get("error"));
+    }
+
+    @Test
     void handleIllegalArgumentReturnsBadRequestResponse() {
         ResponseEntity<Map<String, String>> response =
                 globalExceptionHandler.handleIllegalArgument(new IllegalArgumentException("invalid"));

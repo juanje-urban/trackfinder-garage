@@ -30,7 +30,7 @@ public class EventController {
     @ResponseStatus(HttpStatus.CREATED)
     public EventResponse createEvent(@Valid @RequestBody CreateEventRequest request) {
         Event createdEvent = eventUseCase.createEvent(eventWebMapper.toDomain(request));
-        return eventWebMapper.toResponse(createdEvent);
+        return toResponse(createdEvent);
     }
 
     @PutMapping("/{id}")
@@ -39,7 +39,7 @@ public class EventController {
         eventWebMapper.updateDomain(eventToUpdate, request);
 
         Event updatedEvent = eventUseCase.updateEvent(id, eventToUpdate);
-        return eventWebMapper.toResponse(updatedEvent);
+        return toResponse(updatedEvent);
     }
 
     @DeleteMapping("/{id}")
@@ -52,20 +52,20 @@ public class EventController {
     public List<EventResponse> getAllEvents() {
         return eventUseCase.getAllEvents()
                 .stream()
-                .map(eventWebMapper::toResponse)
+                .map(this::toResponse)
                 .toList();
     }
 
     @GetMapping("/{id}")
     public EventResponse getEventById(@PathVariable Long id) {
-        return eventWebMapper.toResponse(eventUseCase.getEventById(id));
+        return toResponse(eventUseCase.getEventById(id));
     }
 
     @GetMapping("/organizer/{organizerId}")
     public List<EventResponse> getEventsByOrganizerId(@PathVariable Long organizerId) {
         return eventUseCase.getEventsByOrganizerId(organizerId)
                 .stream()
-                .map(eventWebMapper::toResponse)
+                .map(this::toResponse)
                 .toList();
     }
 
@@ -73,7 +73,7 @@ public class EventController {
     public List<EventResponse> getEventsByTrackId(@PathVariable Long trackId) {
         return eventUseCase.getEventsByTrackId(trackId)
                 .stream()
-                .map(eventWebMapper::toResponse)
+                .map(this::toResponse)
                 .toList();
     }
 
@@ -84,7 +84,11 @@ public class EventController {
     ) {
         return eventUseCase.getEventsByDateRange(startDate, endDate)
                 .stream()
-                .map(eventWebMapper::toResponse)
+                .map(this::toResponse)
                 .toList();
+    }
+
+    private EventResponse toResponse(Event event) {
+        return eventWebMapper.toResponse(event, eventUseCase.getRemainingCapacity(event.getId()));
     }
 }

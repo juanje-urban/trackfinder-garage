@@ -17,4 +17,6 @@ public class EventResponse {
     private String trackName;
     private LocalDate eventDate;
     private BigDecimal basePrice;
+    private Integer maxParticipants;
+    private Integer remainingCapacity;
 }

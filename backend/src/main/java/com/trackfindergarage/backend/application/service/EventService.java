@@ -1,6 +1,7 @@
 package com.trackfindergarage.backend.application.service;
 
 import com.trackfindergarage.backend.application.port.in.EventUseCase;
+import com.trackfindergarage.backend.application.port.out.EventBookingPersistencePort;
 import com.trackfindergarage.backend.application.port.out.EventPersistencePort;
 import com.trackfindergarage.backend.application.port.out.OrganizerPersistencePort;
 import com.trackfindergarage.backend.application.port.out.TrackPersistencePort;
@@ -30,18 +31,25 @@ public class EventService implements EventUseCase {
     private static final String EVENT_DATE_MUST_BE_FUTURE = "Event date must be in the future";
     private static final String BASE_PRICE_REQUIRED = "Base price is required";
     private static final String BASE_PRICE_MUST_BE_GREATER_THAN_ZERO = "Base price must be greater than 0";
+    private static final String MAX_PARTICIPANTS_REQUIRED = "Max participants is required";
+    private static final String MAX_PARTICIPANTS_MUST_BE_GREATER_THAN_ZERO = "Max participants must be greater than 0";
+    private static final String MAX_PARTICIPANTS_CANNOT_BE_LESS_THAN_CURRENT_BOOKINGS =
+            "Max participants cannot be less than current bookings (%d)";
     private static final String START_DATE_REQUIRED = "Start date is required";
     private static final String END_DATE_REQUIRED = "End date is required";
     private static final String START_DATE_MUST_BE_BEFORE_OR_EQUAL_END_DATE =
             "Start date must be before or equal to end date";
 
+    private final EventBookingPersistencePort eventBookingPersistencePort;
     private final EventPersistencePort eventPersistencePort;
     private final OrganizerPersistencePort organizerPersistencePort;
     private final TrackPersistencePort trackPersistencePort;
 
-    public EventService(EventPersistencePort eventPersistencePort,
+    public EventService(EventBookingPersistencePort eventBookingPersistencePort,
+                        EventPersistencePort eventPersistencePort,
                         OrganizerPersistencePort organizerPersistencePort,
                         TrackPersistencePort trackPersistencePort) {
+        this.eventBookingPersistencePort = eventBookingPersistencePort;
         this.eventPersistencePort = eventPersistencePort;
         this.organizerPersistencePort = organizerPersistencePort;
         this.trackPersistencePort = trackPersistencePort;
@@ -86,11 +94,13 @@ public class EventService implements EventUseCase {
                 .orElseThrow(() -> new ResourceNotFoundException(TRACK_NOT_FOUND_WITH_ID + trackId));
 
         validateTrackAndDateUniqueness(trackId, event.getEventDate(), id);
+        validateMaxParticipantsAgainstBookings(id, event.getMaxParticipants());
 
         existingEvent.setOrganizer(organizer);
         existingEvent.setTrack(track);
         existingEvent.setEventDate(event.getEventDate());
         existingEvent.setBasePrice(event.getBasePrice());
+        existingEvent.setMaxParticipants(event.getMaxParticipants());
 
         return eventPersistencePort.save(existingEvent);
     }
@@ -112,6 +122,19 @@ public class EventService implements EventUseCase {
     public Event getEventById(Long id) {
         return eventPersistencePort.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(EVENT_NOT_FOUND_WITH_ID + id));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Integer getRemainingCapacity(Long eventId) {
+        Event event = findEventOrThrow(eventId);
+
+        if (event.getMaxParticipants() == null) {
+            return null;
+        }
+
+        int currentBookings = Math.toIntExact(eventBookingPersistencePort.countByEventId(eventId));
+        return Math.max(0, event.getMaxParticipants() - currentBookings);
     }
 
     @Override
@@ -158,6 +181,12 @@ public class EventService implements EventUseCase {
         if (event.getBasePrice().compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException(BASE_PRICE_MUST_BE_GREATER_THAN_ZERO);
         }
+        if (event.getMaxParticipants() == null) {
+            throw new IllegalArgumentException(MAX_PARTICIPANTS_REQUIRED);
+        }
+        if (event.getMaxParticipants() <= 0) {
+            throw new IllegalArgumentException(MAX_PARTICIPANTS_MUST_BE_GREATER_THAN_ZERO);
+        }
     }
 
     private void validateDateRange(LocalDate startDate, LocalDate endDate) {
@@ -189,6 +218,16 @@ public class EventService implements EventUseCase {
 
     private Long extractTrackId(Event event) {
         return event.getTrack().getId();
+    }
+
+    private void validateMaxParticipantsAgainstBookings(Long eventId, Integer maxParticipants) {
+        int currentBookings = Math.toIntExact(eventBookingPersistencePort.countByEventId(eventId));
+
+        if (maxParticipants < currentBookings) {
+            throw new IllegalArgumentException(
+                    MAX_PARTICIPANTS_CANNOT_BE_LESS_THAN_CURRENT_BOOKINGS.formatted(currentBookings)
+            );
+        }
     }
 
     private Event findEventOrThrow(Long id) {

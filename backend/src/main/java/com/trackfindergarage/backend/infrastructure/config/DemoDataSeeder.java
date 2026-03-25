@@ -1,5 +1,7 @@
 package com.trackfindergarage.backend.infrastructure.config;
 
+import com.trackfindergarage.backend.domain.model.LapTime;
+import com.trackfindergarage.backend.domain.model.Message;
 import com.trackfindergarage.backend.domain.model.Organizer;
 import com.trackfindergarage.backend.domain.model.OrganizerService;
 import com.trackfindergarage.backend.domain.model.Role;
@@ -7,6 +9,8 @@ import com.trackfindergarage.backend.domain.model.Service;
 import com.trackfindergarage.backend.domain.model.Track;
 import com.trackfindergarage.backend.domain.model.TrackService;
 import com.trackfindergarage.backend.domain.model.User;
+import com.trackfindergarage.backend.infrastructure.adapter.out.persistence.SpringDataLapTimeRepository;
+import com.trackfindergarage.backend.infrastructure.adapter.out.persistence.SpringDataMessageRepository;
 import com.trackfindergarage.backend.infrastructure.adapter.out.persistence.SpringDataOrganizerRepository;
 import com.trackfindergarage.backend.infrastructure.adapter.out.persistence.SpringDataOrganizerServiceRepository;
 import com.trackfindergarage.backend.infrastructure.adapter.out.persistence.SpringDataRoleRepository;
@@ -19,6 +23,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Component
@@ -28,8 +33,14 @@ public class DemoDataSeeder implements CommandLineRunner {
     private static final String TRACKEVENTS_LEGAL_NAME = "TrackEvents S.L.";
     private static final String RACINGPRO_LEGAL_NAME = "RacingPro S.L.";
     private static final String IBERIAN_MOTORSPORT_LEGAL_NAME = "Iberian Motorsport Events S.L.";
-    private static final String DEFAULT_STANDARD_USER_PASSWORD = "user123";
-    private static final String DEFAULT_ORGANIZER_PASSWORD = "org123";
+    private static final String DEFAULT_STANDARD_USER_LOGIN = "user123";
+    private static final String DEFAULT_ORGANIZER_LOGIN = "org123";
+    private static final String JUANJE_DISPLAY_NAME = "juanje";
+    private static final String MARIA_DISPLAY_NAME = "maria";
+    private static final String CARLOS_DISPLAY_NAME = "carlos";
+    private static final String FERNANDO_ALONSO_DISPLAY_NAME = "fernando.alonso";
+    private static final String ALEX_PALAU_DISPLAY_NAME = "alex.palau";
+    private static final String TRACKEVENTS_DISPLAY_NAME = "trackevents";
 
     private static final String CALAFAT_TRACK_NAME = "Circuit Calafat";
     private static final String JARAMA_TRACK_NAME = "Circuito de Madrid Jarama - RACE";
@@ -50,9 +61,16 @@ public class DemoDataSeeder implements CommandLineRunner {
     private static final String SECOND_DRIVER_INSURANCE_SERVICE_NAME = "Seguro para segundo conductor";
     private static final String COPILOT_INSURANCE_SERVICE_NAME = "Seguro para copiloto";
     private static final String TRANSPONDER_TIMING_SERVICE_NAME = "Cronometraje con transponder";
+    private static final String UNREAD_MESSAGE_SUBJECT = "Consulta sobre tandas en Jarama";
+    private static final String UNREAD_MESSAGE_CONTENT_TEXT =
+            "Hola, me interesa una tanda en Jarama para abril. \u00BFTen\u00E9is previsto organizar alguna? Gracias.";
+    private static final String UNREAD_MESSAGE_CONTENT =
+            "Hola, me interesa una tanda en Jarama para abril. ¿Tenéis previsto organizar alguna? Gracias.";
 
     private final SpringDataRoleRepository roleRepository;
     private final SpringDataUserRepository userRepository;
+    private final SpringDataLapTimeRepository lapTimeRepository;
+    private final SpringDataMessageRepository messageRepository;
     private final SpringDataOrganizerRepository organizerRepository;
     private final SpringDataOrganizerServiceRepository organizerServiceRepository;
     private final SpringDataTrackRepository trackRepository;
@@ -62,6 +80,8 @@ public class DemoDataSeeder implements CommandLineRunner {
 
     public DemoDataSeeder(SpringDataRoleRepository roleRepository,
                           SpringDataUserRepository userRepository,
+                          SpringDataLapTimeRepository lapTimeRepository,
+                          SpringDataMessageRepository messageRepository,
                           SpringDataOrganizerRepository organizerRepository,
                           SpringDataOrganizerServiceRepository organizerServiceRepository,
                           SpringDataTrackRepository trackRepository,
@@ -70,6 +90,8 @@ public class DemoDataSeeder implements CommandLineRunner {
                           PasswordEncoder passwordEncoder) {
         this.roleRepository = roleRepository;
         this.userRepository = userRepository;
+        this.lapTimeRepository = lapTimeRepository;
+        this.messageRepository = messageRepository;
         this.organizerRepository = organizerRepository;
         this.organizerServiceRepository = organizerServiceRepository;
         this.trackRepository = trackRepository;
@@ -85,11 +107,11 @@ public class DemoDataSeeder implements CommandLineRunner {
         Role organizerRole = createRoleIfMissing("ORGANIZER");
 
         createUser("admin", "admin@example.com", "Admin", "Demo", "admin123", adminRole);
-        createUser("juanje", "juanje@example.com", "Juanje", "Demo", DEFAULT_STANDARD_USER_PASSWORD, userRole);
-        createUser("maria", "maria@example.com", "Maria", "Demo", DEFAULT_STANDARD_USER_PASSWORD, userRole);
-        createUser("carlos", "carlos@example.com", "Carlos", "Demo", DEFAULT_STANDARD_USER_PASSWORD, userRole);
-        createUser("fernando.alonso", "fernando.alonso@example.com", "Fernando", "Alonso", DEFAULT_STANDARD_USER_PASSWORD, userRole);
-        createUser("alex.palau", "alex.palau@example.com", "Alex", "Palou", DEFAULT_STANDARD_USER_PASSWORD, userRole);
+        createUser("juanje", "juanje@example.com", "Juanje", "Demo", DEFAULT_STANDARD_USER_LOGIN, userRole);
+        createUser("maria", "maria@example.com", "Maria", "Demo", DEFAULT_STANDARD_USER_LOGIN, userRole);
+        createUser("carlos", "carlos@example.com", "Carlos", "Demo", DEFAULT_STANDARD_USER_LOGIN, userRole);
+        createUser("fernando.alonso", "fernando.alonso@example.com", "Fernando", "Alonso", DEFAULT_STANDARD_USER_LOGIN, userRole);
+        createUser("alex.palau", "alex.palau@example.com", "Alex", "Palou", DEFAULT_STANDARD_USER_LOGIN, userRole);
 
         createOrganizer(
                 "trackevents",
@@ -227,6 +249,8 @@ public class DemoDataSeeder implements CommandLineRunner {
 
         seedOrganizerServices();
         seedTrackServices();
+        seedLapTimes();
+        seedMessages();
     }
 
     private Role createRoleIfMissing(String roleName) {
@@ -265,7 +289,7 @@ public class DemoDataSeeder implements CommandLineRunner {
                                  String legalName,
                                  String cif,
                                  Role organizerRole) {
-        User user = createUser(displayName, email, name, surname, DEFAULT_ORGANIZER_PASSWORD, organizerRole);
+        User user = createUser(displayName, email, name, surname, DEFAULT_ORGANIZER_LOGIN, organizerRole);
 
         Organizer organizer = new Organizer();
         organizer.setUser(user);
@@ -358,6 +382,34 @@ public class DemoDataSeeder implements CommandLineRunner {
         createTrackServiceIfMissing(NURBURGRING_TRACK_NAME, TRANSPONDER_TIMING_SERVICE_NAME);
     }
 
+    private void seedLapTimes() {
+        createLapTimeIfMissing(FERNANDO_ALONSO_DISPLAY_NAME, JARAMA_TRACK_NAME, LocalDate.of(2026, 3, 8), 107215L, "Alpine A110 R");
+        createLapTimeIfMissing(JUANJE_DISPLAY_NAME, JARAMA_TRACK_NAME, LocalDate.of(2026, 3, 8), 111842L, "BMW M2");
+        createLapTimeIfMissing(MARIA_DISPLAY_NAME, JARAMA_TRACK_NAME, LocalDate.of(2026, 3, 8), 118530L, "Toyota GR86");
+
+        createLapTimeIfMissing(ALEX_PALAU_DISPLAY_NAME, RICARDO_TORMO_TRACK_NAME, LocalDate.of(2026, 3, 12), 102480L, "Porsche 911 GT3");
+        createLapTimeIfMissing(CARLOS_DISPLAY_NAME, RICARDO_TORMO_TRACK_NAME, LocalDate.of(2026, 3, 12), 111965L, "MINI John Cooper Works");
+
+        createLapTimeIfMissing(MARIA_DISPLAY_NAME, CALAFAT_TRACK_NAME, LocalDate.of(2026, 3, 15), 95620L, "Hyundai i30 N");
+        createLapTimeIfMissing(JUANJE_DISPLAY_NAME, CALAFAT_TRACK_NAME, LocalDate.of(2026, 3, 15), 98640L, "Mazda MX-5 NA 1.8");
+
+        createLapTimeIfMissing(FERNANDO_ALONSO_DISPLAY_NAME, GUADIX_TRACK_NAME, LocalDate.of(2026, 3, 18), 101870L, "Alpine A110 R");
+        createLapTimeIfMissing(ALEX_PALAU_DISPLAY_NAME, GUADIX_TRACK_NAME, LocalDate.of(2026, 3, 18), 104450L, "CUPRA Leon VZ");
+
+        createLapTimeIfMissing(JUANJE_DISPLAY_NAME, ALGARVE_TRACK_NAME, LocalDate.of(2026, 3, 20), 121930L, "Porsche Cayman S");
+    }
+
+    private void seedMessages() {
+        createMessageIfMissing(
+                JUANJE_DISPLAY_NAME,
+                TRACKEVENTS_DISPLAY_NAME,
+                LocalDateTime.of(2026, 3, 24, 18, 30),
+                false,
+                UNREAD_MESSAGE_SUBJECT,
+                UNREAD_MESSAGE_CONTENT_TEXT
+        );
+    }
+
     private void createOrganizerServiceIfMissing(String legalName, String serviceName) {
         Organizer organizer = findOrganizerByLegalNameOrThrow(legalName);
         Service service = findServiceByNameOrThrow(serviceName);
@@ -384,6 +436,69 @@ public class DemoDataSeeder implements CommandLineRunner {
         trackService.setTrack(track);
         trackService.setService(service);
         trackServiceRepository.save(trackService);
+    }
+
+    private void createLapTimeIfMissing(String displayName,
+                                        String trackName,
+                                        LocalDate lapDate,
+                                        Long lapTimeMs,
+                                        String vehicle) {
+        User user = findUserByDisplayNameOrThrow(displayName);
+        Track track = findTrackByNameOrThrow(trackName);
+
+        boolean exists = lapTimeRepository.findByUserIdAndTrackId(user.getId(), track.getId())
+                .stream()
+                .anyMatch(lapTime -> lapDate.equals(lapTime.getLapDate())
+                        && lapTimeMs.equals(lapTime.getLapTimeMs())
+                        && vehicle.equals(lapTime.getVehicle()));
+
+        if (exists) {
+            return;
+        }
+
+        LapTime lapTime = new LapTime();
+        lapTime.setUser(user);
+        lapTime.setTrack(track);
+        lapTime.setLapDate(lapDate);
+        lapTime.setLapTimeMs(lapTimeMs);
+        lapTime.setVehicle(vehicle);
+        lapTimeRepository.save(lapTime);
+    }
+
+    private void createMessageIfMissing(String senderDisplayName,
+                                        String receiverDisplayName,
+                                        LocalDateTime sentAt,
+                                        boolean isRead,
+                                        String subject,
+                                        String content) {
+        User sender = findUserByDisplayNameOrThrow(senderDisplayName);
+        User receiver = findUserByDisplayNameOrThrow(receiverDisplayName);
+
+        boolean exists = messageRepository.findConversation(sender.getId(), receiver.getId())
+                .stream()
+                .anyMatch(message -> sender.getId().equals(message.getSender().getId())
+                        && receiver.getId().equals(message.getReceiver().getId())
+                        && sentAt.equals(message.getSentAt())
+                        && subject.equals(message.getSubject())
+                        && content.equals(message.getContent()));
+
+        if (exists) {
+            return;
+        }
+
+        Message message = new Message();
+        message.setSender(sender);
+        message.setReceiver(receiver);
+        message.setSentAt(sentAt);
+        message.setIsRead(isRead);
+        message.setSubject(subject);
+        message.setContent(content);
+        messageRepository.save(message);
+    }
+
+    private User findUserByDisplayNameOrThrow(String displayName) {
+        return userRepository.findByDisplayName(displayName)
+                .orElseThrow(() -> new IllegalStateException("User not found in demo seed: " + displayName));
     }
 
     private Organizer findOrganizerByLegalNameOrThrow(String legalName) {

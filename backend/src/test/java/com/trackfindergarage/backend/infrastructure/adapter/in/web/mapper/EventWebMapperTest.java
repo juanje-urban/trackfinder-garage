@@ -24,6 +24,7 @@ class EventWebMapperTest {
         request.setTrackId(2L);
         request.setEventDate(LocalDate.of(2026, 4, 1));
         request.setBasePrice(new BigDecimal("30.00"));
+        request.setMaxParticipants(20);
 
         Event event = eventWebMapper.toDomain(request);
 
@@ -31,6 +32,7 @@ class EventWebMapperTest {
         assertEquals(2L, event.getTrack().getId());
         assertEquals(LocalDate.of(2026, 4, 1), event.getEventDate());
         assertEquals(new BigDecimal("30.00"), event.getBasePrice());
+        assertEquals(20, event.getMaxParticipants());
     }
 
     @Test
@@ -41,6 +43,7 @@ class EventWebMapperTest {
         request.setTrackId(4L);
         request.setEventDate(LocalDate.of(2026, 5, 1));
         request.setBasePrice(new BigDecimal("40.00"));
+        request.setMaxParticipants(25);
 
         eventWebMapper.updateDomain(event, request);
 
@@ -48,6 +51,7 @@ class EventWebMapperTest {
         assertEquals(4L, event.getTrack().getId());
         assertEquals(LocalDate.of(2026, 5, 1), event.getEventDate());
         assertEquals(new BigDecimal("40.00"), event.getBasePrice());
+        assertEquals(25, event.getMaxParticipants());
     }
 
     @Test
@@ -65,13 +69,16 @@ class EventWebMapperTest {
         event.setTrack(track);
         event.setEventDate(LocalDate.of(2026, 6, 1));
         event.setBasePrice(new BigDecimal("50.00"));
+        event.setMaxParticipants(30);
 
-        EventResponse response = eventWebMapper.toResponse(event);
+        EventResponse response = eventWebMapper.toResponse(event, 12);
 
         assertEquals(10L, response.getId());
         assertEquals(1L, response.getOrganizerId());
         assertEquals("Organizer SL", response.getOrganizerLegalName());
         assertEquals(2L, response.getTrackId());
         assertEquals("Jarama", response.getTrackName());
+        assertEquals(30, response.getMaxParticipants());
+        assertEquals(12, response.getRemainingCapacity());
     }
 }

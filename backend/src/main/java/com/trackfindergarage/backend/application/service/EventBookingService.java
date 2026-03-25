@@ -5,6 +5,7 @@ import com.trackfindergarage.backend.application.port.out.EventBookingPersistenc
 import com.trackfindergarage.backend.application.port.out.EventBookingServicePersistencePort;
 import com.trackfindergarage.backend.application.port.out.EventPersistencePort;
 import com.trackfindergarage.backend.application.port.out.UserPersistencePort;
+import com.trackfindergarage.backend.common.exception.ConflictException;
 import com.trackfindergarage.backend.common.exception.DuplicateResourceException;
 import com.trackfindergarage.backend.common.exception.ResourceNotFoundException;
 import com.trackfindergarage.backend.domain.model.Event;
@@ -29,6 +30,9 @@ public class EventBookingService implements EventBookingUseCase {
             "User id %d already has a booking for event id %d";
     private static final String EVENT_BOOKING_REQUIRES_FUTURE_EVENT =
             "Event booking can only be created for future events";
+    private static final String EVENT_BOOKING_REQUIRES_EVENT_CAPACITY =
+            "Event max participants is required before accepting bookings";
+    private static final String EVENT_IS_FULL = "Event id %d is full";
     private static final String EVENT_BOOKING_CANNOT_BE_DELETED_WITHIN_14_DAYS =
             "Event booking cannot be deleted less than 14 days before the event";
 
@@ -67,6 +71,14 @@ public class EventBookingService implements EventBookingUseCase {
                 .ifPresent(existingEventBooking -> {
                     throw new DuplicateResourceException(EVENT_BOOKING_ALREADY_EXISTS.formatted(userId, eventId));
                 });
+
+        if (event.getMaxParticipants() == null) {
+            throw new IllegalArgumentException(EVENT_BOOKING_REQUIRES_EVENT_CAPACITY);
+        }
+
+        if (eventBookingPersistencePort.countByEventId(eventId) >= event.getMaxParticipants()) {
+            throw new ConflictException(EVENT_IS_FULL.formatted(eventId));
+        }
 
         eventBooking.setUser(user);
         eventBooking.setEvent(event);

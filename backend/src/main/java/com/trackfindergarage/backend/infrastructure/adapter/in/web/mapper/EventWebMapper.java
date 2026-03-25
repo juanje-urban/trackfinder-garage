@@ -23,6 +23,7 @@ public class EventWebMapper {
         event.setTrack(track);
         event.setEventDate(request.getEventDate());
         event.setBasePrice(request.getBasePrice());
+        event.setMaxParticipants(request.getMaxParticipants());
 
         return event;
     }
@@ -38,9 +39,14 @@ public class EventWebMapper {
         event.setTrack(track);
         event.setEventDate(request.getEventDate());
         event.setBasePrice(request.getBasePrice());
+        event.setMaxParticipants(request.getMaxParticipants());
     }
 
     public EventResponse toResponse(Event event) {
+        return toResponse(event, null);
+    }
+
+    public EventResponse toResponse(Event event, Integer remainingCapacity) {
         return EventResponse.builder()
                 .id(event.getId())
                 .organizerId(event.getOrganizer() != null ? event.getOrganizer().getIdUser() : null)
@@ -49,6 +55,8 @@ public class EventWebMapper {
                 .trackName(event.getTrack() != null ? event.getTrack().getName() : null)
                 .eventDate(event.getEventDate())
                 .basePrice(event.getBasePrice())
+                .maxParticipants(event.getMaxParticipants())
+                .remainingCapacity(remainingCapacity)
                 .build();
     }
 }

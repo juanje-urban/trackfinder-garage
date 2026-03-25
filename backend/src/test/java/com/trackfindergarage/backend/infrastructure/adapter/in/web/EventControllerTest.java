@@ -34,23 +34,28 @@ class EventControllerTest {
         createRequest.setTrackId(2L);
         createRequest.setEventDate(LocalDate.now().plusDays(10));
         createRequest.setBasePrice(new BigDecimal("30.00"));
+        createRequest.setMaxParticipants(20);
 
         UpdateEventRequest updateRequest = new UpdateEventRequest();
         updateRequest.setOrganizerId(1L);
         updateRequest.setTrackId(2L);
         updateRequest.setEventDate(LocalDate.now().plusDays(20));
         updateRequest.setBasePrice(new BigDecimal("35.00"));
+        updateRequest.setMaxParticipants(25);
 
         Event event = eventWithId(10L, 1L, 2L);
 
         when(eventUseCase.createEvent(any(Event.class))).thenReturn(event);
         when(eventUseCase.updateEvent(eq(10L), any(Event.class))).thenReturn(event);
+        when(eventUseCase.getRemainingCapacity(10L)).thenReturn(14);
 
         EventResponse created = eventController.createEvent(createRequest);
         EventResponse updated = eventController.updateEvent(10L, updateRequest);
 
         assertEquals(10L, created.getId());
         assertEquals(10L, updated.getId());
+        assertEquals(14, created.getRemainingCapacity());
+        assertEquals(14, updated.getRemainingCapacity());
     }
 
     @Test
@@ -64,6 +69,7 @@ class EventControllerTest {
         when(eventUseCase.getEventsByOrganizerId(1L)).thenReturn(List.of(event));
         when(eventUseCase.getEventsByTrackId(2L)).thenReturn(List.of(event));
         when(eventUseCase.getEventsByDateRange(start, end)).thenReturn(List.of(event));
+        when(eventUseCase.getRemainingCapacity(10L)).thenReturn(14);
 
         assertEquals(1, eventController.getAllEvents().size());
         assertEquals(10L, eventController.getEventById(10L).getId());
@@ -94,6 +100,7 @@ class EventControllerTest {
         event.setTrack(track);
         event.setEventDate(LocalDate.now().plusDays(5));
         event.setBasePrice(new BigDecimal("30.00"));
+        event.setMaxParticipants(20);
         return event;
     }
 }

@@ -17,6 +17,8 @@ public interface EventUseCase {
 
     Event getEventById(Long id);
 
+    Integer getRemainingCapacity(Long eventId);
+
     List<Event> getEventsByOrganizerId(Long organizerId);
 
     List<Event> getEventsByTrackId(Long trackId);

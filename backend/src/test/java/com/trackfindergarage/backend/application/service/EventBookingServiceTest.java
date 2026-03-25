@@ -4,6 +4,7 @@ import com.trackfindergarage.backend.application.port.out.EventBookingPersistenc
 import com.trackfindergarage.backend.application.port.out.EventBookingServicePersistencePort;
 import com.trackfindergarage.backend.application.port.out.EventPersistencePort;
 import com.trackfindergarage.backend.application.port.out.UserPersistencePort;
+import com.trackfindergarage.backend.common.exception.ConflictException;
 import com.trackfindergarage.backend.common.exception.DuplicateResourceException;
 import com.trackfindergarage.backend.common.exception.ResourceNotFoundException;
 import com.trackfindergarage.backend.domain.model.Event;
@@ -55,6 +56,7 @@ class EventBookingServiceTest {
         when(userPersistencePort.findById(1L)).thenReturn(Optional.of(user));
         when(eventPersistencePort.findById(2L)).thenReturn(Optional.of(event));
         when(eventBookingPersistencePort.findByUserIdAndEventId(1L, 2L)).thenReturn(Optional.empty());
+        when(eventBookingPersistencePort.countByEventId(2L)).thenReturn(1L);
         when(eventBookingPersistencePort.save(eventBooking)).thenReturn(eventBooking);
 
         EventBooking created = eventBookingService.createEventBooking(eventBooking);
@@ -85,6 +87,18 @@ class EventBookingServiceTest {
         when(eventPersistencePort.findById(2L)).thenReturn(Optional.of(eventWithId(2L, LocalDate.now())));
 
         assertThrows(IllegalArgumentException.class, () -> eventBookingService.createEventBooking(eventBooking));
+    }
+
+    @Test
+    void createEventBookingThrowsWhenEventIsFull() {
+        EventBooking eventBooking = eventBookingWithIds(1L, 2L);
+
+        when(userPersistencePort.findById(1L)).thenReturn(Optional.of(userWithId(1L)));
+        when(eventPersistencePort.findById(2L)).thenReturn(Optional.of(eventWithId(2L, LocalDate.now().plusDays(20))));
+        when(eventBookingPersistencePort.findByUserIdAndEventId(1L, 2L)).thenReturn(Optional.empty());
+        when(eventBookingPersistencePort.countByEventId(2L)).thenReturn(20L);
+
+        assertThrows(ConflictException.class, () -> eventBookingService.createEventBooking(eventBooking));
     }
 
     @Test
@@ -162,6 +176,7 @@ class EventBookingServiceTest {
         event.setId(id);
         event.setEventDate(eventDate);
         event.setBasePrice(new BigDecimal("30.00"));
+        event.setMaxParticipants(20);
 
         Organizer organizer = new Organizer();
         organizer.setIdUser(5L);

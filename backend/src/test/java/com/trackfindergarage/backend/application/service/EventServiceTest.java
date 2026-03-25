@@ -1,5 +1,6 @@
 package com.trackfindergarage.backend.application.service;
 
+import com.trackfindergarage.backend.application.port.out.EventBookingPersistencePort;
 import com.trackfindergarage.backend.application.port.out.EventPersistencePort;
 import com.trackfindergarage.backend.application.port.out.OrganizerPersistencePort;
 import com.trackfindergarage.backend.application.port.out.TrackPersistencePort;
@@ -27,6 +28,9 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class EventServiceTest {
+
+    @Mock
+    private EventBookingPersistencePort eventBookingPersistencePort;
 
     @Mock
     private EventPersistencePort eventPersistencePort;
@@ -197,6 +201,22 @@ class EventServiceTest {
     }
 
     @Test
+    void createEventThrowsWhenMaxParticipantsIsMissing() {
+        Event event = eventWithIds(1L, 2L, LocalDate.now().plusDays(10), new BigDecimal("30.00"));
+        event.setMaxParticipants(null);
+
+        assertThrows(IllegalArgumentException.class, () -> eventService.createEvent(event));
+    }
+
+    @Test
+    void createEventThrowsWhenMaxParticipantsIsNotPositive() {
+        Event event = eventWithIds(1L, 2L, LocalDate.now().plusDays(10), new BigDecimal("30.00"));
+        event.setMaxParticipants(0);
+
+        assertThrows(IllegalArgumentException.class, () -> eventService.createEvent(event));
+    }
+
+    @Test
     void deleteEventDelegatesToPersistenceAfterLoadingExistingEvent() {
         Event event = eventWithIds(1L, 2L, LocalDate.now().plusDays(10), new BigDecimal("30.00"));
         event.setId(8L);
@@ -292,12 +312,41 @@ class EventServiceTest {
         assertThrows(ResourceNotFoundException.class, () -> eventService.getEventById(99L));
     }
 
+    @Test
+    void updateEventThrowsWhenMaxParticipantsIsLessThanCurrentBookings() {
+        Event existing = eventWithIds(1L, 2L, LocalDate.now().plusDays(5), new BigDecimal("30.00"));
+        existing.setId(5L);
+        Event updateRequest = eventWithIds(1L, 2L, LocalDate.now().plusDays(10), new BigDecimal("35.00"));
+        updateRequest.setMaxParticipants(2);
+
+        when(eventPersistencePort.findById(5L)).thenReturn(Optional.of(existing));
+        when(organizerPersistencePort.findById(1L)).thenReturn(Optional.of(organizerWithId(1L)));
+        when(trackPersistencePort.findById(2L)).thenReturn(Optional.of(trackWithId(2L)));
+        when(eventPersistencePort.findByTrackIdAndEventDate(2L, updateRequest.getEventDate())).thenReturn(Optional.empty());
+        when(eventBookingPersistencePort.countByEventId(5L)).thenReturn(3L);
+
+        assertThrows(IllegalArgumentException.class, () -> eventService.updateEvent(5L, updateRequest));
+    }
+
+    @Test
+    void getRemainingCapacityReturnsDifferenceBetweenCapacityAndBookings() {
+        Event event = eventWithIds(1L, 2L, LocalDate.now().plusDays(10), new BigDecimal("30.00"));
+        event.setId(8L);
+        event.setMaxParticipants(20);
+
+        when(eventPersistencePort.findById(8L)).thenReturn(Optional.of(event));
+        when(eventBookingPersistencePort.countByEventId(8L)).thenReturn(6L);
+
+        assertEquals(14, eventService.getRemainingCapacity(8L));
+    }
+
     private Event eventWithIds(Long organizerId, Long trackId, LocalDate date, BigDecimal basePrice) {
         Event event = new Event();
         event.setOrganizer(organizerWithId(organizerId));
         event.setTrack(trackWithId(trackId));
         event.setEventDate(date);
         event.setBasePrice(basePrice);
+        event.setMaxParticipants(20);
         return event;
     }
 

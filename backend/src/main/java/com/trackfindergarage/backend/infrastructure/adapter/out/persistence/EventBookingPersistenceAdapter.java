@@ -42,6 +42,11 @@ public class EventBookingPersistenceAdapter implements EventBookingPersistencePo
     }
 
     @Override
+    public long countByEventId(Long eventId) {
+        return eventBookingRepository.countByEventId(eventId);
+    }
+
+    @Override
     public Optional<EventBooking> findByUserIdAndEventId(Long userId, Long eventId) {
         return eventBookingRepository.findByUserIdAndEventId(userId, eventId);
     }
