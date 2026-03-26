@@ -2,6 +2,8 @@ package com.trackfindergarage.backend.infrastructure.config;
 
 import com.trackfindergarage.backend.domain.model.LapTime;
 import com.trackfindergarage.backend.domain.model.Message;
+import com.trackfindergarage.backend.domain.model.Event;
+import com.trackfindergarage.backend.domain.model.EventBooking;
 import com.trackfindergarage.backend.domain.model.Organizer;
 import com.trackfindergarage.backend.domain.model.OrganizerService;
 import com.trackfindergarage.backend.domain.model.Role;
@@ -9,6 +11,8 @@ import com.trackfindergarage.backend.domain.model.Service;
 import com.trackfindergarage.backend.domain.model.Track;
 import com.trackfindergarage.backend.domain.model.TrackService;
 import com.trackfindergarage.backend.domain.model.User;
+import com.trackfindergarage.backend.infrastructure.adapter.out.persistence.SpringDataEventBookingRepository;
+import com.trackfindergarage.backend.infrastructure.adapter.out.persistence.SpringDataEventRepository;
 import com.trackfindergarage.backend.infrastructure.adapter.out.persistence.SpringDataLapTimeRepository;
 import com.trackfindergarage.backend.infrastructure.adapter.out.persistence.SpringDataMessageRepository;
 import com.trackfindergarage.backend.infrastructure.adapter.out.persistence.SpringDataOrganizerRepository;
@@ -23,6 +27,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -35,6 +40,7 @@ public class DemoDataSeeder implements CommandLineRunner {
     private static final String IBERIAN_MOTORSPORT_LEGAL_NAME = "Iberian Motorsport Events S.L.";
     private static final String DEFAULT_STANDARD_USER_LOGIN = "user123";
     private static final String DEFAULT_ORGANIZER_LOGIN = "org123";
+    private static final String USER_ROLE_NAME = "USER";
     private static final String JUANJE_DISPLAY_NAME = "juanje";
     private static final String MARIA_DISPLAY_NAME = "maria";
     private static final String CARLOS_DISPLAY_NAME = "carlos";
@@ -67,8 +73,15 @@ public class DemoDataSeeder implements CommandLineRunner {
     private static final String LEGACY_UNREAD_MESSAGE_CONTENT =
             "Hola, me interesa una tanda en Jarama para abril. ¿Tenéis previsto organizar alguna? Gracias.";
 
+    private static final LocalDate PAST_JARAMA_EVENT_DATE = LocalDate.of(2024, 4, 13);
+    private static final LocalDate PAST_CALAFAT_EVENT_DATE = LocalDate.of(2024, 6, 8);
+    private static final LocalDate PAST_RICARDO_TORMO_EVENT_DATE = LocalDate.of(2024, 10, 19);
+    private static final LocalDate PAST_ALGARVE_EVENT_DATE = LocalDate.of(2025, 2, 22);
+
     private final SpringDataRoleRepository roleRepository;
     private final SpringDataUserRepository userRepository;
+    private final SpringDataEventRepository eventRepository;
+    private final SpringDataEventBookingRepository eventBookingRepository;
     private final SpringDataLapTimeRepository lapTimeRepository;
     private final SpringDataMessageRepository messageRepository;
     private final SpringDataOrganizerRepository organizerRepository;
@@ -80,6 +93,8 @@ public class DemoDataSeeder implements CommandLineRunner {
 
     public DemoDataSeeder(SpringDataRoleRepository roleRepository,
                           SpringDataUserRepository userRepository,
+                          SpringDataEventRepository eventRepository,
+                          SpringDataEventBookingRepository eventBookingRepository,
                           SpringDataLapTimeRepository lapTimeRepository,
                           SpringDataMessageRepository messageRepository,
                           SpringDataOrganizerRepository organizerRepository,
@@ -90,6 +105,8 @@ public class DemoDataSeeder implements CommandLineRunner {
                           PasswordEncoder passwordEncoder) {
         this.roleRepository = roleRepository;
         this.userRepository = userRepository;
+        this.eventRepository = eventRepository;
+        this.eventBookingRepository = eventBookingRepository;
         this.lapTimeRepository = lapTimeRepository;
         this.messageRepository = messageRepository;
         this.organizerRepository = organizerRepository;
@@ -254,6 +271,8 @@ public class DemoDataSeeder implements CommandLineRunner {
 
         seedOrganizerServices();
         seedTrackServices();
+        seedPastEvents();
+        seedPastEventBookings();
         seedLapTimes();
         seedMessages();
     }
@@ -387,6 +406,51 @@ public class DemoDataSeeder implements CommandLineRunner {
         createTrackServiceIfMissing(NURBURGRING_TRACK_NAME, TRANSPONDER_TIMING_SERVICE_NAME);
     }
 
+    private void seedPastEvents() {
+        createEventIfMissing(TRACKEVENTS_LEGAL_NAME, JARAMA_TRACK_NAME, PAST_JARAMA_EVENT_DATE, new BigDecimal("180.00"), 55);
+        createEventIfMissing(RACINGPRO_LEGAL_NAME, CALAFAT_TRACK_NAME, PAST_CALAFAT_EVENT_DATE, new BigDecimal("145.00"), 35);
+        createEventIfMissing(IBERIAN_MOTORSPORT_LEGAL_NAME,
+                RICARDO_TORMO_TRACK_NAME,
+                PAST_RICARDO_TORMO_EVENT_DATE,
+                new BigDecimal("210.00"),
+                70);
+        createEventIfMissing(TRACKEVENTS_LEGAL_NAME, ALGARVE_TRACK_NAME, PAST_ALGARVE_EVENT_DATE, new BigDecimal("260.00"), 45);
+    }
+
+    private void seedPastEventBookings() {
+        createEventBookingIfMissing(JUANJE_DISPLAY_NAME, JARAMA_TRACK_NAME, PAST_JARAMA_EVENT_DATE, LocalDateTime.of(2024, 3, 20, 19, 0));
+        createEventBookingIfMissing(MARIA_DISPLAY_NAME, JARAMA_TRACK_NAME, PAST_JARAMA_EVENT_DATE, LocalDateTime.of(2024, 3, 22, 10, 30));
+        createEventBookingIfMissing(FERNANDO_ALONSO_DISPLAY_NAME,
+                JARAMA_TRACK_NAME,
+                PAST_JARAMA_EVENT_DATE,
+                LocalDateTime.of(2024, 3, 25, 18, 15));
+
+        createEventBookingIfMissing(CARLOS_DISPLAY_NAME, CALAFAT_TRACK_NAME, PAST_CALAFAT_EVENT_DATE, LocalDateTime.of(2024, 5, 14, 20, 0));
+        createEventBookingIfMissing(MARIA_DISPLAY_NAME, CALAFAT_TRACK_NAME, PAST_CALAFAT_EVENT_DATE, LocalDateTime.of(2024, 5, 16, 9, 45));
+
+        createEventBookingIfMissing(ALEX_PALAU_DISPLAY_NAME,
+                RICARDO_TORMO_TRACK_NAME,
+                PAST_RICARDO_TORMO_EVENT_DATE,
+                LocalDateTime.of(2024, 9, 18, 12, 0));
+        createEventBookingIfMissing(JUANJE_DISPLAY_NAME,
+                RICARDO_TORMO_TRACK_NAME,
+                PAST_RICARDO_TORMO_EVENT_DATE,
+                LocalDateTime.of(2024, 9, 21, 19, 30));
+
+        createEventBookingIfMissing(FERNANDO_ALONSO_DISPLAY_NAME,
+                ALGARVE_TRACK_NAME,
+                PAST_ALGARVE_EVENT_DATE,
+                LocalDateTime.of(2025, 1, 23, 18, 40));
+        createEventBookingIfMissing(ALEX_PALAU_DISPLAY_NAME,
+                ALGARVE_TRACK_NAME,
+                PAST_ALGARVE_EVENT_DATE,
+                LocalDateTime.of(2025, 1, 25, 10, 10));
+        createEventBookingIfMissing(CARLOS_DISPLAY_NAME,
+                ALGARVE_TRACK_NAME,
+                PAST_ALGARVE_EVENT_DATE,
+                LocalDateTime.of(2025, 1, 27, 21, 5));
+    }
+
     private void seedLapTimes() {
         createLapTimeIfMissing(FERNANDO_ALONSO_DISPLAY_NAME, JARAMA_TRACK_NAME, LocalDate.of(2026, 3, 8), 107215L, "Alpine A110 R");
         createLapTimeIfMissing(JUANJE_DISPLAY_NAME, JARAMA_TRACK_NAME, LocalDate.of(2026, 3, 8), 111842L, "BMW M2");
@@ -447,6 +511,46 @@ public class DemoDataSeeder implements CommandLineRunner {
         trackService.setTrack(track);
         trackService.setService(service);
         trackServiceRepository.save(trackService);
+    }
+
+    private void createEventIfMissing(String organizerLegalName,
+                                      String trackName,
+                                      LocalDate eventDate,
+                                      BigDecimal basePrice,
+                                      Integer maxParticipants) {
+        Organizer organizer = findOrganizerByLegalNameOrThrow(organizerLegalName);
+        Track track = findTrackByNameOrThrow(trackName);
+
+        if (eventRepository.findByTrackIdAndEventDate(track.getId(), eventDate).isPresent()) {
+            return;
+        }
+
+        Event event = new Event();
+        event.setOrganizer(organizer);
+        event.setTrack(track);
+        event.setEventDate(eventDate);
+        event.setBasePrice(basePrice);
+        event.setMaxParticipants(maxParticipants);
+        eventRepository.save(event);
+    }
+
+    private void createEventBookingIfMissing(String attendeeDisplayName,
+                                             String trackName,
+                                             LocalDate eventDate,
+                                             LocalDateTime bookedAt) {
+        User attendee = findEventAttendeeByDisplayNameOrThrow(attendeeDisplayName);
+        Event event = findEventByTrackAndDateOrThrow(trackName, eventDate);
+
+        if (eventBookingRepository.findByUserIdAndEventId(attendee.getId(), event.getId()).isPresent()) {
+            return;
+        }
+
+        EventBooking eventBooking = new EventBooking();
+        eventBooking.setUser(attendee);
+        eventBooking.setEvent(event);
+        eventBooking.setBookedAt(bookedAt);
+        eventBooking.setBasePriceAtPurchase(event.getBasePrice());
+        eventBookingRepository.save(eventBooking);
     }
 
     private void createLapTimeIfMissing(String displayName,
@@ -512,6 +616,16 @@ public class DemoDataSeeder implements CommandLineRunner {
                 .orElseThrow(() -> new IllegalStateException("User not found in demo seed: " + displayName));
     }
 
+    private User findEventAttendeeByDisplayNameOrThrow(String displayName) {
+        User user = findUserByDisplayNameOrThrow(displayName);
+
+        if (user.getRole() == null || !USER_ROLE_NAME.equals(user.getRole().getRoleName())) {
+            throw new IllegalStateException("Demo event attendee must have USER role: " + displayName);
+        }
+
+        return user;
+    }
+
     private Organizer findOrganizerByLegalNameOrThrow(String legalName) {
         return organizerRepository.findByLegalName(legalName)
                 .orElseThrow(() -> new IllegalStateException("Organizer not found in demo seed: " + legalName));
@@ -520,6 +634,15 @@ public class DemoDataSeeder implements CommandLineRunner {
     private Track findTrackByNameOrThrow(String trackName) {
         return trackRepository.findByName(trackName)
                 .orElseThrow(() -> new IllegalStateException("Track not found in demo seed: " + trackName));
+    }
+
+    private Event findEventByTrackAndDateOrThrow(String trackName, LocalDate eventDate) {
+        Track track = findTrackByNameOrThrow(trackName);
+
+        return eventRepository.findByTrackIdAndEventDate(track.getId(), eventDate)
+                .orElseThrow(() -> new IllegalStateException(
+                        "Event not found in demo seed for track: " + trackName + " and date: " + eventDate
+                ));
     }
 
     private Service findServiceByNameOrThrow(String serviceName) {
