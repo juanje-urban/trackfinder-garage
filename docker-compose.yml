@@ -25,5 +25,14 @@ services:
     depends_on:
       - db
 
+  frontend:
+    image: ghcr.io/juanje-urban/trackfinder-garage-frontend:latest
+    container_name: trackfinder-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+
+
 volumes:
   mariadb_data:
