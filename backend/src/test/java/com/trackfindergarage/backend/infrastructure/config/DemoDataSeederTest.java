@@ -40,6 +40,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -106,6 +107,8 @@ class DemoDataSeederTest {
     void runSeedsAllDemoDataWhenRepositoriesAreEmpty() {
         SeedState state = new SeedState();
         stubRepositories(state);
+        stubInitialCreationSaves(state);
+        stubRemainingSeedingSaves(state);
 
         demoDataSeeder.run();
 
@@ -157,16 +160,24 @@ class DemoDataSeederTest {
         verify(messageRepository, never()).save(any(Message.class));
     }
 
+    @Test
+    void runThrowsWhenOrganizerCannotBeRecoveredForDemoServices() {
+        SeedState state = new SeedState();
+        stubRepositories(state);
+        stubInitialCreationSaves(state);
+
+        when(organizerRepository.findByLegalName("TrackEvents S.L.")).thenReturn(Optional.empty());
+
+        IllegalStateException exception = assertThrows(IllegalStateException.class, () -> demoDataSeeder.run());
+
+        assertEquals("Organizer not found in demo seed: TrackEvents S.L.", exception.getMessage());
+    }
+
     private void stubRepositories(SeedState state) {
         when(passwordEncoder.encode(anyString())).thenAnswer(invocation -> "encoded-" + invocation.getArgument(0));
 
         when(roleRepository.findByRoleName(anyString()))
                 .thenAnswer(invocation -> Optional.ofNullable(state.rolesByName.get(invocation.getArgument(0))));
-        when(roleRepository.save(any(Role.class))).thenAnswer(invocation -> {
-            Role role = invocation.getArgument(0);
-            state.rolesByName.put(role.getRoleName(), role);
-            return role;
-        });
 
         when(userRepository.findByDisplayName(anyString()))
                 .thenAnswer(invocation -> Optional.ofNullable(state.usersByDisplayName.get(invocation.getArgument(0))));
@@ -192,6 +203,44 @@ class DemoDataSeederTest {
 
         when(trackRepository.findByName(anyString()))
                 .thenAnswer(invocation -> Optional.ofNullable(state.tracksByName.get(invocation.getArgument(0))));
+
+        when(serviceRepository.findByName(anyString()))
+                .thenAnswer(invocation -> Optional.ofNullable(state.servicesByName.get(invocation.getArgument(0))));
+
+        when(organizerServiceRepository.findByOrganizerIdUserAndServiceId(anyLong(), anyLong()))
+                .thenAnswer(invocation -> state.organizerServiceKeys.contains(state.pairKey(
+                                invocation.getArgument(0),
+                                invocation.getArgument(1)))
+                        ? Optional.of(new OrganizerService())
+                        : Optional.empty());
+
+        when(trackServiceRepository.findByTrackIdAndServiceId(anyLong(), anyLong()))
+                .thenAnswer(invocation -> state.trackServiceKeys.contains(state.pairKey(
+                                invocation.getArgument(0),
+                                invocation.getArgument(1)))
+                        ? Optional.of(new TrackService())
+                        : Optional.empty());
+
+        when(lapTimeRepository.findByUserIdAndTrackId(anyLong(), anyLong()))
+                .thenAnswer(invocation -> new ArrayList<>(state.lapTimesByPair.getOrDefault(
+                        state.pairKey(invocation.getArgument(0), invocation.getArgument(1)),
+                        List.of()
+                )));
+
+        when(messageRepository.findConversation(anyLong(), anyLong()))
+                .thenAnswer(invocation -> new ArrayList<>(state.conversationsByPair.getOrDefault(
+                        state.pairKey(invocation.getArgument(0), invocation.getArgument(1)),
+                        List.of()
+                )));
+    }
+
+    private void stubInitialCreationSaves(SeedState state) {
+        when(roleRepository.save(any(Role.class))).thenAnswer(invocation -> {
+            Role role = invocation.getArgument(0);
+            state.rolesByName.put(role.getRoleName(), role);
+            return role;
+        });
+
         when(trackRepository.save(any(Track.class))).thenAnswer(invocation -> {
             Track track = invocation.getArgument(0);
             if (track.getId() == null) {
@@ -201,8 +250,6 @@ class DemoDataSeederTest {
             return track;
         });
 
-        when(serviceRepository.findByName(anyString()))
-                .thenAnswer(invocation -> Optional.ofNullable(state.servicesByName.get(invocation.getArgument(0))));
         when(serviceRepository.save(any(Service.class))).thenAnswer(invocation -> {
             Service service = invocation.getArgument(0);
             if (service.getId() == null) {
@@ -211,13 +258,9 @@ class DemoDataSeederTest {
             state.servicesByName.put(service.getName(), service);
             return service;
         });
+    }
 
-        when(organizerServiceRepository.findByOrganizerIdUserAndServiceId(anyLong(), anyLong()))
-                .thenAnswer(invocation -> state.organizerServiceKeys.contains(state.pairKey(
-                                invocation.getArgument(0),
-                                invocation.getArgument(1)))
-                        ? Optional.of(new OrganizerService())
-                        : Optional.empty());
+    private void stubRemainingSeedingSaves(SeedState state) {
         when(organizerServiceRepository.save(any(OrganizerService.class))).thenAnswer(invocation -> {
             OrganizerService organizerService = invocation.getArgument(0);
             state.organizerServiceKeys.add(state.pairKey(
@@ -227,12 +270,6 @@ class DemoDataSeederTest {
             return organizerService;
         });
 
-        when(trackServiceRepository.findByTrackIdAndServiceId(anyLong(), anyLong()))
-                .thenAnswer(invocation -> state.trackServiceKeys.contains(state.pairKey(
-                                invocation.getArgument(0),
-                                invocation.getArgument(1)))
-                        ? Optional.of(new TrackService())
-                        : Optional.empty());
         when(trackServiceRepository.save(any(TrackService.class))).thenAnswer(invocation -> {
             TrackService trackService = invocation.getArgument(0);
             state.trackServiceKeys.add(state.pairKey(
@@ -242,11 +279,6 @@ class DemoDataSeederTest {
             return trackService;
         });
 
-        when(lapTimeRepository.findByUserIdAndTrackId(anyLong(), anyLong()))
-                .thenAnswer(invocation -> new ArrayList<>(state.lapTimesByPair.getOrDefault(
-                        state.pairKey(invocation.getArgument(0), invocation.getArgument(1)),
-                        List.of()
-                )));
         when(lapTimeRepository.save(any(LapTime.class))).thenAnswer(invocation -> {
             LapTime lapTime = invocation.getArgument(0);
             if (lapTime.getId() == null) {
@@ -259,11 +291,6 @@ class DemoDataSeederTest {
             return lapTime;
         });
 
-        when(messageRepository.findConversation(anyLong(), anyLong()))
-                .thenAnswer(invocation -> new ArrayList<>(state.conversationsByPair.getOrDefault(
-                        state.pairKey(invocation.getArgument(0), invocation.getArgument(1)),
-                        List.of()
-                )));
         when(messageRepository.save(any(Message.class))).thenAnswer(invocation -> {
             Message message = invocation.getArgument(0);
             if (message.getId() == null) {
