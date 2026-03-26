@@ -3,6 +3,8 @@ package com.trackfindergarage.backend.infrastructure.config;
 import com.trackfindergarage.backend.domain.model.LapTime;
 import com.trackfindergarage.backend.domain.model.Message;
 import com.trackfindergarage.backend.domain.model.Event;
+import com.trackfindergarage.backend.domain.model.EventBookingService;
+import com.trackfindergarage.backend.domain.model.EventService;
 import com.trackfindergarage.backend.domain.model.EventBooking;
 import com.trackfindergarage.backend.domain.model.Organizer;
 import com.trackfindergarage.backend.domain.model.OrganizerService;
@@ -12,7 +14,9 @@ import com.trackfindergarage.backend.domain.model.Track;
 import com.trackfindergarage.backend.domain.model.TrackService;
 import com.trackfindergarage.backend.domain.model.User;
 import com.trackfindergarage.backend.infrastructure.adapter.out.persistence.SpringDataEventBookingRepository;
+import com.trackfindergarage.backend.infrastructure.adapter.out.persistence.SpringDataEventBookingServiceRepository;
 import com.trackfindergarage.backend.infrastructure.adapter.out.persistence.SpringDataEventRepository;
+import com.trackfindergarage.backend.infrastructure.adapter.out.persistence.SpringDataEventServiceRepository;
 import com.trackfindergarage.backend.infrastructure.adapter.out.persistence.SpringDataLapTimeRepository;
 import com.trackfindergarage.backend.infrastructure.adapter.out.persistence.SpringDataMessageRepository;
 import com.trackfindergarage.backend.infrastructure.adapter.out.persistence.SpringDataOrganizerRepository;
@@ -82,6 +86,8 @@ public class DemoDataSeeder implements CommandLineRunner {
     private final SpringDataUserRepository userRepository;
     private final SpringDataEventRepository eventRepository;
     private final SpringDataEventBookingRepository eventBookingRepository;
+    private final SpringDataEventServiceRepository eventServiceRepository;
+    private final SpringDataEventBookingServiceRepository eventBookingServiceRepository;
     private final SpringDataLapTimeRepository lapTimeRepository;
     private final SpringDataMessageRepository messageRepository;
     private final SpringDataOrganizerRepository organizerRepository;
@@ -95,6 +101,8 @@ public class DemoDataSeeder implements CommandLineRunner {
                           SpringDataUserRepository userRepository,
                           SpringDataEventRepository eventRepository,
                           SpringDataEventBookingRepository eventBookingRepository,
+                          SpringDataEventServiceRepository eventServiceRepository,
+                          SpringDataEventBookingServiceRepository eventBookingServiceRepository,
                           SpringDataLapTimeRepository lapTimeRepository,
                           SpringDataMessageRepository messageRepository,
                           SpringDataOrganizerRepository organizerRepository,
@@ -107,6 +115,8 @@ public class DemoDataSeeder implements CommandLineRunner {
         this.userRepository = userRepository;
         this.eventRepository = eventRepository;
         this.eventBookingRepository = eventBookingRepository;
+        this.eventServiceRepository = eventServiceRepository;
+        this.eventBookingServiceRepository = eventBookingServiceRepository;
         this.lapTimeRepository = lapTimeRepository;
         this.messageRepository = messageRepository;
         this.organizerRepository = organizerRepository;
@@ -272,7 +282,9 @@ public class DemoDataSeeder implements CommandLineRunner {
         seedOrganizerServices();
         seedTrackServices();
         seedPastEvents();
+        seedPastEventServices();
         seedPastEventBookings();
+        seedPastEventBookingServices();
         seedLapTimes();
         seedMessages();
     }
@@ -451,6 +463,169 @@ public class DemoDataSeeder implements CommandLineRunner {
                 LocalDateTime.of(2025, 1, 27, 21, 5));
     }
 
+    private void seedPastEventServices() {
+        createTrackEventServiceIfMissing(JARAMA_TRACK_NAME, PAST_JARAMA_EVENT_DATE, BOX_RENTAL_SERVICE_NAME, new BigDecimal("35.00"));
+        createTrackEventServiceIfMissing(JARAMA_TRACK_NAME,
+                PAST_JARAMA_EVENT_DATE,
+                COVERED_PADDOCK_SERVICE_NAME,
+                new BigDecimal("18.00"));
+        createTrackEventServiceIfMissing(JARAMA_TRACK_NAME,
+                PAST_JARAMA_EVENT_DATE,
+                TRANSPONDER_TIMING_SERVICE_NAME,
+                new BigDecimal("15.00"));
+        createOrganizerEventServiceIfMissing(JARAMA_TRACK_NAME,
+                PAST_JARAMA_EVENT_DATE,
+                EVENT_PHOTOGRAPHY_SERVICE_NAME,
+                new BigDecimal("22.00"));
+        createOrganizerEventServiceIfMissing(JARAMA_TRACK_NAME,
+                PAST_JARAMA_EVENT_DATE,
+                WELCOME_PACK_SERVICE_NAME,
+                new BigDecimal("10.00"));
+        createOrganizerEventServiceIfMissing(JARAMA_TRACK_NAME,
+                PAST_JARAMA_EVENT_DATE,
+                SECOND_DRIVER_INSURANCE_SERVICE_NAME,
+                new BigDecimal("28.00"));
+
+        createTrackEventServiceIfMissing(CALAFAT_TRACK_NAME, PAST_CALAFAT_EVENT_DATE, SKIDPAD_SERVICE_NAME, new BigDecimal("25.00"));
+        createOrganizerEventServiceIfMissing(CALAFAT_TRACK_NAME,
+                PAST_CALAFAT_EVENT_DATE,
+                EVENT_VIDEO_SERVICE_NAME,
+                new BigDecimal("20.00"));
+        createOrganizerEventServiceIfMissing(CALAFAT_TRACK_NAME,
+                PAST_CALAFAT_EVENT_DATE,
+                INSTRUCTOR_SERVICE_NAME,
+                new BigDecimal("45.00"));
+        createOrganizerEventServiceIfMissing(CALAFAT_TRACK_NAME,
+                PAST_CALAFAT_EVENT_DATE,
+                SECOND_DRIVER_INSURANCE_SERVICE_NAME,
+                new BigDecimal("24.00"));
+        createOrganizerEventServiceIfMissing(CALAFAT_TRACK_NAME,
+                PAST_CALAFAT_EVENT_DATE,
+                COPILOT_INSURANCE_SERVICE_NAME,
+                new BigDecimal("15.00"));
+
+        createTrackEventServiceIfMissing(RICARDO_TORMO_TRACK_NAME,
+                PAST_RICARDO_TORMO_EVENT_DATE,
+                BOX_RENTAL_SERVICE_NAME,
+                new BigDecimal("40.00"));
+        createTrackEventServiceIfMissing(RICARDO_TORMO_TRACK_NAME,
+                PAST_RICARDO_TORMO_EVENT_DATE,
+                COVERED_PADDOCK_SERVICE_NAME,
+                new BigDecimal("20.00"));
+        createTrackEventServiceIfMissing(RICARDO_TORMO_TRACK_NAME,
+                PAST_RICARDO_TORMO_EVENT_DATE,
+                TRANSPONDER_TIMING_SERVICE_NAME,
+                new BigDecimal("18.00"));
+        createOrganizerEventServiceIfMissing(RICARDO_TORMO_TRACK_NAME,
+                PAST_RICARDO_TORMO_EVENT_DATE,
+                EVENT_PHOTOGRAPHY_SERVICE_NAME,
+                new BigDecimal("25.00"));
+        createOrganizerEventServiceIfMissing(RICARDO_TORMO_TRACK_NAME,
+                PAST_RICARDO_TORMO_EVENT_DATE,
+                INSTRUCTOR_SERVICE_NAME,
+                new BigDecimal("50.00"));
+        createOrganizerEventServiceIfMissing(RICARDO_TORMO_TRACK_NAME,
+                PAST_RICARDO_TORMO_EVENT_DATE,
+                SECOND_DRIVER_INSURANCE_SERVICE_NAME,
+                new BigDecimal("30.00"));
+
+        createTrackEventServiceIfMissing(ALGARVE_TRACK_NAME, PAST_ALGARVE_EVENT_DATE, BOX_RENTAL_SERVICE_NAME, new BigDecimal("45.00"));
+        createTrackEventServiceIfMissing(ALGARVE_TRACK_NAME,
+                PAST_ALGARVE_EVENT_DATE,
+                COVERED_PADDOCK_SERVICE_NAME,
+                new BigDecimal("25.00"));
+        createTrackEventServiceIfMissing(ALGARVE_TRACK_NAME,
+                PAST_ALGARVE_EVENT_DATE,
+                TRANSPONDER_TIMING_SERVICE_NAME,
+                new BigDecimal("20.00"));
+        createOrganizerEventServiceIfMissing(ALGARVE_TRACK_NAME,
+                PAST_ALGARVE_EVENT_DATE,
+                EVENT_PHOTOGRAPHY_SERVICE_NAME,
+                new BigDecimal("24.00"));
+        createOrganizerEventServiceIfMissing(ALGARVE_TRACK_NAME,
+                PAST_ALGARVE_EVENT_DATE,
+                WELCOME_PACK_SERVICE_NAME,
+                new BigDecimal("12.00"));
+        createOrganizerEventServiceIfMissing(ALGARVE_TRACK_NAME,
+                PAST_ALGARVE_EVENT_DATE,
+                COPILOT_INSURANCE_SERVICE_NAME,
+                new BigDecimal("18.00"));
+    }
+
+    private void seedPastEventBookingServices() {
+        createTrackEventBookingServiceIfMissing(JUANJE_DISPLAY_NAME,
+                JARAMA_TRACK_NAME,
+                PAST_JARAMA_EVENT_DATE,
+                TRANSPONDER_TIMING_SERVICE_NAME);
+        createOrganizerEventBookingServiceIfMissing(JUANJE_DISPLAY_NAME,
+                JARAMA_TRACK_NAME,
+                PAST_JARAMA_EVENT_DATE,
+                WELCOME_PACK_SERVICE_NAME);
+        createOrganizerEventBookingServiceIfMissing(MARIA_DISPLAY_NAME,
+                JARAMA_TRACK_NAME,
+                PAST_JARAMA_EVENT_DATE,
+                EVENT_PHOTOGRAPHY_SERVICE_NAME);
+        createTrackEventBookingServiceIfMissing(FERNANDO_ALONSO_DISPLAY_NAME,
+                JARAMA_TRACK_NAME,
+                PAST_JARAMA_EVENT_DATE,
+                BOX_RENTAL_SERVICE_NAME);
+        createOrganizerEventBookingServiceIfMissing(FERNANDO_ALONSO_DISPLAY_NAME,
+                JARAMA_TRACK_NAME,
+                PAST_JARAMA_EVENT_DATE,
+                SECOND_DRIVER_INSURANCE_SERVICE_NAME);
+
+        createTrackEventBookingServiceIfMissing(CARLOS_DISPLAY_NAME,
+                CALAFAT_TRACK_NAME,
+                PAST_CALAFAT_EVENT_DATE,
+                SKIDPAD_SERVICE_NAME);
+        createOrganizerEventBookingServiceIfMissing(MARIA_DISPLAY_NAME,
+                CALAFAT_TRACK_NAME,
+                PAST_CALAFAT_EVENT_DATE,
+                INSTRUCTOR_SERVICE_NAME);
+        createOrganizerEventBookingServiceIfMissing(MARIA_DISPLAY_NAME,
+                CALAFAT_TRACK_NAME,
+                PAST_CALAFAT_EVENT_DATE,
+                COPILOT_INSURANCE_SERVICE_NAME);
+
+        createTrackEventBookingServiceIfMissing(ALEX_PALAU_DISPLAY_NAME,
+                RICARDO_TORMO_TRACK_NAME,
+                PAST_RICARDO_TORMO_EVENT_DATE,
+                BOX_RENTAL_SERVICE_NAME);
+        createOrganizerEventBookingServiceIfMissing(ALEX_PALAU_DISPLAY_NAME,
+                RICARDO_TORMO_TRACK_NAME,
+                PAST_RICARDO_TORMO_EVENT_DATE,
+                EVENT_PHOTOGRAPHY_SERVICE_NAME);
+        createOrganizerEventBookingServiceIfMissing(JUANJE_DISPLAY_NAME,
+                RICARDO_TORMO_TRACK_NAME,
+                PAST_RICARDO_TORMO_EVENT_DATE,
+                INSTRUCTOR_SERVICE_NAME);
+        createOrganizerEventBookingServiceIfMissing(JUANJE_DISPLAY_NAME,
+                RICARDO_TORMO_TRACK_NAME,
+                PAST_RICARDO_TORMO_EVENT_DATE,
+                SECOND_DRIVER_INSURANCE_SERVICE_NAME);
+
+        createTrackEventBookingServiceIfMissing(FERNANDO_ALONSO_DISPLAY_NAME,
+                ALGARVE_TRACK_NAME,
+                PAST_ALGARVE_EVENT_DATE,
+                BOX_RENTAL_SERVICE_NAME);
+        createTrackEventBookingServiceIfMissing(FERNANDO_ALONSO_DISPLAY_NAME,
+                ALGARVE_TRACK_NAME,
+                PAST_ALGARVE_EVENT_DATE,
+                TRANSPONDER_TIMING_SERVICE_NAME);
+        createOrganizerEventBookingServiceIfMissing(ALEX_PALAU_DISPLAY_NAME,
+                ALGARVE_TRACK_NAME,
+                PAST_ALGARVE_EVENT_DATE,
+                EVENT_PHOTOGRAPHY_SERVICE_NAME);
+        createOrganizerEventBookingServiceIfMissing(CARLOS_DISPLAY_NAME,
+                ALGARVE_TRACK_NAME,
+                PAST_ALGARVE_EVENT_DATE,
+                WELCOME_PACK_SERVICE_NAME);
+        createOrganizerEventBookingServiceIfMissing(CARLOS_DISPLAY_NAME,
+                ALGARVE_TRACK_NAME,
+                PAST_ALGARVE_EVENT_DATE,
+                COPILOT_INSURANCE_SERVICE_NAME);
+    }
+
     private void seedLapTimes() {
         createLapTimeIfMissing(FERNANDO_ALONSO_DISPLAY_NAME, JARAMA_TRACK_NAME, LocalDate.of(2026, 3, 8), 107215L, "Alpine A110 R");
         createLapTimeIfMissing(JUANJE_DISPLAY_NAME, JARAMA_TRACK_NAME, LocalDate.of(2026, 3, 8), 111842L, "BMW M2");
@@ -553,6 +728,105 @@ public class DemoDataSeeder implements CommandLineRunner {
         eventBookingRepository.save(eventBooking);
     }
 
+    private void createTrackEventServiceIfMissing(String trackName,
+                                                  LocalDate eventDate,
+                                                  String serviceName,
+                                                  BigDecimal price) {
+        Event event = findEventByTrackAndDateOrThrow(trackName, eventDate);
+        TrackService trackService = findTrackServiceForTrackOrThrow(event.getTrack(), serviceName);
+
+        if (eventServiceRepository.findByEventIdAndTrackServiceId(event.getId(), trackService.getId()).isPresent()) {
+            return;
+        }
+
+        EventService eventService = new EventService();
+        eventService.setEvent(event);
+        eventService.setTrackService(trackService);
+        eventService.setPrice(price);
+        eventServiceRepository.save(eventService);
+    }
+
+    private void createOrganizerEventServiceIfMissing(String trackName,
+                                                      LocalDate eventDate,
+                                                      String serviceName,
+                                                      BigDecimal price) {
+        Event event = findEventByTrackAndDateOrThrow(trackName, eventDate);
+        OrganizerService organizerService = findOrganizerServiceForOrganizerOrThrow(event.getOrganizer(), serviceName);
+
+        if (eventServiceRepository.findByEventIdAndOrganizerServiceId(event.getId(), organizerService.getId()).isPresent()) {
+            return;
+        }
+
+        EventService eventService = new EventService();
+        eventService.setEvent(event);
+        eventService.setOrganizerService(organizerService);
+        eventService.setPrice(price);
+        eventServiceRepository.save(eventService);
+    }
+
+    private void createTrackEventBookingServiceIfMissing(String attendeeDisplayName,
+                                                         String trackName,
+                                                         LocalDate eventDate,
+                                                         String serviceName) {
+        EventBooking eventBooking = findEventBookingOrThrow(attendeeDisplayName, trackName, eventDate);
+        TrackService trackService = findTrackServiceForTrackOrThrow(eventBooking.getEvent().getTrack(), serviceName);
+        EventService eventService = eventServiceRepository.findByEventIdAndTrackServiceId(
+                        eventBooking.getEvent().getId(),
+                        trackService.getId()
+                )
+                .orElseThrow(() -> new IllegalStateException(
+                        "Event service not found in demo seed for track service: "
+                                + serviceName
+                                + ", track: "
+                                + trackName
+                                + ", date: "
+                                + eventDate
+                ));
+
+        if (eventBookingServiceRepository.findByEventBookingIdAndEventServiceId(eventBooking.getId(), eventService.getId()).isPresent()) {
+            return;
+        }
+
+        EventBookingService eventBookingService = new EventBookingService();
+        eventBookingService.setEventBooking(eventBooking);
+        eventBookingService.setEventService(eventService);
+        eventBookingService.setPriceAtPurchase(eventService.getPrice());
+        eventBookingServiceRepository.save(eventBookingService);
+    }
+
+    private void createOrganizerEventBookingServiceIfMissing(String attendeeDisplayName,
+                                                             String trackName,
+                                                             LocalDate eventDate,
+                                                             String serviceName) {
+        EventBooking eventBooking = findEventBookingOrThrow(attendeeDisplayName, trackName, eventDate);
+        OrganizerService organizerService = findOrganizerServiceForOrganizerOrThrow(
+                eventBooking.getEvent().getOrganizer(),
+                serviceName
+        );
+        EventService eventService = eventServiceRepository.findByEventIdAndOrganizerServiceId(
+                        eventBooking.getEvent().getId(),
+                        organizerService.getId()
+                )
+                .orElseThrow(() -> new IllegalStateException(
+                        "Event service not found in demo seed for organizer service: "
+                                + serviceName
+                                + ", track: "
+                                + trackName
+                                + ", date: "
+                                + eventDate
+                ));
+
+        if (eventBookingServiceRepository.findByEventBookingIdAndEventServiceId(eventBooking.getId(), eventService.getId()).isPresent()) {
+            return;
+        }
+
+        EventBookingService eventBookingService = new EventBookingService();
+        eventBookingService.setEventBooking(eventBooking);
+        eventBookingService.setEventService(eventService);
+        eventBookingService.setPriceAtPurchase(eventService.getPrice());
+        eventBookingServiceRepository.save(eventBookingService);
+    }
+
     private void createLapTimeIfMissing(String displayName,
                                         String trackName,
                                         LocalDate lapDate,
@@ -645,8 +919,47 @@ public class DemoDataSeeder implements CommandLineRunner {
                 ));
     }
 
+    private EventBooking findEventBookingOrThrow(String attendeeDisplayName, String trackName, LocalDate eventDate) {
+        User attendee = findEventAttendeeByDisplayNameOrThrow(attendeeDisplayName);
+        Event event = findEventByTrackAndDateOrThrow(trackName, eventDate);
+
+        return eventBookingRepository.findByUserIdAndEventId(attendee.getId(), event.getId())
+                .orElseThrow(() -> new IllegalStateException(
+                        "Event booking not found in demo seed for attendee: "
+                                + attendeeDisplayName
+                                + ", track: "
+                                + trackName
+                                + ", date: "
+                                + eventDate
+                ));
+    }
+
     private Service findServiceByNameOrThrow(String serviceName) {
         return serviceRepository.findByName(serviceName)
                 .orElseThrow(() -> new IllegalStateException("Service not found in demo seed: " + serviceName));
+    }
+
+    private OrganizerService findOrganizerServiceForOrganizerOrThrow(Organizer organizer, String serviceName) {
+        Service service = findServiceByNameOrThrow(serviceName);
+
+        return organizerServiceRepository.findByOrganizerIdUserAndServiceId(organizer.getIdUser(), service.getId())
+                .orElseThrow(() -> new IllegalStateException(
+                        "Organizer service not found in demo seed for organizer: "
+                                + organizer.getLegalName()
+                                + " and service: "
+                                + serviceName
+                ));
+    }
+
+    private TrackService findTrackServiceForTrackOrThrow(Track track, String serviceName) {
+        Service service = findServiceByNameOrThrow(serviceName);
+
+        return trackServiceRepository.findByTrackIdAndServiceId(track.getId(), service.getId())
+                .orElseThrow(() -> new IllegalStateException(
+                        "Track service not found in demo seed for track: "
+                                + track.getName()
+                                + " and service: "
+                                + serviceName
+                ));
     }
 }
