@@ -106,7 +106,8 @@ class DemoDataSeederTest {
     @Test
     void runSeedsAllDemoDataWhenRepositoriesAreEmpty() {
         SeedState state = new SeedState();
-        stubRepositories(state);
+        stubCoreRepositories(state);
+        stubNestedSeedLookups(state);
         stubInitialCreationSaves(state);
         stubRemainingSeedingSaves(state);
 
@@ -141,7 +142,8 @@ class DemoDataSeederTest {
     @Test
     void runSkipsIdempotentDemoResourcesWhenTheyAlreadyExist() {
         SeedState state = new SeedState();
-        stubRepositories(state);
+        stubCoreRepositories(state);
+        stubNestedSeedLookups(state);
         populateExistingDemoResources(state);
 
         when(organizerServiceRepository.findByOrganizerIdUserAndServiceId(anyLong(), anyLong()))
@@ -163,7 +165,7 @@ class DemoDataSeederTest {
     @Test
     void runThrowsWhenOrganizerCannotBeRecoveredForDemoServices() {
         SeedState state = new SeedState();
-        stubRepositories(state);
+        stubCoreRepositories(state);
         stubInitialCreationSaves(state);
 
         when(organizerRepository.findByLegalName("TrackEvents S.L.")).thenReturn(Optional.empty());
@@ -173,14 +175,11 @@ class DemoDataSeederTest {
         assertEquals("Organizer not found in demo seed: TrackEvents S.L.", exception.getMessage());
     }
 
-    private void stubRepositories(SeedState state) {
+    private void stubCoreRepositories(SeedState state) {
         when(passwordEncoder.encode(anyString())).thenAnswer(invocation -> "encoded-" + invocation.getArgument(0));
 
         when(roleRepository.findByRoleName(anyString()))
                 .thenAnswer(invocation -> Optional.ofNullable(state.rolesByName.get(invocation.getArgument(0))));
-
-        when(userRepository.findByDisplayName(anyString()))
-                .thenAnswer(invocation -> Optional.ofNullable(state.usersByDisplayName.get(invocation.getArgument(0))));
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
             User user = invocation.getArgument(0);
             if (user.getId() == null) {
@@ -206,6 +205,11 @@ class DemoDataSeederTest {
 
         when(serviceRepository.findByName(anyString()))
                 .thenAnswer(invocation -> Optional.ofNullable(state.servicesByName.get(invocation.getArgument(0))));
+    }
+
+    private void stubNestedSeedLookups(SeedState state) {
+        when(userRepository.findByDisplayName(anyString()))
+                .thenAnswer(invocation -> Optional.ofNullable(state.usersByDisplayName.get(invocation.getArgument(0))));
 
         when(organizerServiceRepository.findByOrganizerIdUserAndServiceId(anyLong(), anyLong()))
                 .thenAnswer(invocation -> state.organizerServiceKeys.contains(state.pairKey(
