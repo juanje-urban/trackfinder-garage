@@ -81,6 +81,10 @@ public class DemoDataSeeder implements CommandLineRunner {
     private static final LocalDate PAST_CALAFAT_EVENT_DATE = LocalDate.of(2024, 6, 8);
     private static final LocalDate PAST_RICARDO_TORMO_EVENT_DATE = LocalDate.of(2024, 10, 19);
     private static final LocalDate PAST_ALGARVE_EVENT_DATE = LocalDate.of(2025, 2, 22);
+    private static final int FUTURE_JARAMA_EVENT_OFFSET_DAYS = 28;
+    private static final int FUTURE_CALAFAT_EVENT_OFFSET_DAYS = 49;
+    private static final int FUTURE_RICARDO_TORMO_EVENT_OFFSET_DAYS = 77;
+    private static final int FUTURE_ALGARVE_EVENT_OFFSET_DAYS = 112;
 
     private final SpringDataRoleRepository roleRepository;
     private final SpringDataUserRepository userRepository;
@@ -285,6 +289,10 @@ public class DemoDataSeeder implements CommandLineRunner {
         seedPastEventServices();
         seedPastEventBookings();
         seedPastEventBookingServices();
+        seedFutureEvents();
+        seedFutureEventServices();
+        seedFutureEventBookings();
+        seedFutureEventBookingServices();
         seedLapTimes();
         seedMessages();
     }
@@ -626,6 +634,253 @@ public class DemoDataSeeder implements CommandLineRunner {
                 COPILOT_INSURANCE_SERVICE_NAME);
     }
 
+    private void seedFutureEvents() {
+        createEventIfMissing(TRACKEVENTS_LEGAL_NAME,
+                JARAMA_TRACK_NAME,
+                calculateFutureEventDate(FUTURE_JARAMA_EVENT_OFFSET_DAYS),
+                new BigDecimal("205.00"),
+                60);
+        createEventIfMissing(RACINGPRO_LEGAL_NAME,
+                CALAFAT_TRACK_NAME,
+                calculateFutureEventDate(FUTURE_CALAFAT_EVENT_OFFSET_DAYS),
+                new BigDecimal("155.00"),
+                36);
+        createEventIfMissing(IBERIAN_MOTORSPORT_LEGAL_NAME,
+                RICARDO_TORMO_TRACK_NAME,
+                calculateFutureEventDate(FUTURE_RICARDO_TORMO_EVENT_OFFSET_DAYS),
+                new BigDecimal("225.00"),
+                72);
+        createEventIfMissing(TRACKEVENTS_LEGAL_NAME,
+                ALGARVE_TRACK_NAME,
+                calculateFutureEventDate(FUTURE_ALGARVE_EVENT_OFFSET_DAYS),
+                new BigDecimal("285.00"),
+                48);
+    }
+
+    private void seedFutureEventServices() {
+        LocalDate futureJaramaEventDate = calculateFutureEventDate(FUTURE_JARAMA_EVENT_OFFSET_DAYS);
+        LocalDate futureCalafatEventDate = calculateFutureEventDate(FUTURE_CALAFAT_EVENT_OFFSET_DAYS);
+        LocalDate futureRicardoTormoEventDate = calculateFutureEventDate(FUTURE_RICARDO_TORMO_EVENT_OFFSET_DAYS);
+        LocalDate futureAlgarveEventDate = calculateFutureEventDate(FUTURE_ALGARVE_EVENT_OFFSET_DAYS);
+
+        createTrackEventServiceIfMissing(JARAMA_TRACK_NAME, futureJaramaEventDate, BOX_RENTAL_SERVICE_NAME, new BigDecimal("38.00"));
+        createTrackEventServiceIfMissing(JARAMA_TRACK_NAME,
+                futureJaramaEventDate,
+                COVERED_PADDOCK_SERVICE_NAME,
+                new BigDecimal("20.00"));
+        createTrackEventServiceIfMissing(JARAMA_TRACK_NAME,
+                futureJaramaEventDate,
+                TRANSPONDER_TIMING_SERVICE_NAME,
+                new BigDecimal("16.00"));
+        createOrganizerEventServiceIfMissing(JARAMA_TRACK_NAME,
+                futureJaramaEventDate,
+                EVENT_PHOTOGRAPHY_SERVICE_NAME,
+                new BigDecimal("24.00"));
+        createOrganizerEventServiceIfMissing(JARAMA_TRACK_NAME,
+                futureJaramaEventDate,
+                WELCOME_PACK_SERVICE_NAME,
+                new BigDecimal("11.00"));
+        createOrganizerEventServiceIfMissing(JARAMA_TRACK_NAME,
+                futureJaramaEventDate,
+                SECOND_DRIVER_INSURANCE_SERVICE_NAME,
+                new BigDecimal("30.00"));
+
+        createTrackEventServiceIfMissing(CALAFAT_TRACK_NAME, futureCalafatEventDate, SKIDPAD_SERVICE_NAME, new BigDecimal("27.00"));
+        createOrganizerEventServiceIfMissing(CALAFAT_TRACK_NAME,
+                futureCalafatEventDate,
+                EVENT_VIDEO_SERVICE_NAME,
+                new BigDecimal("22.00"));
+        createOrganizerEventServiceIfMissing(CALAFAT_TRACK_NAME,
+                futureCalafatEventDate,
+                INSTRUCTOR_SERVICE_NAME,
+                new BigDecimal("48.00"));
+        createOrganizerEventServiceIfMissing(CALAFAT_TRACK_NAME,
+                futureCalafatEventDate,
+                SECOND_DRIVER_INSURANCE_SERVICE_NAME,
+                new BigDecimal("25.00"));
+        createOrganizerEventServiceIfMissing(CALAFAT_TRACK_NAME,
+                futureCalafatEventDate,
+                COPILOT_INSURANCE_SERVICE_NAME,
+                new BigDecimal("16.00"));
+
+        createTrackEventServiceIfMissing(RICARDO_TORMO_TRACK_NAME,
+                futureRicardoTormoEventDate,
+                BOX_RENTAL_SERVICE_NAME,
+                new BigDecimal("42.00"));
+        createTrackEventServiceIfMissing(RICARDO_TORMO_TRACK_NAME,
+                futureRicardoTormoEventDate,
+                COVERED_PADDOCK_SERVICE_NAME,
+                new BigDecimal("22.00"));
+        createTrackEventServiceIfMissing(RICARDO_TORMO_TRACK_NAME,
+                futureRicardoTormoEventDate,
+                TRANSPONDER_TIMING_SERVICE_NAME,
+                new BigDecimal("19.00"));
+        createOrganizerEventServiceIfMissing(RICARDO_TORMO_TRACK_NAME,
+                futureRicardoTormoEventDate,
+                EVENT_PHOTOGRAPHY_SERVICE_NAME,
+                new BigDecimal("27.00"));
+        createOrganizerEventServiceIfMissing(RICARDO_TORMO_TRACK_NAME,
+                futureRicardoTormoEventDate,
+                INSTRUCTOR_SERVICE_NAME,
+                new BigDecimal("52.00"));
+        createOrganizerEventServiceIfMissing(RICARDO_TORMO_TRACK_NAME,
+                futureRicardoTormoEventDate,
+                SECOND_DRIVER_INSURANCE_SERVICE_NAME,
+                new BigDecimal("31.00"));
+
+        createTrackEventServiceIfMissing(ALGARVE_TRACK_NAME, futureAlgarveEventDate, BOX_RENTAL_SERVICE_NAME, new BigDecimal("48.00"));
+        createTrackEventServiceIfMissing(ALGARVE_TRACK_NAME,
+                futureAlgarveEventDate,
+                COVERED_PADDOCK_SERVICE_NAME,
+                new BigDecimal("28.00"));
+        createTrackEventServiceIfMissing(ALGARVE_TRACK_NAME,
+                futureAlgarveEventDate,
+                TRANSPONDER_TIMING_SERVICE_NAME,
+                new BigDecimal("22.00"));
+        createOrganizerEventServiceIfMissing(ALGARVE_TRACK_NAME,
+                futureAlgarveEventDate,
+                EVENT_PHOTOGRAPHY_SERVICE_NAME,
+                new BigDecimal("26.00"));
+        createOrganizerEventServiceIfMissing(ALGARVE_TRACK_NAME,
+                futureAlgarveEventDate,
+                WELCOME_PACK_SERVICE_NAME,
+                new BigDecimal("13.00"));
+        createOrganizerEventServiceIfMissing(ALGARVE_TRACK_NAME,
+                futureAlgarveEventDate,
+                COPILOT_INSURANCE_SERVICE_NAME,
+                new BigDecimal("20.00"));
+    }
+
+    private void seedFutureEventBookings() {
+        LocalDate futureJaramaEventDate = calculateFutureEventDate(FUTURE_JARAMA_EVENT_OFFSET_DAYS);
+        LocalDate futureCalafatEventDate = calculateFutureEventDate(FUTURE_CALAFAT_EVENT_OFFSET_DAYS);
+        LocalDate futureRicardoTormoEventDate = calculateFutureEventDate(FUTURE_RICARDO_TORMO_EVENT_OFFSET_DAYS);
+        LocalDate futureAlgarveEventDate = calculateFutureEventDate(FUTURE_ALGARVE_EVENT_OFFSET_DAYS);
+
+        createEventBookingIfMissing(JUANJE_DISPLAY_NAME,
+                JARAMA_TRACK_NAME,
+                futureJaramaEventDate,
+                LocalDateTime.now().minusDays(5));
+        createEventBookingIfMissing(MARIA_DISPLAY_NAME,
+                JARAMA_TRACK_NAME,
+                futureJaramaEventDate,
+                LocalDateTime.now().minusDays(4));
+        createEventBookingIfMissing(ALEX_PALAU_DISPLAY_NAME,
+                JARAMA_TRACK_NAME,
+                futureJaramaEventDate,
+                LocalDateTime.now().minusDays(3));
+
+        createEventBookingIfMissing(CARLOS_DISPLAY_NAME,
+                CALAFAT_TRACK_NAME,
+                futureCalafatEventDate,
+                LocalDateTime.now().minusDays(8));
+        createEventBookingIfMissing(FERNANDO_ALONSO_DISPLAY_NAME,
+                CALAFAT_TRACK_NAME,
+                futureCalafatEventDate,
+                LocalDateTime.now().minusDays(6));
+
+        createEventBookingIfMissing(ALEX_PALAU_DISPLAY_NAME,
+                RICARDO_TORMO_TRACK_NAME,
+                futureRicardoTormoEventDate,
+                LocalDateTime.now().minusDays(10));
+        createEventBookingIfMissing(JUANJE_DISPLAY_NAME,
+                RICARDO_TORMO_TRACK_NAME,
+                futureRicardoTormoEventDate,
+                LocalDateTime.now().minusDays(9));
+
+        createEventBookingIfMissing(FERNANDO_ALONSO_DISPLAY_NAME,
+                ALGARVE_TRACK_NAME,
+                futureAlgarveEventDate,
+                LocalDateTime.now().minusDays(12));
+        createEventBookingIfMissing(MARIA_DISPLAY_NAME,
+                ALGARVE_TRACK_NAME,
+                futureAlgarveEventDate,
+                LocalDateTime.now().minusDays(11));
+        createEventBookingIfMissing(CARLOS_DISPLAY_NAME,
+                ALGARVE_TRACK_NAME,
+                futureAlgarveEventDate,
+                LocalDateTime.now().minusDays(7));
+    }
+
+    private void seedFutureEventBookingServices() {
+        LocalDate futureJaramaEventDate = calculateFutureEventDate(FUTURE_JARAMA_EVENT_OFFSET_DAYS);
+        LocalDate futureCalafatEventDate = calculateFutureEventDate(FUTURE_CALAFAT_EVENT_OFFSET_DAYS);
+        LocalDate futureRicardoTormoEventDate = calculateFutureEventDate(FUTURE_RICARDO_TORMO_EVENT_OFFSET_DAYS);
+        LocalDate futureAlgarveEventDate = calculateFutureEventDate(FUTURE_ALGARVE_EVENT_OFFSET_DAYS);
+
+        createTrackEventBookingServiceIfMissing(JUANJE_DISPLAY_NAME,
+                JARAMA_TRACK_NAME,
+                futureJaramaEventDate,
+                TRANSPONDER_TIMING_SERVICE_NAME);
+        createOrganizerEventBookingServiceIfMissing(JUANJE_DISPLAY_NAME,
+                JARAMA_TRACK_NAME,
+                futureJaramaEventDate,
+                WELCOME_PACK_SERVICE_NAME);
+        createOrganizerEventBookingServiceIfMissing(MARIA_DISPLAY_NAME,
+                JARAMA_TRACK_NAME,
+                futureJaramaEventDate,
+                EVENT_PHOTOGRAPHY_SERVICE_NAME);
+        createTrackEventBookingServiceIfMissing(ALEX_PALAU_DISPLAY_NAME,
+                JARAMA_TRACK_NAME,
+                futureJaramaEventDate,
+                BOX_RENTAL_SERVICE_NAME);
+        createOrganizerEventBookingServiceIfMissing(ALEX_PALAU_DISPLAY_NAME,
+                JARAMA_TRACK_NAME,
+                futureJaramaEventDate,
+                SECOND_DRIVER_INSURANCE_SERVICE_NAME);
+
+        createTrackEventBookingServiceIfMissing(CARLOS_DISPLAY_NAME,
+                CALAFAT_TRACK_NAME,
+                futureCalafatEventDate,
+                SKIDPAD_SERVICE_NAME);
+        createOrganizerEventBookingServiceIfMissing(FERNANDO_ALONSO_DISPLAY_NAME,
+                CALAFAT_TRACK_NAME,
+                futureCalafatEventDate,
+                INSTRUCTOR_SERVICE_NAME);
+        createOrganizerEventBookingServiceIfMissing(FERNANDO_ALONSO_DISPLAY_NAME,
+                CALAFAT_TRACK_NAME,
+                futureCalafatEventDate,
+                COPILOT_INSURANCE_SERVICE_NAME);
+
+        createTrackEventBookingServiceIfMissing(ALEX_PALAU_DISPLAY_NAME,
+                RICARDO_TORMO_TRACK_NAME,
+                futureRicardoTormoEventDate,
+                BOX_RENTAL_SERVICE_NAME);
+        createOrganizerEventBookingServiceIfMissing(ALEX_PALAU_DISPLAY_NAME,
+                RICARDO_TORMO_TRACK_NAME,
+                futureRicardoTormoEventDate,
+                EVENT_PHOTOGRAPHY_SERVICE_NAME);
+        createOrganizerEventBookingServiceIfMissing(JUANJE_DISPLAY_NAME,
+                RICARDO_TORMO_TRACK_NAME,
+                futureRicardoTormoEventDate,
+                INSTRUCTOR_SERVICE_NAME);
+        createOrganizerEventBookingServiceIfMissing(JUANJE_DISPLAY_NAME,
+                RICARDO_TORMO_TRACK_NAME,
+                futureRicardoTormoEventDate,
+                SECOND_DRIVER_INSURANCE_SERVICE_NAME);
+
+        createTrackEventBookingServiceIfMissing(FERNANDO_ALONSO_DISPLAY_NAME,
+                ALGARVE_TRACK_NAME,
+                futureAlgarveEventDate,
+                BOX_RENTAL_SERVICE_NAME);
+        createTrackEventBookingServiceIfMissing(FERNANDO_ALONSO_DISPLAY_NAME,
+                ALGARVE_TRACK_NAME,
+                futureAlgarveEventDate,
+                TRANSPONDER_TIMING_SERVICE_NAME);
+        createOrganizerEventBookingServiceIfMissing(MARIA_DISPLAY_NAME,
+                ALGARVE_TRACK_NAME,
+                futureAlgarveEventDate,
+                EVENT_PHOTOGRAPHY_SERVICE_NAME);
+        createOrganizerEventBookingServiceIfMissing(CARLOS_DISPLAY_NAME,
+                ALGARVE_TRACK_NAME,
+                futureAlgarveEventDate,
+                WELCOME_PACK_SERVICE_NAME);
+        createOrganizerEventBookingServiceIfMissing(CARLOS_DISPLAY_NAME,
+                ALGARVE_TRACK_NAME,
+                futureAlgarveEventDate,
+                COPILOT_INSURANCE_SERVICE_NAME);
+    }
+
     private void seedLapTimes() {
         createLapTimeIfMissing(FERNANDO_ALONSO_DISPLAY_NAME, JARAMA_TRACK_NAME, LocalDate.of(2026, 3, 8), 107215L, "Alpine A110 R");
         createLapTimeIfMissing(JUANJE_DISPLAY_NAME, JARAMA_TRACK_NAME, LocalDate.of(2026, 3, 8), 111842L, "BMW M2");
@@ -937,6 +1192,10 @@ public class DemoDataSeeder implements CommandLineRunner {
     private Service findServiceByNameOrThrow(String serviceName) {
         return serviceRepository.findByName(serviceName)
                 .orElseThrow(() -> new IllegalStateException("Service not found in demo seed: " + serviceName));
+    }
+
+    private LocalDate calculateFutureEventDate(int offsetDays) {
+        return LocalDate.now().plusDays(offsetDays);
     }
 
     private OrganizerService findOrganizerServiceForOrganizerOrThrow(Organizer organizer, String serviceName) {

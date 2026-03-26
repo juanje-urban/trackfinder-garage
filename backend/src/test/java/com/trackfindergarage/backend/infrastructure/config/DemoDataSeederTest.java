@@ -143,30 +143,34 @@ class DemoDataSeederTest {
         verify(serviceRepository, times(12)).save(any(Service.class));
         verify(organizerServiceRepository, times(17)).save(any(OrganizerService.class));
         verify(trackServiceRepository, times(23)).save(any(TrackService.class));
-        verify(eventRepository, times(4)).save(any(Event.class));
-        verify(eventServiceRepository, times(23)).save(any(EventService.class));
-        verify(eventBookingRepository, times(10)).save(any(EventBooking.class));
-        verify(eventBookingServiceRepository, times(17)).save(any(EventBookingService.class));
+        verify(eventRepository, times(8)).save(any(Event.class));
+        verify(eventServiceRepository, times(46)).save(any(EventService.class));
+        verify(eventBookingRepository, times(20)).save(any(EventBooking.class));
+        verify(eventBookingServiceRepository, times(34)).save(any(EventBookingService.class));
         verify(lapTimeRepository, times(10)).save(any(LapTime.class));
         verify(messageRepository, times(1)).save(any(Message.class));
 
         ArgumentCaptor<Event> eventCaptor = ArgumentCaptor.forClass(Event.class);
-        verify(eventRepository, times(4)).save(eventCaptor.capture());
-        assertTrue(eventCaptor.getAllValues().stream()
-                .allMatch(event -> event.getEventDate().isBefore(LocalDate.now())));
+        verify(eventRepository, times(8)).save(eventCaptor.capture());
+        assertEquals(4, eventCaptor.getAllValues().stream()
+                .filter(event -> event.getEventDate().isBefore(LocalDate.now()))
+                .count());
+        assertEquals(4, eventCaptor.getAllValues().stream()
+                .filter(event -> event.getEventDate().isAfter(LocalDate.now()))
+                .count());
 
         ArgumentCaptor<EventBooking> eventBookingCaptor = ArgumentCaptor.forClass(EventBooking.class);
-        verify(eventBookingRepository, times(10)).save(eventBookingCaptor.capture());
+        verify(eventBookingRepository, times(20)).save(eventBookingCaptor.capture());
         assertTrue(eventBookingCaptor.getAllValues().stream()
                 .allMatch(eventBooking -> "USER".equals(eventBooking.getUser().getRole().getRoleName())));
 
         ArgumentCaptor<EventService> eventServiceCaptor = ArgumentCaptor.forClass(EventService.class);
-        verify(eventServiceRepository, times(23)).save(eventServiceCaptor.capture());
+        verify(eventServiceRepository, times(46)).save(eventServiceCaptor.capture());
         assertTrue(eventServiceCaptor.getAllValues().stream()
                 .allMatch(eventService -> eventService.getPrice().compareTo(BigDecimal.ZERO) > 0));
 
         ArgumentCaptor<EventBookingService> eventBookingServiceCaptor = ArgumentCaptor.forClass(EventBookingService.class);
-        verify(eventBookingServiceRepository, times(17)).save(eventBookingServiceCaptor.capture());
+        verify(eventBookingServiceRepository, times(34)).save(eventBookingServiceCaptor.capture());
         assertTrue(eventBookingServiceCaptor.getAllValues().stream()
                 .allMatch(eventBookingService -> eventBookingService.getEventBooking().getEvent().getId()
                         .equals(eventBookingService.getEventService().getEvent().getId())
@@ -597,11 +601,43 @@ class DemoDataSeederTest {
                 new BigDecimal("210.00"),
                 70);
         Event algarveEvent = event(4L, trackeventsOrganizer, algarve, LocalDate.of(2025, 2, 22), new BigDecimal("260.00"), 45);
+        LocalDate futureJaramaEventDate = LocalDate.now().plusDays(28);
+        LocalDate futureCalafatEventDate = LocalDate.now().plusDays(49);
+        LocalDate futureRicardoTormoEventDate = LocalDate.now().plusDays(77);
+        LocalDate futureAlgarveEventDate = LocalDate.now().plusDays(112);
+        Event futureJaramaEvent = event(5L,
+                trackeventsOrganizer,
+                jarama,
+                futureJaramaEventDate,
+                new BigDecimal("205.00"),
+                60);
+        Event futureCalafatEvent = event(6L,
+                racingproOrganizer,
+                calafat,
+                futureCalafatEventDate,
+                new BigDecimal("155.00"),
+                36);
+        Event futureRicardoTormoEvent = event(7L,
+                iberianOrganizer,
+                ricardoTormo,
+                futureRicardoTormoEventDate,
+                new BigDecimal("225.00"),
+                72);
+        Event futureAlgarveEvent = event(8L,
+                trackeventsOrganizer,
+                algarve,
+                futureAlgarveEventDate,
+                new BigDecimal("285.00"),
+                48);
 
         state.addEvent(jaramaEvent);
         state.addEvent(calafatEvent);
         state.addEvent(ricardoTormoEvent);
         state.addEvent(algarveEvent);
+        state.addEvent(futureJaramaEvent);
+        state.addEvent(futureCalafatEvent);
+        state.addEvent(futureRicardoTormoEvent);
+        state.addEvent(futureAlgarveEvent);
 
         state.addEventBooking(eventBooking(1L, juanje, jaramaEvent, LocalDateTime.of(2024, 3, 20, 19, 0)));
         state.addEventBooking(eventBooking(2L, maria, jaramaEvent, LocalDateTime.of(2024, 3, 22, 10, 30)));
@@ -613,6 +649,16 @@ class DemoDataSeederTest {
         state.addEventBooking(eventBooking(8L, fernando, algarveEvent, LocalDateTime.of(2025, 1, 23, 18, 40)));
         state.addEventBooking(eventBooking(9L, alex, algarveEvent, LocalDateTime.of(2025, 1, 25, 10, 10)));
         state.addEventBooking(eventBooking(10L, carlos, algarveEvent, LocalDateTime.of(2025, 1, 27, 21, 5)));
+        state.addEventBooking(eventBooking(11L, juanje, futureJaramaEvent, LocalDateTime.now().minusDays(5)));
+        state.addEventBooking(eventBooking(12L, maria, futureJaramaEvent, LocalDateTime.now().minusDays(4)));
+        state.addEventBooking(eventBooking(13L, alex, futureJaramaEvent, LocalDateTime.now().minusDays(3)));
+        state.addEventBooking(eventBooking(14L, carlos, futureCalafatEvent, LocalDateTime.now().minusDays(8)));
+        state.addEventBooking(eventBooking(15L, fernando, futureCalafatEvent, LocalDateTime.now().minusDays(6)));
+        state.addEventBooking(eventBooking(16L, alex, futureRicardoTormoEvent, LocalDateTime.now().minusDays(10)));
+        state.addEventBooking(eventBooking(17L, juanje, futureRicardoTormoEvent, LocalDateTime.now().minusDays(9)));
+        state.addEventBooking(eventBooking(18L, fernando, futureAlgarveEvent, LocalDateTime.now().minusDays(12)));
+        state.addEventBooking(eventBooking(19L, maria, futureAlgarveEvent, LocalDateTime.now().minusDays(11)));
+        state.addEventBooking(eventBooking(20L, carlos, futureAlgarveEvent, LocalDateTime.now().minusDays(7)));
 
         EventService jaramaBoxEventService = eventService(1L, jaramaEvent, jaramaBox, null, new BigDecimal("35.00"));
         EventService jaramaPaddockEventService = eventService(2L, jaramaEvent, jaramaPaddock, null, new BigDecimal("18.00"));
@@ -677,6 +723,121 @@ class DemoDataSeederTest {
                 null,
                 trackeventsCopilot,
                 new BigDecimal("18.00"));
+        EventService futureJaramaBoxEventService = eventService(24L,
+                futureJaramaEvent,
+                jaramaBox,
+                null,
+                new BigDecimal("38.00"));
+        EventService futureJaramaPaddockEventService = eventService(25L,
+                futureJaramaEvent,
+                jaramaPaddock,
+                null,
+                new BigDecimal("20.00"));
+        EventService futureJaramaTransponderEventService = eventService(26L,
+                futureJaramaEvent,
+                jaramaTransponder,
+                null,
+                new BigDecimal("16.00"));
+        EventService futureJaramaPhotographyEventService = eventService(27L,
+                futureJaramaEvent,
+                null,
+                trackeventsPhotography,
+                new BigDecimal("24.00"));
+        EventService futureJaramaWelcomePackEventService = eventService(28L,
+                futureJaramaEvent,
+                null,
+                trackeventsWelcomePack,
+                new BigDecimal("11.00"));
+        EventService futureJaramaSecondDriverEventService = eventService(29L,
+                futureJaramaEvent,
+                null,
+                trackeventsSecondDriver,
+                new BigDecimal("30.00"));
+        EventService futureCalafatSkidpadEventService = eventService(30L,
+                futureCalafatEvent,
+                calafatSkidpad,
+                null,
+                new BigDecimal("27.00"));
+        EventService futureCalafatVideoEventService = eventService(31L,
+                futureCalafatEvent,
+                null,
+                racingproVideo,
+                new BigDecimal("22.00"));
+        EventService futureCalafatInstructorEventService = eventService(32L,
+                futureCalafatEvent,
+                null,
+                racingproInstructor,
+                new BigDecimal("48.00"));
+        EventService futureCalafatSecondDriverEventService = eventService(33L,
+                futureCalafatEvent,
+                null,
+                racingproSecondDriver,
+                new BigDecimal("25.00"));
+        EventService futureCalafatCopilotEventService = eventService(34L,
+                futureCalafatEvent,
+                null,
+                racingproCopilot,
+                new BigDecimal("16.00"));
+        EventService futureRicardoBoxEventService = eventService(35L,
+                futureRicardoTormoEvent,
+                ricardoBox,
+                null,
+                new BigDecimal("42.00"));
+        EventService futureRicardoPaddockEventService = eventService(36L,
+                futureRicardoTormoEvent,
+                ricardoPaddock,
+                null,
+                new BigDecimal("22.00"));
+        EventService futureRicardoTransponderEventService = eventService(37L,
+                futureRicardoTormoEvent,
+                ricardoTransponder,
+                null,
+                new BigDecimal("19.00"));
+        EventService futureRicardoPhotographyEventService = eventService(38L,
+                futureRicardoTormoEvent,
+                null,
+                iberianPhotography,
+                new BigDecimal("27.00"));
+        EventService futureRicardoInstructorEventService = eventService(39L,
+                futureRicardoTormoEvent,
+                null,
+                iberianInstructor,
+                new BigDecimal("52.00"));
+        EventService futureRicardoSecondDriverEventService = eventService(40L,
+                futureRicardoTormoEvent,
+                null,
+                iberianSecondDriver,
+                new BigDecimal("31.00"));
+        EventService futureAlgarveBoxEventService = eventService(41L,
+                futureAlgarveEvent,
+                algarveBox,
+                null,
+                new BigDecimal("48.00"));
+        EventService futureAlgarvePaddockEventService = eventService(42L,
+                futureAlgarveEvent,
+                algarvePaddock,
+                null,
+                new BigDecimal("28.00"));
+        EventService futureAlgarveTransponderEventService = eventService(43L,
+                futureAlgarveEvent,
+                algarveTransponder,
+                null,
+                new BigDecimal("22.00"));
+        EventService futureAlgarvePhotographyEventService = eventService(44L,
+                futureAlgarveEvent,
+                null,
+                trackeventsPhotography,
+                new BigDecimal("26.00"));
+        EventService futureAlgarveWelcomePackEventService = eventService(45L,
+                futureAlgarveEvent,
+                null,
+                trackeventsWelcomePack,
+                new BigDecimal("13.00"));
+        EventService futureAlgarveCopilotEventService = eventService(46L,
+                futureAlgarveEvent,
+                null,
+                trackeventsCopilot,
+                new BigDecimal("20.00"));
 
         state.addEventService(jaramaBoxEventService);
         state.addEventService(jaramaPaddockEventService);
@@ -701,6 +862,29 @@ class DemoDataSeederTest {
         state.addEventService(algarvePhotographyEventService);
         state.addEventService(algarveWelcomePackEventService);
         state.addEventService(algarveCopilotEventService);
+        state.addEventService(futureJaramaBoxEventService);
+        state.addEventService(futureJaramaPaddockEventService);
+        state.addEventService(futureJaramaTransponderEventService);
+        state.addEventService(futureJaramaPhotographyEventService);
+        state.addEventService(futureJaramaWelcomePackEventService);
+        state.addEventService(futureJaramaSecondDriverEventService);
+        state.addEventService(futureCalafatSkidpadEventService);
+        state.addEventService(futureCalafatVideoEventService);
+        state.addEventService(futureCalafatInstructorEventService);
+        state.addEventService(futureCalafatSecondDriverEventService);
+        state.addEventService(futureCalafatCopilotEventService);
+        state.addEventService(futureRicardoBoxEventService);
+        state.addEventService(futureRicardoPaddockEventService);
+        state.addEventService(futureRicardoTransponderEventService);
+        state.addEventService(futureRicardoPhotographyEventService);
+        state.addEventService(futureRicardoInstructorEventService);
+        state.addEventService(futureRicardoSecondDriverEventService);
+        state.addEventService(futureAlgarveBoxEventService);
+        state.addEventService(futureAlgarvePaddockEventService);
+        state.addEventService(futureAlgarveTransponderEventService);
+        state.addEventService(futureAlgarvePhotographyEventService);
+        state.addEventService(futureAlgarveWelcomePackEventService);
+        state.addEventService(futureAlgarveCopilotEventService);
 
         state.addEventBookingService(eventBookingService(1L,
                 state.eventBookingsByUserAndEvent.get(state.pairKey(juanje.getId(), jaramaEvent.getId())),
@@ -753,6 +937,57 @@ class DemoDataSeederTest {
         state.addEventBookingService(eventBookingService(17L,
                 state.eventBookingsByUserAndEvent.get(state.pairKey(carlos.getId(), algarveEvent.getId())),
                 algarveCopilotEventService));
+        state.addEventBookingService(eventBookingService(18L,
+                state.eventBookingsByUserAndEvent.get(state.pairKey(juanje.getId(), futureJaramaEvent.getId())),
+                futureJaramaTransponderEventService));
+        state.addEventBookingService(eventBookingService(19L,
+                state.eventBookingsByUserAndEvent.get(state.pairKey(juanje.getId(), futureJaramaEvent.getId())),
+                futureJaramaWelcomePackEventService));
+        state.addEventBookingService(eventBookingService(20L,
+                state.eventBookingsByUserAndEvent.get(state.pairKey(maria.getId(), futureJaramaEvent.getId())),
+                futureJaramaPhotographyEventService));
+        state.addEventBookingService(eventBookingService(21L,
+                state.eventBookingsByUserAndEvent.get(state.pairKey(alex.getId(), futureJaramaEvent.getId())),
+                futureJaramaBoxEventService));
+        state.addEventBookingService(eventBookingService(22L,
+                state.eventBookingsByUserAndEvent.get(state.pairKey(alex.getId(), futureJaramaEvent.getId())),
+                futureJaramaSecondDriverEventService));
+        state.addEventBookingService(eventBookingService(23L,
+                state.eventBookingsByUserAndEvent.get(state.pairKey(carlos.getId(), futureCalafatEvent.getId())),
+                futureCalafatSkidpadEventService));
+        state.addEventBookingService(eventBookingService(24L,
+                state.eventBookingsByUserAndEvent.get(state.pairKey(fernando.getId(), futureCalafatEvent.getId())),
+                futureCalafatInstructorEventService));
+        state.addEventBookingService(eventBookingService(25L,
+                state.eventBookingsByUserAndEvent.get(state.pairKey(fernando.getId(), futureCalafatEvent.getId())),
+                futureCalafatCopilotEventService));
+        state.addEventBookingService(eventBookingService(26L,
+                state.eventBookingsByUserAndEvent.get(state.pairKey(alex.getId(), futureRicardoTormoEvent.getId())),
+                futureRicardoBoxEventService));
+        state.addEventBookingService(eventBookingService(27L,
+                state.eventBookingsByUserAndEvent.get(state.pairKey(alex.getId(), futureRicardoTormoEvent.getId())),
+                futureRicardoPhotographyEventService));
+        state.addEventBookingService(eventBookingService(28L,
+                state.eventBookingsByUserAndEvent.get(state.pairKey(juanje.getId(), futureRicardoTormoEvent.getId())),
+                futureRicardoInstructorEventService));
+        state.addEventBookingService(eventBookingService(29L,
+                state.eventBookingsByUserAndEvent.get(state.pairKey(juanje.getId(), futureRicardoTormoEvent.getId())),
+                futureRicardoSecondDriverEventService));
+        state.addEventBookingService(eventBookingService(30L,
+                state.eventBookingsByUserAndEvent.get(state.pairKey(fernando.getId(), futureAlgarveEvent.getId())),
+                futureAlgarveBoxEventService));
+        state.addEventBookingService(eventBookingService(31L,
+                state.eventBookingsByUserAndEvent.get(state.pairKey(fernando.getId(), futureAlgarveEvent.getId())),
+                futureAlgarveTransponderEventService));
+        state.addEventBookingService(eventBookingService(32L,
+                state.eventBookingsByUserAndEvent.get(state.pairKey(maria.getId(), futureAlgarveEvent.getId())),
+                futureAlgarvePhotographyEventService));
+        state.addEventBookingService(eventBookingService(33L,
+                state.eventBookingsByUserAndEvent.get(state.pairKey(carlos.getId(), futureAlgarveEvent.getId())),
+                futureAlgarveWelcomePackEventService));
+        state.addEventBookingService(eventBookingService(34L,
+                state.eventBookingsByUserAndEvent.get(state.pairKey(carlos.getId(), futureAlgarveEvent.getId())),
+                futureAlgarveCopilotEventService));
 
         state.addLapTime(lapTime(fernando, jarama, LocalDate.of(2026, 3, 8), 107215L, "Alpine A110 R"));
         state.addLapTime(lapTime(juanje, jarama, LocalDate.of(2026, 3, 8), 111842L, "BMW M2"));
