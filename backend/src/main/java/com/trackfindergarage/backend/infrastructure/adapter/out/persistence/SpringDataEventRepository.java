@@ -16,4 +16,6 @@ public interface SpringDataEventRepository extends JpaRepository<Event, Long> {
     List<Event> findByEventDateBetween(LocalDate startDate, LocalDate endDate);
 
     Optional<Event> findByTrackIdAndEventDate(Long trackId, LocalDate eventDate);
+
+    List<Event> findByEventDateGreaterThanEqualOrderByEventDateAsc(LocalDate fromDate);
 }

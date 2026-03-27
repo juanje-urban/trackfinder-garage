@@ -65,6 +65,7 @@ class EventControllerTest {
         LocalDate end = LocalDate.now().plusDays(30);
 
         when(eventUseCase.getAllEvents()).thenReturn(List.of(event));
+        when(eventUseCase.getFutureEvents()).thenReturn(List.of(event));
         when(eventUseCase.getEventById(10L)).thenReturn(event);
         when(eventUseCase.getEventsByOrganizerId(1L)).thenReturn(List.of(event));
         when(eventUseCase.getEventsByTrackId(2L)).thenReturn(List.of(event));
@@ -72,6 +73,7 @@ class EventControllerTest {
         when(eventUseCase.getRemainingCapacity(10L)).thenReturn(14);
 
         assertEquals(1, eventController.getAllEvents().size());
+        assertEquals(1, eventController.getFutureEvents().size());
         assertEquals(10L, eventController.getEventById(10L).getId());
         assertEquals(1, eventController.getEventsByOrganizerId(1L).size());
         assertEquals(1, eventController.getEventsByTrackId(2L).size());

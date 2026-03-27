@@ -14,6 +14,8 @@ public interface EventPersistencePort {
 
     List<Event> findAll();
 
+    List<Event> findFutureEvents(LocalDate fromDate);
+
     List<Event> findByOrganizerIdUser(Long organizerId);
 
     List<Event> findByTrackId(Long trackId);

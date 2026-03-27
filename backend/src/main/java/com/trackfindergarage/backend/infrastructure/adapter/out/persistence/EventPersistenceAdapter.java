@@ -33,6 +33,11 @@ public class EventPersistenceAdapter implements EventPersistencePort {
     }
 
     @Override
+    public List<Event> findFutureEvents(LocalDate fromDate) {
+        return eventRepository.findByEventDateGreaterThanEqualOrderByEventDateAsc(fromDate);
+    }
+
+    @Override
     public List<Event> findByOrganizerIdUser(Long organizerId) {
         return eventRepository.findByOrganizerIdUser(organizerId);
     }

@@ -23,6 +23,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -235,6 +236,16 @@ class EventServiceTest {
         when(eventPersistencePort.findAll()).thenReturn(events);
 
         assertEquals(events, eventService.getAllEvents());
+    }
+
+    @Test
+    void getFutureEventsReturnsPersistenceResultFromTodayOnward() {
+        List<Event> events = List.of(eventWithIds(1L, 2L, LocalDate.now().plusDays(10), new BigDecimal("30.00")));
+
+        when(eventPersistencePort.findFutureEvents(any(LocalDate.class))).thenReturn(events);
+
+        assertEquals(events, eventService.getFutureEvents());
+        verify(eventPersistencePort).findFutureEvents(any(LocalDate.class));
     }
 
     @Test

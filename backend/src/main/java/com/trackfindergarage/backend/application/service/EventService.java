@@ -119,6 +119,12 @@ public class EventService implements EventUseCase {
 
     @Override
     @Transactional(readOnly = true)
+    public List<Event> getFutureEvents() {
+        return eventPersistencePort.findFutureEvents(LocalDate.now());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Event getEventById(Long id) {
         return eventPersistencePort.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(EVENT_NOT_FOUND_WITH_ID + id));

@@ -15,6 +15,8 @@ public interface EventUseCase {
 
     List<Event> getAllEvents();
 
+    List<Event> getFutureEvents();
+
     Event getEventById(Long id);
 
     Integer getRemainingCapacity(Long eventId);

@@ -56,6 +56,14 @@ public class EventController {
                 .toList();
     }
 
+    @GetMapping("/future")
+    public List<EventResponse> getFutureEvents() {
+        return eventUseCase.getFutureEvents()
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
     @GetMapping("/{id}")
     public EventResponse getEventById(@PathVariable Long id) {
         return toResponse(eventUseCase.getEventById(id));
