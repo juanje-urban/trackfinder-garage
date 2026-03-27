@@ -334,9 +334,12 @@ public class DemoDataSeeder implements CommandLineRunner {
                                  String cif,
                                  Role organizerRole) {
         User user = createUser(displayName, email, name, surname, DEFAULT_ORGANIZER_LOGIN, organizerRole);
+        User managedUser = userRepository.findById(user.getId())
+                .orElseThrow(() -> new IllegalStateException("User not found in demo seed: " + displayName));
 
         Organizer organizer = new Organizer();
-        organizer.setUser(user);
+        organizer.setIdUser(managedUser.getId());
+        organizer.setUser(managedUser);
         organizer.setLegalName(legalName);
         organizer.setCif(cif);
         organizer.setEnabled(true);
