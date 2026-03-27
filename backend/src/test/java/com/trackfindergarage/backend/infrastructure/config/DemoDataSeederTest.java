@@ -238,8 +238,11 @@ class DemoDataSeederTest {
                 user.setId(state.nextUserId.getAndIncrement());
             }
             state.usersByDisplayName.put(user.getDisplayName(), user);
+            state.usersById.put(user.getId(), user);
             return user;
         });
+        when(userRepository.findById(anyLong()))
+                .thenAnswer(invocation -> Optional.ofNullable(state.usersById.get(invocation.getArgument(0))));
 
         when(organizerRepository.findByLegalName(anyString()))
                 .thenAnswer(invocation -> Optional.ofNullable(state.organizersByLegalName.get(invocation.getArgument(0))));
@@ -1140,6 +1143,7 @@ class DemoDataSeederTest {
     private static final class SeedState {
         private final Map<String, Role> rolesByName = new HashMap<>();
         private final Map<String, User> usersByDisplayName = new HashMap<>();
+        private final Map<Long, User> usersById = new HashMap<>();
         private final Map<String, Organizer> organizersByLegalName = new HashMap<>();
         private final Map<String, Track> tracksByName = new HashMap<>();
         private final Map<String, Service> servicesByName = new HashMap<>();
