@@ -30,6 +30,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -37,6 +38,7 @@ import java.time.LocalDateTime;
 
 @Component
 @Profile("demo")
+@Transactional
 public class DemoDataSeeder implements CommandLineRunner {
 
     private static final String TRACKEVENTS_LEGAL_NAME = "TrackEvents S.L.";
@@ -334,12 +336,9 @@ public class DemoDataSeeder implements CommandLineRunner {
                                  String cif,
                                  Role organizerRole) {
         User user = createUser(displayName, email, name, surname, DEFAULT_ORGANIZER_LOGIN, organizerRole);
-        User managedUser = userRepository.findById(user.getId())
-                .orElseThrow(() -> new IllegalStateException("User not found in demo seed: " + displayName));
 
         Organizer organizer = new Organizer();
-        organizer.setIdUser(managedUser.getId());
-        organizer.setUser(managedUser);
+        organizer.setUser(user);
         organizer.setLegalName(legalName);
         organizer.setCif(cif);
         organizer.setEnabled(true);

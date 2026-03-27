@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.domain.Persistable;
 
 @Entity
 @Table(
@@ -16,7 +17,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Organizer {
+public class Organizer implements Persistable<Long> {
 
     @Id
     @Column(name = "id_user", nullable = false, updatable = false)
@@ -35,4 +36,28 @@ public class Organizer {
 
     @Column(name = "enabled")
     private Boolean enabled;
+
+    @Transient
+    private boolean newEntity = true;
+
+    @Override
+    public Long getId() {
+        return idUser;
+    }
+
+    @Override
+    public boolean isNew() {
+        return newEntity;
+    }
+
+    public void setIdUser(Long idUser) {
+        this.idUser = idUser;
+        this.newEntity = idUser == null;
+    }
+
+    @PostPersist
+    @PostLoad
+    void markNotNew() {
+        this.newEntity = false;
+    }
 }
