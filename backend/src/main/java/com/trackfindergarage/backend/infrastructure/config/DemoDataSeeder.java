@@ -79,6 +79,12 @@ public class DemoDataSeeder implements CommandLineRunner {
     private static final String LEGACY_UNREAD_MESSAGE_CONTENT =
             "Hola, me interesa una tanda en Jarama para abril. ¿Tenéis previsto organizar alguna? Gracias.";
 
+    private static final BigDecimal PRICE_18_00 = new BigDecimal("18.00");
+    private static final BigDecimal PRICE_20_00 = new BigDecimal("20.00");
+    private static final BigDecimal PRICE_22_00 = new BigDecimal("22.00");
+    private static final BigDecimal PRICE_24_00 = new BigDecimal("24.00");
+    private static final BigDecimal PRICE_25_00 = new BigDecimal("25.00");
+
     private static final LocalDate PAST_JARAMA_EVENT_DATE = LocalDate.of(2024, 4, 13);
     private static final LocalDate PAST_CALAFAT_EVENT_DATE = LocalDate.of(2024, 6, 8);
     private static final LocalDate PAST_RICARDO_TORMO_EVENT_DATE = LocalDate.of(2024, 10, 19);
@@ -478,7 +484,7 @@ public class DemoDataSeeder implements CommandLineRunner {
         createTrackEventServiceIfMissing(JARAMA_TRACK_NAME,
                 PAST_JARAMA_EVENT_DATE,
                 COVERED_PADDOCK_SERVICE_NAME,
-                new BigDecimal("18.00"));
+                PRICE_18_00);
         createTrackEventServiceIfMissing(JARAMA_TRACK_NAME,
                 PAST_JARAMA_EVENT_DATE,
                 TRANSPONDER_TIMING_SERVICE_NAME,
@@ -486,7 +492,7 @@ public class DemoDataSeeder implements CommandLineRunner {
         createOrganizerEventServiceIfMissing(JARAMA_TRACK_NAME,
                 PAST_JARAMA_EVENT_DATE,
                 EVENT_PHOTOGRAPHY_SERVICE_NAME,
-                new BigDecimal("22.00"));
+                PRICE_22_00);
         createOrganizerEventServiceIfMissing(JARAMA_TRACK_NAME,
                 PAST_JARAMA_EVENT_DATE,
                 WELCOME_PACK_SERVICE_NAME,
@@ -496,11 +502,11 @@ public class DemoDataSeeder implements CommandLineRunner {
                 SECOND_DRIVER_INSURANCE_SERVICE_NAME,
                 new BigDecimal("28.00"));
 
-        createTrackEventServiceIfMissing(CALAFAT_TRACK_NAME, PAST_CALAFAT_EVENT_DATE, SKIDPAD_SERVICE_NAME, new BigDecimal("25.00"));
+        createTrackEventServiceIfMissing(CALAFAT_TRACK_NAME, PAST_CALAFAT_EVENT_DATE, SKIDPAD_SERVICE_NAME, PRICE_25_00);
         createOrganizerEventServiceIfMissing(CALAFAT_TRACK_NAME,
                 PAST_CALAFAT_EVENT_DATE,
                 EVENT_VIDEO_SERVICE_NAME,
-                new BigDecimal("20.00"));
+                PRICE_20_00);
         createOrganizerEventServiceIfMissing(CALAFAT_TRACK_NAME,
                 PAST_CALAFAT_EVENT_DATE,
                 INSTRUCTOR_SERVICE_NAME,
@@ -508,7 +514,7 @@ public class DemoDataSeeder implements CommandLineRunner {
         createOrganizerEventServiceIfMissing(CALAFAT_TRACK_NAME,
                 PAST_CALAFAT_EVENT_DATE,
                 SECOND_DRIVER_INSURANCE_SERVICE_NAME,
-                new BigDecimal("24.00"));
+                PRICE_24_00);
         createOrganizerEventServiceIfMissing(CALAFAT_TRACK_NAME,
                 PAST_CALAFAT_EVENT_DATE,
                 COPILOT_INSURANCE_SERVICE_NAME,
@@ -521,15 +527,15 @@ public class DemoDataSeeder implements CommandLineRunner {
         createTrackEventServiceIfMissing(RICARDO_TORMO_TRACK_NAME,
                 PAST_RICARDO_TORMO_EVENT_DATE,
                 COVERED_PADDOCK_SERVICE_NAME,
-                new BigDecimal("20.00"));
+                PRICE_20_00);
         createTrackEventServiceIfMissing(RICARDO_TORMO_TRACK_NAME,
                 PAST_RICARDO_TORMO_EVENT_DATE,
                 TRANSPONDER_TIMING_SERVICE_NAME,
-                new BigDecimal("18.00"));
+                PRICE_18_00);
         createOrganizerEventServiceIfMissing(RICARDO_TORMO_TRACK_NAME,
                 PAST_RICARDO_TORMO_EVENT_DATE,
                 EVENT_PHOTOGRAPHY_SERVICE_NAME,
-                new BigDecimal("25.00"));
+                PRICE_25_00);
         createOrganizerEventServiceIfMissing(RICARDO_TORMO_TRACK_NAME,
                 PAST_RICARDO_TORMO_EVENT_DATE,
                 INSTRUCTOR_SERVICE_NAME,
@@ -543,15 +549,15 @@ public class DemoDataSeeder implements CommandLineRunner {
         createTrackEventServiceIfMissing(ALGARVE_TRACK_NAME,
                 PAST_ALGARVE_EVENT_DATE,
                 COVERED_PADDOCK_SERVICE_NAME,
-                new BigDecimal("25.00"));
+                PRICE_25_00);
         createTrackEventServiceIfMissing(ALGARVE_TRACK_NAME,
                 PAST_ALGARVE_EVENT_DATE,
                 TRANSPONDER_TIMING_SERVICE_NAME,
-                new BigDecimal("20.00"));
+                PRICE_20_00);
         createOrganizerEventServiceIfMissing(ALGARVE_TRACK_NAME,
                 PAST_ALGARVE_EVENT_DATE,
                 EVENT_PHOTOGRAPHY_SERVICE_NAME,
-                new BigDecimal("24.00"));
+                PRICE_24_00);
         createOrganizerEventServiceIfMissing(ALGARVE_TRACK_NAME,
                 PAST_ALGARVE_EVENT_DATE,
                 WELCOME_PACK_SERVICE_NAME,
@@ -559,7 +565,7 @@ public class DemoDataSeeder implements CommandLineRunner {
         createOrganizerEventServiceIfMissing(ALGARVE_TRACK_NAME,
                 PAST_ALGARVE_EVENT_DATE,
                 COPILOT_INSURANCE_SERVICE_NAME,
-                new BigDecimal("18.00"));
+                PRICE_18_00);
     }
 
     private void seedPastEventBookingServices() {
@@ -669,7 +675,7 @@ public class DemoDataSeeder implements CommandLineRunner {
         createTrackEventServiceIfMissing(JARAMA_TRACK_NAME,
                 futureJaramaEventDate,
                 COVERED_PADDOCK_SERVICE_NAME,
-                new BigDecimal("20.00"));
+                PRICE_20_00);
         createTrackEventServiceIfMissing(JARAMA_TRACK_NAME,
                 futureJaramaEventDate,
                 TRANSPONDER_TIMING_SERVICE_NAME,
@@ -677,7 +683,7 @@ public class DemoDataSeeder implements CommandLineRunner {
         createOrganizerEventServiceIfMissing(JARAMA_TRACK_NAME,
                 futureJaramaEventDate,
                 EVENT_PHOTOGRAPHY_SERVICE_NAME,
-                new BigDecimal("24.00"));
+                PRICE_24_00);
         createOrganizerEventServiceIfMissing(JARAMA_TRACK_NAME,
                 futureJaramaEventDate,
                 WELCOME_PACK_SERVICE_NAME,
@@ -691,7 +697,7 @@ public class DemoDataSeeder implements CommandLineRunner {
         createOrganizerEventServiceIfMissing(CALAFAT_TRACK_NAME,
                 futureCalafatEventDate,
                 EVENT_VIDEO_SERVICE_NAME,
-                new BigDecimal("22.00"));
+                PRICE_22_00);
         createOrganizerEventServiceIfMissing(CALAFAT_TRACK_NAME,
                 futureCalafatEventDate,
                 INSTRUCTOR_SERVICE_NAME,
@@ -699,7 +705,7 @@ public class DemoDataSeeder implements CommandLineRunner {
         createOrganizerEventServiceIfMissing(CALAFAT_TRACK_NAME,
                 futureCalafatEventDate,
                 SECOND_DRIVER_INSURANCE_SERVICE_NAME,
-                new BigDecimal("25.00"));
+                PRICE_25_00);
         createOrganizerEventServiceIfMissing(CALAFAT_TRACK_NAME,
                 futureCalafatEventDate,
                 COPILOT_INSURANCE_SERVICE_NAME,
@@ -712,7 +718,7 @@ public class DemoDataSeeder implements CommandLineRunner {
         createTrackEventServiceIfMissing(RICARDO_TORMO_TRACK_NAME,
                 futureRicardoTormoEventDate,
                 COVERED_PADDOCK_SERVICE_NAME,
-                new BigDecimal("22.00"));
+                PRICE_22_00);
         createTrackEventServiceIfMissing(RICARDO_TORMO_TRACK_NAME,
                 futureRicardoTormoEventDate,
                 TRANSPONDER_TIMING_SERVICE_NAME,
@@ -738,7 +744,7 @@ public class DemoDataSeeder implements CommandLineRunner {
         createTrackEventServiceIfMissing(ALGARVE_TRACK_NAME,
                 futureAlgarveEventDate,
                 TRANSPONDER_TIMING_SERVICE_NAME,
-                new BigDecimal("22.00"));
+                PRICE_22_00);
         createOrganizerEventServiceIfMissing(ALGARVE_TRACK_NAME,
                 futureAlgarveEventDate,
                 EVENT_PHOTOGRAPHY_SERVICE_NAME,
@@ -1034,10 +1040,7 @@ public class DemoDataSeeder implements CommandLineRunner {
                 .orElseThrow(() -> new IllegalStateException(
                         "Event service not found in demo seed for track service: "
                                 + serviceName
-                                + ", track: "
-                                + trackName
-                                + ", date: "
-                                + eventDate
+                                + formatTrackAndDateDetails(trackName, eventDate)
                 ));
 
         if (eventBookingServiceRepository.findByEventBookingIdAndEventServiceId(eventBooking.getId(), eventService.getId()).isPresent()) {
@@ -1067,10 +1070,7 @@ public class DemoDataSeeder implements CommandLineRunner {
                 .orElseThrow(() -> new IllegalStateException(
                         "Event service not found in demo seed for organizer service: "
                                 + serviceName
-                                + ", track: "
-                                + trackName
-                                + ", date: "
-                                + eventDate
+                                + formatTrackAndDateDetails(trackName, eventDate)
                 ));
 
         if (eventBookingServiceRepository.findByEventBookingIdAndEventServiceId(eventBooking.getId(), eventService.getId()).isPresent()) {
@@ -1184,10 +1184,7 @@ public class DemoDataSeeder implements CommandLineRunner {
                 .orElseThrow(() -> new IllegalStateException(
                         "Event booking not found in demo seed for attendee: "
                                 + attendeeDisplayName
-                                + ", track: "
-                                + trackName
-                                + ", date: "
-                                + eventDate
+                                + formatTrackAndDateDetails(trackName, eventDate)
                 ));
     }
 
@@ -1198,6 +1195,10 @@ public class DemoDataSeeder implements CommandLineRunner {
 
     private LocalDate calculateFutureEventDate(int offsetDays) {
         return LocalDate.now().plusDays(offsetDays);
+    }
+
+    private String formatTrackAndDateDetails(String trackName, LocalDate eventDate) {
+        return ", track: " + trackName + ", date: " + eventDate;
     }
 
     private OrganizerService findOrganizerServiceForOrganizerOrThrow(Organizer organizer, String serviceName) {

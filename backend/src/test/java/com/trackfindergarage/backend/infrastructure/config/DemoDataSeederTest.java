@@ -136,60 +136,13 @@ class DemoDataSeederTest {
 
         demoDataSeeder.run();
 
-        verify(roleRepository, times(3)).save(any(Role.class));
-        verify(userRepository, times(9)).save(any(User.class));
-        verify(organizerRepository, times(3)).save(any(Organizer.class));
-        verify(trackRepository, times(6)).save(any(Track.class));
-        verify(serviceRepository, times(12)).save(any(Service.class));
-        verify(organizerServiceRepository, times(17)).save(any(OrganizerService.class));
-        verify(trackServiceRepository, times(23)).save(any(TrackService.class));
-        verify(eventRepository, times(8)).save(any(Event.class));
-        verify(eventServiceRepository, times(46)).save(any(EventService.class));
-        verify(eventBookingRepository, times(20)).save(any(EventBooking.class));
-        verify(eventBookingServiceRepository, times(34)).save(any(EventBookingService.class));
-        verify(lapTimeRepository, times(10)).save(any(LapTime.class));
-        verify(messageRepository, times(1)).save(any(Message.class));
-
-        ArgumentCaptor<Event> eventCaptor = ArgumentCaptor.forClass(Event.class);
-        verify(eventRepository, times(8)).save(eventCaptor.capture());
-        assertEquals(4, eventCaptor.getAllValues().stream()
-                .filter(event -> event.getEventDate().isBefore(LocalDate.now()))
-                .count());
-        assertEquals(4, eventCaptor.getAllValues().stream()
-                .filter(event -> event.getEventDate().isAfter(LocalDate.now()))
-                .count());
-
-        ArgumentCaptor<EventBooking> eventBookingCaptor = ArgumentCaptor.forClass(EventBooking.class);
-        verify(eventBookingRepository, times(20)).save(eventBookingCaptor.capture());
-        assertTrue(eventBookingCaptor.getAllValues().stream()
-                .allMatch(eventBooking -> "USER".equals(eventBooking.getUser().getRole().getRoleName())));
-
-        ArgumentCaptor<EventService> eventServiceCaptor = ArgumentCaptor.forClass(EventService.class);
-        verify(eventServiceRepository, times(46)).save(eventServiceCaptor.capture());
-        assertTrue(eventServiceCaptor.getAllValues().stream()
-                .allMatch(eventService -> eventService.getPrice().compareTo(BigDecimal.ZERO) > 0));
-
-        ArgumentCaptor<EventBookingService> eventBookingServiceCaptor = ArgumentCaptor.forClass(EventBookingService.class);
-        verify(eventBookingServiceRepository, times(34)).save(eventBookingServiceCaptor.capture());
-        assertTrue(eventBookingServiceCaptor.getAllValues().stream()
-                .allMatch(eventBookingService -> eventBookingService.getEventBooking().getEvent().getId()
-                        .equals(eventBookingService.getEventService().getEvent().getId())
-                        && eventBookingService.getPriceAtPurchase().compareTo(eventBookingService.getEventService().getPrice()) == 0));
-
-        ArgumentCaptor<LapTime> lapTimeCaptor = ArgumentCaptor.forClass(LapTime.class);
-        verify(lapTimeRepository, times(10)).save(lapTimeCaptor.capture());
-        assertTrue(lapTimeCaptor.getAllValues().stream()
-                .anyMatch(lapTime -> "Mazda MX-5 NA 1.8".equals(lapTime.getVehicle())));
-
-        ArgumentCaptor<Message> messageCaptor = ArgumentCaptor.forClass(Message.class);
-        verify(messageRepository).save(messageCaptor.capture());
-        Message savedMessage = messageCaptor.getValue();
-
-        assertEquals("juanje", savedMessage.getSender().getDisplayName());
-        assertEquals("trackevents", savedMessage.getReceiver().getDisplayName());
-        assertEquals("Consulta sobre tandas en Jarama", savedMessage.getSubject());
-        assertEquals(UNREAD_MESSAGE_CONTENT, savedMessage.getContent());
-        assertFalse(savedMessage.getIsRead());
+        assertSeedCreationCounts();
+        assertSavedEventsHaveExpectedDateDistribution();
+        assertSavedBookingsBelongToStandardUsers();
+        assertSavedEventServicesHavePositivePrice();
+        assertSavedBookingServicesMirrorEventServicePricing();
+        assertSavedLapTimesContainExpectedVehicle();
+        assertUnreadMessageWasSeeded();
     }
 
     @Test
@@ -225,6 +178,80 @@ class DemoDataSeederTest {
         IllegalStateException exception = assertThrows(IllegalStateException.class, () -> demoDataSeeder.run());
 
         assertEquals("Organizer not found in demo seed: TrackEvents S.L.", exception.getMessage());
+    }
+
+    private void assertSeedCreationCounts() {
+        verify(roleRepository, times(3)).save(any(Role.class));
+        verify(userRepository, times(9)).save(any(User.class));
+        verify(organizerRepository, times(3)).save(any(Organizer.class));
+        verify(trackRepository, times(6)).save(any(Track.class));
+        verify(serviceRepository, times(12)).save(any(Service.class));
+        verify(organizerServiceRepository, times(17)).save(any(OrganizerService.class));
+        verify(trackServiceRepository, times(23)).save(any(TrackService.class));
+        verify(eventRepository, times(8)).save(any(Event.class));
+        verify(eventServiceRepository, times(46)).save(any(EventService.class));
+        verify(eventBookingRepository, times(20)).save(any(EventBooking.class));
+        verify(eventBookingServiceRepository, times(34)).save(any(EventBookingService.class));
+        verify(lapTimeRepository, times(10)).save(any(LapTime.class));
+        verify(messageRepository, times(1)).save(any(Message.class));
+    }
+
+    private void assertSavedEventsHaveExpectedDateDistribution() {
+        ArgumentCaptor<Event> eventCaptor = ArgumentCaptor.forClass(Event.class);
+        verify(eventRepository, times(8)).save(eventCaptor.capture());
+
+        assertEquals(4, eventCaptor.getAllValues().stream()
+                .filter(event -> event.getEventDate().isBefore(LocalDate.now()))
+                .count());
+        assertEquals(4, eventCaptor.getAllValues().stream()
+                .filter(event -> event.getEventDate().isAfter(LocalDate.now()))
+                .count());
+    }
+
+    private void assertSavedBookingsBelongToStandardUsers() {
+        ArgumentCaptor<EventBooking> eventBookingCaptor = ArgumentCaptor.forClass(EventBooking.class);
+        verify(eventBookingRepository, times(20)).save(eventBookingCaptor.capture());
+
+        assertTrue(eventBookingCaptor.getAllValues().stream()
+                .allMatch(eventBooking -> "USER".equals(eventBooking.getUser().getRole().getRoleName())));
+    }
+
+    private void assertSavedEventServicesHavePositivePrice() {
+        ArgumentCaptor<EventService> eventServiceCaptor = ArgumentCaptor.forClass(EventService.class);
+        verify(eventServiceRepository, times(46)).save(eventServiceCaptor.capture());
+
+        assertTrue(eventServiceCaptor.getAllValues().stream()
+                .allMatch(eventService -> eventService.getPrice().compareTo(BigDecimal.ZERO) > 0));
+    }
+
+    private void assertSavedBookingServicesMirrorEventServicePricing() {
+        ArgumentCaptor<EventBookingService> eventBookingServiceCaptor = ArgumentCaptor.forClass(EventBookingService.class);
+        verify(eventBookingServiceRepository, times(34)).save(eventBookingServiceCaptor.capture());
+
+        assertTrue(eventBookingServiceCaptor.getAllValues().stream()
+                .allMatch(eventBookingService -> eventBookingService.getEventBooking().getEvent().getId()
+                        .equals(eventBookingService.getEventService().getEvent().getId())
+                        && eventBookingService.getPriceAtPurchase().compareTo(eventBookingService.getEventService().getPrice()) == 0));
+    }
+
+    private void assertSavedLapTimesContainExpectedVehicle() {
+        ArgumentCaptor<LapTime> lapTimeCaptor = ArgumentCaptor.forClass(LapTime.class);
+        verify(lapTimeRepository, times(10)).save(lapTimeCaptor.capture());
+
+        assertTrue(lapTimeCaptor.getAllValues().stream()
+                .anyMatch(lapTime -> "Mazda MX-5 NA 1.8".equals(lapTime.getVehicle())));
+    }
+
+    private void assertUnreadMessageWasSeeded() {
+        ArgumentCaptor<Message> messageCaptor = ArgumentCaptor.forClass(Message.class);
+        verify(messageRepository).save(messageCaptor.capture());
+        Message savedMessage = messageCaptor.getValue();
+
+        assertEquals("juanje", savedMessage.getSender().getDisplayName());
+        assertEquals("trackevents", savedMessage.getReceiver().getDisplayName());
+        assertEquals("Consulta sobre tandas en Jarama", savedMessage.getSubject());
+        assertEquals(UNREAD_MESSAGE_CONTENT, savedMessage.getContent());
+        assertFalse(savedMessage.getIsRead());
     }
 
     private void stubCoreRepositories(SeedState state) {
