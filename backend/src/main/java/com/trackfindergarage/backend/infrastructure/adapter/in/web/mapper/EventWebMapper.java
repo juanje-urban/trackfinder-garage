@@ -42,11 +42,7 @@ public class EventWebMapper {
         event.setMaxParticipants(request.getMaxParticipants());
     }
 
-    public EventResponse toResponse(Event event) {
-        return toResponse(event, null);
-    }
-
-    public EventResponse toResponse(Event event, Integer remainingCapacity) {
+    public EventResponse toResponse(Event event, int remainingCapacity) {
         return EventResponse.builder()
                 .id(event.getId())
                 .organizerId(event.getOrganizer() != null ? event.getOrganizer().getIdUser() : null)

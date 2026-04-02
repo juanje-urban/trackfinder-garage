@@ -42,6 +42,6 @@ public class Event {
     @Column(name = "base_price", nullable = false, precision = 10, scale = 2)
     private BigDecimal basePrice;
 
-    @Column(name = "max_participants")
+    @Column(name = "max_participants", nullable = false)
     private Integer maxParticipants;
 }

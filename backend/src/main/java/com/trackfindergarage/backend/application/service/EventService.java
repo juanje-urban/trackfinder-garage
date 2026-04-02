@@ -132,12 +132,8 @@ public class EventService implements EventUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public Integer getRemainingCapacity(Long eventId) {
+    public int getRemainingCapacity(Long eventId) {
         Event event = findEventOrThrow(eventId);
-
-        if (event.getMaxParticipants() == null) {
-            return null;
-        }
 
         int currentBookings = Math.toIntExact(eventBookingPersistencePort.countByEventId(eventId));
         return Math.max(0, event.getMaxParticipants() - currentBookings);
