@@ -35,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Component
 @Profile("demo")
@@ -44,6 +45,10 @@ public class DemoDataSeeder implements CommandLineRunner {
     private static final String TRACKEVENTS_LEGAL_NAME = "TrackEvents S.L.";
     private static final String RACINGPRO_LEGAL_NAME = "RacingPro S.L.";
     private static final String IBERIAN_MOTORSPORT_LEGAL_NAME = "Iberian Motorsport Events S.L.";
+    private static final String TRACKLIMITS_IBERIA_LEGAL_NAME = "TrackLimits Iberia S.L.";
+    private static final String APEX_IBERIA_LEGAL_NAME = "Apex Iberia Track Days S.L.";
+    private static final String LUSITANIA_RACING_LEGAL_NAME = "Lusitania Racing Experience Lda.";
+    private static final String MEDITERRANEAN_MOTORSPORT_LEGAL_NAME = "Mediterranean Motorsport Club S.L.";
     private static final String DEFAULT_STANDARD_USER_LOGIN = "user123";
     private static final String DEFAULT_ORGANIZER_LOGIN = "org123";
     private static final String USER_ROLE_NAME = "USER";
@@ -53,6 +58,33 @@ public class DemoDataSeeder implements CommandLineRunner {
     private static final String FERNANDO_ALONSO_DISPLAY_NAME = "fernando.alonso";
     private static final String ALEX_PALAU_DISPLAY_NAME = "alex.palau";
     private static final String TRACKEVENTS_DISPLAY_NAME = "trackevents";
+    private static final String RACINGPRO_DISPLAY_NAME = "racingpro";
+    private static final String IBERIAN_MOTORSPORT_DISPLAY_NAME = "iberianmotorsport";
+    private static final String TRACKLIMITS_IBERIA_DISPLAY_NAME = "tracklimits.iberia";
+    private static final String APEX_IBERIA_DISPLAY_NAME = "apex.iberia";
+    private static final String LUSITANIA_RACING_DISPLAY_NAME = "lusitania.racing";
+    private static final String MEDITERRANEAN_MOTORSPORT_DISPLAY_NAME = "mediterranean.motorsport";
+
+    private static final String LATEBRAKER_88_DISPLAY_NAME = "latebraker88";
+    private static final String CURVA_PERALTADA_DISPLAY_NAME = "curva_peraltada";
+    private static final String APEXHUNTER_DISPLAY_NAME = "apexhunter";
+    private static final String PITLANE_JUNKIE_DISPLAY_NAME = "pitlane_junkie";
+    private static final String KERB_RIDER_DISPLAY_NAME = "kerb_rider";
+    private static final String FLATOUT_MARTA_DISPLAY_NAME = "flatout_marta";
+    private static final String HEELTOE_DANI_DISPLAY_NAME = "heeltoe_dani";
+    private static final String TRACKRAT_77_DISPLAY_NAME = "trackrat_77";
+    private static final String BOXBOX_RAUL_DISPLAY_NAME = "boxbox_raul";
+    private static final String REDFLAG_INES_DISPLAY_NAME = "redflag_ines";
+    private static final String CHICANE_CHASER_DISPLAY_NAME = "chicane_chaser";
+    private static final String FULLTHROTTLE_EVA_DISPLAY_NAME = "fullthrottle_eva";
+    private static final String GRIDWALKER_DISPLAY_NAME = "gridwalker";
+    private static final String OVERSTEER_MIGUEL_DISPLAY_NAME = "oversteer_miguel";
+    private static final String TYRESMOKE_LUCIA_DISPLAY_NAME = "tyresmoke_lucia";
+    private static final String CURB_ATTACK_DISPLAY_NAME = "curb_attack";
+    private static final String BRAKEPOINT_NORA_DISPLAY_NAME = "brakepoint_nora";
+    private static final String PADDOCK_PAULA_DISPLAY_NAME = "paddock_paula";
+    private static final String STINTMASTER_DISPLAY_NAME = "stintmaster";
+    private static final String APEX_LUSO_DISPLAY_NAME = "apex_luso";
 
     private static final String CALAFAT_TRACK_NAME = "Circuit Calafat";
     private static final String JARAMA_TRACK_NAME = "Circuito de Madrid Jarama - RACE";
@@ -60,6 +92,20 @@ public class DemoDataSeeder implements CommandLineRunner {
     private static final String GUADIX_TRACK_NAME = "Circuito Mike G Guadix";
     private static final String ALGARVE_TRACK_NAME = "Autodromo Internacional do Algarve";
     private static final String NURBURGRING_TRACK_NAME = "Nurburgring";
+    private static final String BARCELONA_TRACK_NAME = "Circuit de Barcelona-Catalunya";
+    private static final String JEREZ_TRACK_NAME = "Circuito de Jerez - Angel Nieto";
+    private static final String MOTORLAND_TRACK_NAME = "MotorLand Aragon";
+    private static final String NAVARRA_TRACK_NAME = "Circuito de Navarra";
+    private static final String ALBACETE_TRACK_NAME = "Circuito de Albacete";
+    private static final String MONTEBLANCO_TRACK_NAME = "Circuito de Monteblanco";
+    private static final String CARTAGENA_TRACK_NAME = "Circuito de Cartagena";
+    private static final String ESTORIL_TRACK_NAME = "Circuito do Estoril";
+    private static final String BRAGA_TRACK_NAME = "Circuito Vasco Sameiro";
+    private static final String VILA_REAL_TRACK_NAME = "Circuito de Vila Real";
+    private static final String BOAVISTA_TRACK_NAME = "Circuito da Boavista";
+    private static final String SPA_TRACK_NAME = "Circuit de Spa-Francorchamps";
+    private static final String MUGELLO_TRACK_NAME = "Mugello Circuit";
+    private static final String PAUL_RICARD_TRACK_NAME = "Circuit Paul Ricard";
 
     private static final String BOX_RENTAL_SERVICE_NAME = "Alquiler de box";
     private static final String COVERED_PADDOCK_SERVICE_NAME = "Reserva de paddock cubierto";
@@ -84,11 +130,39 @@ public class DemoDataSeeder implements CommandLineRunner {
     private static final BigDecimal PRICE_22_00 = new BigDecimal("22.00");
     private static final BigDecimal PRICE_24_00 = new BigDecimal("24.00");
     private static final BigDecimal PRICE_25_00 = new BigDecimal("25.00");
+    private static final BigDecimal BOX_RENTAL_PRICE = new BigDecimal("35.00");
+    private static final BigDecimal COVERED_PADDOCK_PRICE = PRICE_20_00;
+    private static final BigDecimal SKIDPAD_PRICE = new BigDecimal("27.00");
+    private static final BigDecimal TRANSPONDER_PRICE = PRICE_18_00;
+    private static final BigDecimal EVENT_PHOTOGRAPHY_PRICE = PRICE_24_00;
+    private static final BigDecimal EVENT_VIDEO_PRICE = PRICE_22_00;
+    private static final BigDecimal CATERING_PRICE = PRICE_20_00;
+    private static final BigDecimal WELCOME_PACK_PRICE = new BigDecimal("12.00");
+    private static final BigDecimal INSTRUCTOR_PRICE = new BigDecimal("48.00");
+    private static final BigDecimal SECOND_DRIVER_INSURANCE_PRICE = new BigDecimal("30.00");
+    private static final BigDecimal COPILOT_INSURANCE_PRICE = PRICE_18_00;
 
     private static final LocalDate PAST_JARAMA_EVENT_DATE = LocalDate.of(2024, 4, 13);
     private static final LocalDate PAST_CALAFAT_EVENT_DATE = LocalDate.of(2024, 6, 8);
     private static final LocalDate PAST_RICARDO_TORMO_EVENT_DATE = LocalDate.of(2024, 10, 19);
     private static final LocalDate PAST_ALGARVE_EVENT_DATE = LocalDate.of(2025, 2, 22);
+    private static final LocalDate PAST_BARCELONA_EVENT_DATE = LocalDate.of(2025, 5, 17);
+    private static final LocalDate PAST_JEREZ_EVENT_DATE = LocalDate.of(2025, 9, 20);
+    private static final LocalDate PAST_ESTORIL_EVENT_DATE = LocalDate.of(2025, 11, 15);
+    private static final LocalDate PAST_MOTORLAND_EVENT_DATE = LocalDate.of(2026, 3, 21);
+    private static final LocalDate FUTURE_JARAMA_EVENT_DATE = LocalDate.of(2026, 7, 12);
+    private static final LocalDate FUTURE_CALAFAT_EVENT_DATE = LocalDate.of(2026, 7, 19);
+    private static final LocalDate FUTURE_ESTORIL_EVENT_DATE = LocalDate.of(2026, 7, 26);
+    private static final LocalDate FUTURE_JEREZ_EVENT_DATE = LocalDate.of(2026, 8, 9);
+    private static final LocalDate FUTURE_BARCELONA_EVENT_DATE = LocalDate.of(2026, 8, 30);
+    private static final LocalDate FUTURE_ALGARVE_EVENT_DATE = LocalDate.of(2026, 9, 13);
+    private static final LocalDate FUTURE_RICARDO_TORMO_EVENT_DATE = LocalDate.of(2026, 10, 4);
+    private static final LocalDate FUTURE_NAVARRA_EVENT_DATE = LocalDate.of(2026, 10, 18);
+    private static final LocalDate FUTURE_MOTORLAND_EVENT_DATE = LocalDate.of(2026, 11, 8);
+    private static final LocalDate FUTURE_CARTAGENA_EVENT_DATE = LocalDate.of(2026, 11, 29);
+    private static final LocalDate FUTURE_ALBACETE_EVENT_DATE = LocalDate.of(2027, 1, 24);
+    private static final LocalDate FUTURE_SPA_EVENT_DATE = LocalDate.of(2027, 2, 14);
+    private static final LocalDate FUTURE_MUGELLO_EVENT_DATE = LocalDate.of(2027, 3, 14);
     private static final int FUTURE_JARAMA_EVENT_OFFSET_DAYS = 28;
     private static final int FUTURE_CALAFAT_EVENT_OFFSET_DAYS = 49;
     private static final int FUTURE_RICARDO_TORMO_EVENT_OFFSET_DAYS = 77;
@@ -142,80 +216,120 @@ public class DemoDataSeeder implements CommandLineRunner {
     @Override
     public void run(String... args) {
         Role adminRole = createRoleIfMissing("ADMIN");
-        Role userRole = createRoleIfMissing("USER");
+        Role userRole = createRoleIfMissing(USER_ROLE_NAME);
         Role organizerRole = createRoleIfMissing("ORGANIZER");
 
         createUser("admin", "admin@example.com", "Admin", "Demo", "admin123", adminRole);
-        createUser(JUANJE_DISPLAY_NAME, "juanje@example.com", "Juanje", "Demo", DEFAULT_STANDARD_USER_LOGIN, userRole);
-        createUser(MARIA_DISPLAY_NAME, "maria@example.com", "Maria", "Demo", DEFAULT_STANDARD_USER_LOGIN, userRole);
-        createUser(CARLOS_DISPLAY_NAME, "carlos@example.com", "Carlos", "Demo", DEFAULT_STANDARD_USER_LOGIN, userRole);
-        createUser(FERNANDO_ALONSO_DISPLAY_NAME,
-                "fernando.alonso@example.com",
-                "Fernando",
-                "Alonso",
+        seedStandardUsers(userRole);
+        seedOrganizers(organizerRole);
+        seedTracks();
+        seedServices();
+        seedOrganizerServices();
+        seedTrackServices();
+        migrateLegacyFutureEvents();
+        seedPastEvents();
+        seedPastEventServices();
+        seedPastEventBookings();
+        seedPastEventBookingServices();
+        seedFutureEvents();
+        seedFutureEventServices();
+        seedFutureEventBookings();
+        seedFutureEventBookingServices();
+        seedLapTimes();
+        seedMessages();
+    }
+
+    private Role createRoleIfMissing(String roleName) {
+        return roleRepository.findByRoleName(roleName)
+                .orElseGet(() -> {
+                    Role role = new Role();
+                    role.setRoleName(roleName);
+                    return roleRepository.save(role);
+                });
+    }
+
+    private User createUser(String displayName,
+                            String email,
+                            String name,
+                            String surname,
+                            String rawPassword,
+                            Role role) {
+        User existingUser = userRepository.findByDisplayName(displayName)
+                .or(() -> userRepository.findByEmail(email))
+                .orElse(null);
+
+        if (existingUser != null) {
+            return existingUser;
+        }
+
+        User user = new User();
+        user.setDisplayName(displayName);
+        user.setEmail(email);
+        user.setName(name);
+        user.setSurname(surname);
+        user.setAddress("Direccion demo");
+        user.setPhone("600000000");
+        user.setRole(role);
+        user.setPasswordHash(passwordEncoder.encode(rawPassword));
+        user.setCreated(LocalDateTime.now());
+        user.setEnabled(true);
+        return userRepository.save(user);
+    }
+
+    private void createOrganizer(String displayName,
+                                 String email,
+                                 String name,
+                                 String surname,
+                                 String legalName,
+                                 String cif,
+                                 Role organizerRole) {
+        if (organizerRepository.findByLegalName(legalName).isPresent()) {
+            return;
+        }
+
+        User user = createUser(displayName, email, name, surname, DEFAULT_ORGANIZER_LOGIN, organizerRole);
+
+        Organizer organizer = new Organizer();
+        organizer.setUser(user);
+        organizer.setLegalName(legalName);
+        organizer.setCif(cif);
+        organizer.setEnabled(true);
+
+        organizerRepository.save(organizer);
+    }
+
+    private void seedStandardUsers(Role userRole) {
+        standardUserSeeds().forEach(userSeed -> createUser(
+                userSeed.displayName(),
+                userSeed.email(),
+                userSeed.name(),
+                userSeed.surname(),
                 DEFAULT_STANDARD_USER_LOGIN,
-                userRole);
-        createUser(ALEX_PALAU_DISPLAY_NAME, "alex.palau@example.com", "Alex", "Palou", DEFAULT_STANDARD_USER_LOGIN, userRole);
+                userRole
+        ));
+    }
 
-        createOrganizer(
-                TRACKEVENTS_DISPLAY_NAME,
-                "trackevents@example.com",
-                "Trackevents",
-                "Demo",
-                TRACKEVENTS_LEGAL_NAME,
-                "B00000001",
+    private void seedOrganizers(Role organizerRole) {
+        organizerSeeds().forEach(organizerSeed -> createOrganizer(
+                organizerSeed.displayName(),
+                organizerSeed.email(),
+                organizerSeed.name(),
+                organizerSeed.surname(),
+                organizerSeed.legalName(),
+                organizerSeed.cif(),
                 organizerRole
-        );
-        createOrganizer(
-                "racingpro",
-                "racingpro@example.com",
-                "Racingpro",
-                "Demo",
-                RACINGPRO_LEGAL_NAME,
-                "B00000002",
-                organizerRole
-        );
-        createOrganizer(
-                "iberianmotorsport",
-                "iberianmotorsport@example.com",
-                "Iberian",
-                "Motorsport",
-                IBERIAN_MOTORSPORT_LEGAL_NAME,
-                "B00000003",
-                organizerRole
-        );
+        ));
+    }
 
-        createTrackIfMissing(
-                CALAFAT_TRACK_NAME,
-                "L'Ametlla de Mar, Tarragona, Espana",
-                "Circuito junto al Mediterraneo, conocido por sus cursos de conduccion y tandas privadas en la costa de Tarragona."
-        );
-        createTrackIfMissing(
-                JARAMA_TRACK_NAME,
-                "San Sebastian de los Reyes, Madrid, Espana",
-                "Trazado historico del automovilismo espanol, sede habitual de eventos, track days y experiencias de conduccion cerca de Madrid."
-        );
-        createTrackIfMissing(
-                RICARDO_TORMO_TRACK_NAME,
-                "Cheste, Valencia, Espana",
-                "Circuito permanente de la Comunitat Valenciana, referencia nacional para motociclismo y automovilismo con gradas panoramicas."
-        );
-        createTrackIfMissing(
-                GUADIX_TRACK_NAME,
-                "Guadix, Granada, Espana",
-                "Circuito andaluz muy usado para tandas, pruebas de desarrollo y entrenamientos, situado en el altiplano granadino."
-        );
-        createTrackIfMissing(
-                ALGARVE_TRACK_NAME,
-                "Portimao, Faro, Portugal",
-                "Circuito portugues famoso por sus desniveles y curvas ciegas, habitual en competiciones internacionales y pruebas de equipos."
-        );
-        createTrackIfMissing(
-                NURBURGRING_TRACK_NAME,
-                "Nurburg, Renania-Palatinado, Alemania",
-                "Complejo aleman de referencia mundial, celebre por la Nordschleife y por su importancia historica en el automovilismo europeo."
-        );
+    private void seedTracks() {
+        trackSeeds().forEach(trackSeed -> createTrackIfMissing(
+                trackSeed.name(),
+                trackSeed.location(),
+                trackSeed.description()
+        ));
+    }
 
+    private void seedServices() {
         createServiceIfMissing(
                 BOX_RENTAL_SERVICE_NAME,
                 "Reserva de box privado para el evento.",
@@ -240,7 +354,6 @@ public class DemoDataSeeder implements CommandLineRunner {
                 true,
                 false
         );
-
         createServiceIfMissing(
                 EVENT_PHOTOGRAPHY_SERVICE_NAME,
                 "Cobertura fotografica profesional de la jornada.",
@@ -283,73 +396,12 @@ public class DemoDataSeeder implements CommandLineRunner {
                 false,
                 true
         );
-
         createServiceIfMissing(
                 TRANSPONDER_TIMING_SERVICE_NAME,
                 "Sistema de cronometraje con transponder para registrar tiempos por vuelta.",
                 true,
                 true
         );
-
-        seedOrganizerServices();
-        seedTrackServices();
-        seedPastEvents();
-        seedPastEventServices();
-        seedPastEventBookings();
-        seedPastEventBookingServices();
-        seedFutureEvents();
-        seedFutureEventServices();
-        seedFutureEventBookings();
-        seedFutureEventBookingServices();
-        seedLapTimes();
-        seedMessages();
-    }
-
-    private Role createRoleIfMissing(String roleName) {
-        return roleRepository.findByRoleName(roleName)
-                .orElseGet(() -> {
-                    Role role = new Role();
-                    role.setRoleName(roleName);
-                    return roleRepository.save(role);
-                });
-    }
-
-    private User createUser(String displayName,
-                            String email,
-                            String name,
-                            String surname,
-                            String rawPassword,
-                            Role role) {
-        User user = new User();
-        user.setDisplayName(displayName);
-        user.setEmail(email);
-        user.setName(name);
-        user.setSurname(surname);
-        user.setAddress("Direccion demo");
-        user.setPhone("600000000");
-        user.setRole(role);
-        user.setPasswordHash(passwordEncoder.encode(rawPassword));
-        user.setCreated(LocalDateTime.now());
-        user.setEnabled(true);
-        return userRepository.save(user);
-    }
-
-    private void createOrganizer(String displayName,
-                                 String email,
-                                 String name,
-                                 String surname,
-                                 String legalName,
-                                 String cif,
-                                 Role organizerRole) {
-        User user = createUser(displayName, email, name, surname, DEFAULT_ORGANIZER_LOGIN, organizerRole);
-
-        Organizer organizer = new Organizer();
-        organizer.setUser(user);
-        organizer.setLegalName(legalName);
-        organizer.setCif(cif);
-        organizer.setEnabled(true);
-
-        organizerRepository.save(organizer);
     }
 
     private void createTrackIfMissing(String name, String location, String description) {
@@ -382,528 +434,781 @@ public class DemoDataSeeder implements CommandLineRunner {
     }
 
     private void seedOrganizerServices() {
-        createOrganizerServiceIfMissing(TRACKEVENTS_LEGAL_NAME, EVENT_PHOTOGRAPHY_SERVICE_NAME);
-        createOrganizerServiceIfMissing(TRACKEVENTS_LEGAL_NAME, WELCOME_PACK_SERVICE_NAME);
-        createOrganizerServiceIfMissing(TRACKEVENTS_LEGAL_NAME, TRANSPONDER_TIMING_SERVICE_NAME);
-        createOrganizerServiceIfMissing(TRACKEVENTS_LEGAL_NAME, SECOND_DRIVER_INSURANCE_SERVICE_NAME);
-        createOrganizerServiceIfMissing(TRACKEVENTS_LEGAL_NAME, COPILOT_INSURANCE_SERVICE_NAME);
-
-        createOrganizerServiceIfMissing(RACINGPRO_LEGAL_NAME, EVENT_VIDEO_SERVICE_NAME);
-        createOrganizerServiceIfMissing(RACINGPRO_LEGAL_NAME, CATERING_SERVICE_NAME);
-        createOrganizerServiceIfMissing(RACINGPRO_LEGAL_NAME, INSTRUCTOR_SERVICE_NAME);
-        createOrganizerServiceIfMissing(RACINGPRO_LEGAL_NAME, TRANSPONDER_TIMING_SERVICE_NAME);
-        createOrganizerServiceIfMissing(RACINGPRO_LEGAL_NAME, SECOND_DRIVER_INSURANCE_SERVICE_NAME);
-        createOrganizerServiceIfMissing(RACINGPRO_LEGAL_NAME, COPILOT_INSURANCE_SERVICE_NAME);
-
-        createOrganizerServiceIfMissing(IBERIAN_MOTORSPORT_LEGAL_NAME, EVENT_PHOTOGRAPHY_SERVICE_NAME);
-        createOrganizerServiceIfMissing(IBERIAN_MOTORSPORT_LEGAL_NAME, WELCOME_PACK_SERVICE_NAME);
-        createOrganizerServiceIfMissing(IBERIAN_MOTORSPORT_LEGAL_NAME, INSTRUCTOR_SERVICE_NAME);
-        createOrganizerServiceIfMissing(IBERIAN_MOTORSPORT_LEGAL_NAME, TRANSPONDER_TIMING_SERVICE_NAME);
-        createOrganizerServiceIfMissing(IBERIAN_MOTORSPORT_LEGAL_NAME, SECOND_DRIVER_INSURANCE_SERVICE_NAME);
-        createOrganizerServiceIfMissing(IBERIAN_MOTORSPORT_LEGAL_NAME, COPILOT_INSURANCE_SERVICE_NAME);
+        organizerSeeds().forEach(organizerSeed -> registerOrganizerServices(
+                organizerSeed.legalName(),
+                EVENT_PHOTOGRAPHY_SERVICE_NAME,
+                EVENT_VIDEO_SERVICE_NAME,
+                CATERING_SERVICE_NAME,
+                WELCOME_PACK_SERVICE_NAME,
+                INSTRUCTOR_SERVICE_NAME,
+                SECOND_DRIVER_INSURANCE_SERVICE_NAME,
+                COPILOT_INSURANCE_SERVICE_NAME,
+                TRANSPONDER_TIMING_SERVICE_NAME
+        ));
     }
 
     private void seedTrackServices() {
-        createTrackServiceIfMissing(CALAFAT_TRACK_NAME, BOX_RENTAL_SERVICE_NAME);
-        createTrackServiceIfMissing(CALAFAT_TRACK_NAME, NOISE_CONTROL_SERVICE_NAME);
-        createTrackServiceIfMissing(CALAFAT_TRACK_NAME, SKIDPAD_SERVICE_NAME);
+        registerTrackServices(CALAFAT_TRACK_NAME,
+                BOX_RENTAL_SERVICE_NAME,
+                NOISE_CONTROL_SERVICE_NAME,
+                SKIDPAD_SERVICE_NAME,
+                TRANSPONDER_TIMING_SERVICE_NAME);
+        registerTrackServices(JARAMA_TRACK_NAME,
+                BOX_RENTAL_SERVICE_NAME,
+                COVERED_PADDOCK_SERVICE_NAME,
+                NOISE_CONTROL_SERVICE_NAME,
+                SKIDPAD_SERVICE_NAME,
+                TRANSPONDER_TIMING_SERVICE_NAME);
+        registerTrackServices(RICARDO_TORMO_TRACK_NAME,
+                BOX_RENTAL_SERVICE_NAME,
+                COVERED_PADDOCK_SERVICE_NAME,
+                NOISE_CONTROL_SERVICE_NAME,
+                TRANSPONDER_TIMING_SERVICE_NAME);
+        registerTrackServices(GUADIX_TRACK_NAME,
+                BOX_RENTAL_SERVICE_NAME,
+                NOISE_CONTROL_SERVICE_NAME,
+                SKIDPAD_SERVICE_NAME,
+                TRANSPONDER_TIMING_SERVICE_NAME);
+        registerTrackServices(ALGARVE_TRACK_NAME,
+                BOX_RENTAL_SERVICE_NAME,
+                COVERED_PADDOCK_SERVICE_NAME,
+                NOISE_CONTROL_SERVICE_NAME,
+                TRANSPONDER_TIMING_SERVICE_NAME);
+        registerTrackServices(NURBURGRING_TRACK_NAME,
+                BOX_RENTAL_SERVICE_NAME,
+                COVERED_PADDOCK_SERVICE_NAME,
+                NOISE_CONTROL_SERVICE_NAME,
+                TRANSPONDER_TIMING_SERVICE_NAME);
+        registerTrackServices(BARCELONA_TRACK_NAME,
+                BOX_RENTAL_SERVICE_NAME,
+                COVERED_PADDOCK_SERVICE_NAME,
+                NOISE_CONTROL_SERVICE_NAME,
+                TRANSPONDER_TIMING_SERVICE_NAME);
+        registerTrackServices(JEREZ_TRACK_NAME,
+                BOX_RENTAL_SERVICE_NAME,
+                COVERED_PADDOCK_SERVICE_NAME,
+                NOISE_CONTROL_SERVICE_NAME,
+                TRANSPONDER_TIMING_SERVICE_NAME);
+        registerTrackServices(MOTORLAND_TRACK_NAME,
+                BOX_RENTAL_SERVICE_NAME,
+                COVERED_PADDOCK_SERVICE_NAME,
+                NOISE_CONTROL_SERVICE_NAME,
+                TRANSPONDER_TIMING_SERVICE_NAME);
+        registerTrackServices(NAVARRA_TRACK_NAME,
+                BOX_RENTAL_SERVICE_NAME,
+                COVERED_PADDOCK_SERVICE_NAME,
+                NOISE_CONTROL_SERVICE_NAME,
+                TRANSPONDER_TIMING_SERVICE_NAME);
+        registerTrackServices(ALBACETE_TRACK_NAME,
+                BOX_RENTAL_SERVICE_NAME,
+                NOISE_CONTROL_SERVICE_NAME,
+                SKIDPAD_SERVICE_NAME,
+                TRANSPONDER_TIMING_SERVICE_NAME);
+        registerTrackServices(MONTEBLANCO_TRACK_NAME,
+                BOX_RENTAL_SERVICE_NAME,
+                NOISE_CONTROL_SERVICE_NAME,
+                SKIDPAD_SERVICE_NAME,
+                TRANSPONDER_TIMING_SERVICE_NAME);
+        registerTrackServices(CARTAGENA_TRACK_NAME,
+                BOX_RENTAL_SERVICE_NAME,
+                NOISE_CONTROL_SERVICE_NAME,
+                SKIDPAD_SERVICE_NAME,
+                TRANSPONDER_TIMING_SERVICE_NAME);
+        registerTrackServices(ESTORIL_TRACK_NAME,
+                BOX_RENTAL_SERVICE_NAME,
+                COVERED_PADDOCK_SERVICE_NAME,
+                NOISE_CONTROL_SERVICE_NAME,
+                TRANSPONDER_TIMING_SERVICE_NAME);
+        registerTrackServices(BRAGA_TRACK_NAME,
+                BOX_RENTAL_SERVICE_NAME,
+                NOISE_CONTROL_SERVICE_NAME,
+                SKIDPAD_SERVICE_NAME,
+                TRANSPONDER_TIMING_SERVICE_NAME);
+        registerTrackServices(VILA_REAL_TRACK_NAME,
+                BOX_RENTAL_SERVICE_NAME,
+                NOISE_CONTROL_SERVICE_NAME,
+                TRANSPONDER_TIMING_SERVICE_NAME);
+        registerTrackServices(BOAVISTA_TRACK_NAME,
+                BOX_RENTAL_SERVICE_NAME,
+                NOISE_CONTROL_SERVICE_NAME,
+                TRANSPONDER_TIMING_SERVICE_NAME);
+        registerTrackServices(SPA_TRACK_NAME,
+                BOX_RENTAL_SERVICE_NAME,
+                COVERED_PADDOCK_SERVICE_NAME,
+                NOISE_CONTROL_SERVICE_NAME,
+                TRANSPONDER_TIMING_SERVICE_NAME);
+        registerTrackServices(MUGELLO_TRACK_NAME,
+                BOX_RENTAL_SERVICE_NAME,
+                COVERED_PADDOCK_SERVICE_NAME,
+                NOISE_CONTROL_SERVICE_NAME,
+                TRANSPONDER_TIMING_SERVICE_NAME);
+        registerTrackServices(PAUL_RICARD_TRACK_NAME,
+                BOX_RENTAL_SERVICE_NAME,
+                COVERED_PADDOCK_SERVICE_NAME,
+                NOISE_CONTROL_SERVICE_NAME,
+                TRANSPONDER_TIMING_SERVICE_NAME);
+    }
 
-        createTrackServiceIfMissing(JARAMA_TRACK_NAME, BOX_RENTAL_SERVICE_NAME);
-        createTrackServiceIfMissing(JARAMA_TRACK_NAME, COVERED_PADDOCK_SERVICE_NAME);
-        createTrackServiceIfMissing(JARAMA_TRACK_NAME, NOISE_CONTROL_SERVICE_NAME);
-        createTrackServiceIfMissing(JARAMA_TRACK_NAME, SKIDPAD_SERVICE_NAME);
-        createTrackServiceIfMissing(JARAMA_TRACK_NAME, TRANSPONDER_TIMING_SERVICE_NAME);
-
-        createTrackServiceIfMissing(RICARDO_TORMO_TRACK_NAME, BOX_RENTAL_SERVICE_NAME);
-        createTrackServiceIfMissing(RICARDO_TORMO_TRACK_NAME, COVERED_PADDOCK_SERVICE_NAME);
-        createTrackServiceIfMissing(RICARDO_TORMO_TRACK_NAME, NOISE_CONTROL_SERVICE_NAME);
-        createTrackServiceIfMissing(RICARDO_TORMO_TRACK_NAME, TRANSPONDER_TIMING_SERVICE_NAME);
-
-        createTrackServiceIfMissing(GUADIX_TRACK_NAME, BOX_RENTAL_SERVICE_NAME);
-        createTrackServiceIfMissing(GUADIX_TRACK_NAME, NOISE_CONTROL_SERVICE_NAME);
-        createTrackServiceIfMissing(GUADIX_TRACK_NAME, SKIDPAD_SERVICE_NAME);
-
-        createTrackServiceIfMissing(ALGARVE_TRACK_NAME, BOX_RENTAL_SERVICE_NAME);
-        createTrackServiceIfMissing(ALGARVE_TRACK_NAME, COVERED_PADDOCK_SERVICE_NAME);
-        createTrackServiceIfMissing(ALGARVE_TRACK_NAME, NOISE_CONTROL_SERVICE_NAME);
-        createTrackServiceIfMissing(ALGARVE_TRACK_NAME, TRANSPONDER_TIMING_SERVICE_NAME);
-
-        createTrackServiceIfMissing(NURBURGRING_TRACK_NAME, BOX_RENTAL_SERVICE_NAME);
-        createTrackServiceIfMissing(NURBURGRING_TRACK_NAME, COVERED_PADDOCK_SERVICE_NAME);
-        createTrackServiceIfMissing(NURBURGRING_TRACK_NAME, NOISE_CONTROL_SERVICE_NAME);
-        createTrackServiceIfMissing(NURBURGRING_TRACK_NAME, TRANSPONDER_TIMING_SERVICE_NAME);
+    private void migrateLegacyFutureEvents() {
+        migrateLegacyFutureEvent(
+                TRACKEVENTS_LEGAL_NAME,
+                JARAMA_TRACK_NAME,
+                calculateFutureEventDate(FUTURE_JARAMA_EVENT_OFFSET_DAYS),
+                FUTURE_JARAMA_EVENT_DATE,
+                price("205.00"),
+                60
+        );
+        migrateLegacyFutureEvent(
+                RACINGPRO_LEGAL_NAME,
+                CALAFAT_TRACK_NAME,
+                calculateFutureEventDate(FUTURE_CALAFAT_EVENT_OFFSET_DAYS),
+                FUTURE_CALAFAT_EVENT_DATE,
+                price("160.00"),
+                38
+        );
+        migrateLegacyFutureEvent(
+                IBERIAN_MOTORSPORT_LEGAL_NAME,
+                RICARDO_TORMO_TRACK_NAME,
+                calculateFutureEventDate(FUTURE_RICARDO_TORMO_EVENT_OFFSET_DAYS),
+                FUTURE_RICARDO_TORMO_EVENT_DATE,
+                price("225.00"),
+                72
+        );
+        migrateLegacyFutureEvent(
+                TRACKEVENTS_LEGAL_NAME,
+                ALGARVE_TRACK_NAME,
+                calculateFutureEventDate(FUTURE_ALGARVE_EVENT_OFFSET_DAYS),
+                FUTURE_ALGARVE_EVENT_DATE,
+                price("285.00"),
+                50
+        );
     }
 
     private void seedPastEvents() {
-        createEventIfMissing(TRACKEVENTS_LEGAL_NAME, JARAMA_TRACK_NAME, PAST_JARAMA_EVENT_DATE, new BigDecimal("180.00"), 55);
-        createEventIfMissing(RACINGPRO_LEGAL_NAME, CALAFAT_TRACK_NAME, PAST_CALAFAT_EVENT_DATE, new BigDecimal("145.00"), 35);
-        createEventIfMissing(IBERIAN_MOTORSPORT_LEGAL_NAME,
-                RICARDO_TORMO_TRACK_NAME,
-                PAST_RICARDO_TORMO_EVENT_DATE,
-                new BigDecimal("210.00"),
-                70);
-        createEventIfMissing(TRACKEVENTS_LEGAL_NAME, ALGARVE_TRACK_NAME, PAST_ALGARVE_EVENT_DATE, new BigDecimal("260.00"), 45);
+        seedEvents(pastEventSeeds());
     }
 
     private void seedPastEventBookings() {
-        createEventBookingIfMissing(JUANJE_DISPLAY_NAME, JARAMA_TRACK_NAME, PAST_JARAMA_EVENT_DATE, LocalDateTime.of(2024, 3, 20, 19, 0));
-        createEventBookingIfMissing(MARIA_DISPLAY_NAME, JARAMA_TRACK_NAME, PAST_JARAMA_EVENT_DATE, LocalDateTime.of(2024, 3, 22, 10, 30));
-        createEventBookingIfMissing(FERNANDO_ALONSO_DISPLAY_NAME,
-                JARAMA_TRACK_NAME,
-                PAST_JARAMA_EVENT_DATE,
-                LocalDateTime.of(2024, 3, 25, 18, 15));
-
-        createEventBookingIfMissing(CARLOS_DISPLAY_NAME, CALAFAT_TRACK_NAME, PAST_CALAFAT_EVENT_DATE, LocalDateTime.of(2024, 5, 14, 20, 0));
-        createEventBookingIfMissing(MARIA_DISPLAY_NAME, CALAFAT_TRACK_NAME, PAST_CALAFAT_EVENT_DATE, LocalDateTime.of(2024, 5, 16, 9, 45));
-
-        createEventBookingIfMissing(ALEX_PALAU_DISPLAY_NAME,
-                RICARDO_TORMO_TRACK_NAME,
-                PAST_RICARDO_TORMO_EVENT_DATE,
-                LocalDateTime.of(2024, 9, 18, 12, 0));
-        createEventBookingIfMissing(JUANJE_DISPLAY_NAME,
-                RICARDO_TORMO_TRACK_NAME,
-                PAST_RICARDO_TORMO_EVENT_DATE,
-                LocalDateTime.of(2024, 9, 21, 19, 30));
-
-        createEventBookingIfMissing(FERNANDO_ALONSO_DISPLAY_NAME,
-                ALGARVE_TRACK_NAME,
-                PAST_ALGARVE_EVENT_DATE,
-                LocalDateTime.of(2025, 1, 23, 18, 40));
-        createEventBookingIfMissing(ALEX_PALAU_DISPLAY_NAME,
-                ALGARVE_TRACK_NAME,
-                PAST_ALGARVE_EVENT_DATE,
-                LocalDateTime.of(2025, 1, 25, 10, 10));
-        createEventBookingIfMissing(CARLOS_DISPLAY_NAME,
-                ALGARVE_TRACK_NAME,
-                PAST_ALGARVE_EVENT_DATE,
-                LocalDateTime.of(2025, 1, 27, 21, 5));
+        seedEventBookings(pastAttendanceSeeds());
     }
 
     private void seedPastEventServices() {
-        createTrackEventServiceIfMissing(JARAMA_TRACK_NAME, PAST_JARAMA_EVENT_DATE, BOX_RENTAL_SERVICE_NAME, new BigDecimal("35.00"));
-        createTrackEventServiceIfMissing(JARAMA_TRACK_NAME,
-                PAST_JARAMA_EVENT_DATE,
-                COVERED_PADDOCK_SERVICE_NAME,
-                PRICE_18_00);
-        createTrackEventServiceIfMissing(JARAMA_TRACK_NAME,
-                PAST_JARAMA_EVENT_DATE,
-                TRANSPONDER_TIMING_SERVICE_NAME,
-                new BigDecimal("15.00"));
-        createOrganizerEventServiceIfMissing(JARAMA_TRACK_NAME,
-                PAST_JARAMA_EVENT_DATE,
-                EVENT_PHOTOGRAPHY_SERVICE_NAME,
-                PRICE_22_00);
-        createOrganizerEventServiceIfMissing(JARAMA_TRACK_NAME,
-                PAST_JARAMA_EVENT_DATE,
-                WELCOME_PACK_SERVICE_NAME,
-                new BigDecimal("10.00"));
-        createOrganizerEventServiceIfMissing(JARAMA_TRACK_NAME,
-                PAST_JARAMA_EVENT_DATE,
-                SECOND_DRIVER_INSURANCE_SERVICE_NAME,
-                new BigDecimal("28.00"));
-
-        createTrackEventServiceIfMissing(CALAFAT_TRACK_NAME, PAST_CALAFAT_EVENT_DATE, SKIDPAD_SERVICE_NAME, PRICE_25_00);
-        createOrganizerEventServiceIfMissing(CALAFAT_TRACK_NAME,
-                PAST_CALAFAT_EVENT_DATE,
-                EVENT_VIDEO_SERVICE_NAME,
-                PRICE_20_00);
-        createOrganizerEventServiceIfMissing(CALAFAT_TRACK_NAME,
-                PAST_CALAFAT_EVENT_DATE,
-                INSTRUCTOR_SERVICE_NAME,
-                new BigDecimal("45.00"));
-        createOrganizerEventServiceIfMissing(CALAFAT_TRACK_NAME,
-                PAST_CALAFAT_EVENT_DATE,
-                SECOND_DRIVER_INSURANCE_SERVICE_NAME,
-                PRICE_24_00);
-        createOrganizerEventServiceIfMissing(CALAFAT_TRACK_NAME,
-                PAST_CALAFAT_EVENT_DATE,
-                COPILOT_INSURANCE_SERVICE_NAME,
-                new BigDecimal("15.00"));
-
-        createTrackEventServiceIfMissing(RICARDO_TORMO_TRACK_NAME,
-                PAST_RICARDO_TORMO_EVENT_DATE,
-                BOX_RENTAL_SERVICE_NAME,
-                new BigDecimal("40.00"));
-        createTrackEventServiceIfMissing(RICARDO_TORMO_TRACK_NAME,
-                PAST_RICARDO_TORMO_EVENT_DATE,
-                COVERED_PADDOCK_SERVICE_NAME,
-                PRICE_20_00);
-        createTrackEventServiceIfMissing(RICARDO_TORMO_TRACK_NAME,
-                PAST_RICARDO_TORMO_EVENT_DATE,
-                TRANSPONDER_TIMING_SERVICE_NAME,
-                PRICE_18_00);
-        createOrganizerEventServiceIfMissing(RICARDO_TORMO_TRACK_NAME,
-                PAST_RICARDO_TORMO_EVENT_DATE,
-                EVENT_PHOTOGRAPHY_SERVICE_NAME,
-                PRICE_25_00);
-        createOrganizerEventServiceIfMissing(RICARDO_TORMO_TRACK_NAME,
-                PAST_RICARDO_TORMO_EVENT_DATE,
-                INSTRUCTOR_SERVICE_NAME,
-                new BigDecimal("50.00"));
-        createOrganizerEventServiceIfMissing(RICARDO_TORMO_TRACK_NAME,
-                PAST_RICARDO_TORMO_EVENT_DATE,
-                SECOND_DRIVER_INSURANCE_SERVICE_NAME,
-                new BigDecimal("30.00"));
-
-        createTrackEventServiceIfMissing(ALGARVE_TRACK_NAME, PAST_ALGARVE_EVENT_DATE, BOX_RENTAL_SERVICE_NAME, new BigDecimal("45.00"));
-        createTrackEventServiceIfMissing(ALGARVE_TRACK_NAME,
-                PAST_ALGARVE_EVENT_DATE,
-                COVERED_PADDOCK_SERVICE_NAME,
-                PRICE_25_00);
-        createTrackEventServiceIfMissing(ALGARVE_TRACK_NAME,
-                PAST_ALGARVE_EVENT_DATE,
-                TRANSPONDER_TIMING_SERVICE_NAME,
-                PRICE_20_00);
-        createOrganizerEventServiceIfMissing(ALGARVE_TRACK_NAME,
-                PAST_ALGARVE_EVENT_DATE,
-                EVENT_PHOTOGRAPHY_SERVICE_NAME,
-                PRICE_24_00);
-        createOrganizerEventServiceIfMissing(ALGARVE_TRACK_NAME,
-                PAST_ALGARVE_EVENT_DATE,
-                WELCOME_PACK_SERVICE_NAME,
-                new BigDecimal("12.00"));
-        createOrganizerEventServiceIfMissing(ALGARVE_TRACK_NAME,
-                PAST_ALGARVE_EVENT_DATE,
-                COPILOT_INSURANCE_SERVICE_NAME,
-                PRICE_18_00);
+        seedEventServices(pastEventSeeds());
     }
 
     private void seedPastEventBookingServices() {
-        createTrackEventBookingServiceIfMissing(JUANJE_DISPLAY_NAME,
-                JARAMA_TRACK_NAME,
-                PAST_JARAMA_EVENT_DATE,
-                TRANSPONDER_TIMING_SERVICE_NAME);
-        createOrganizerEventBookingServiceIfMissing(JUANJE_DISPLAY_NAME,
-                JARAMA_TRACK_NAME,
-                PAST_JARAMA_EVENT_DATE,
-                WELCOME_PACK_SERVICE_NAME);
-        createOrganizerEventBookingServiceIfMissing(MARIA_DISPLAY_NAME,
-                JARAMA_TRACK_NAME,
-                PAST_JARAMA_EVENT_DATE,
-                EVENT_PHOTOGRAPHY_SERVICE_NAME);
-        createTrackEventBookingServiceIfMissing(FERNANDO_ALONSO_DISPLAY_NAME,
-                JARAMA_TRACK_NAME,
-                PAST_JARAMA_EVENT_DATE,
-                BOX_RENTAL_SERVICE_NAME);
-        createOrganizerEventBookingServiceIfMissing(FERNANDO_ALONSO_DISPLAY_NAME,
-                JARAMA_TRACK_NAME,
-                PAST_JARAMA_EVENT_DATE,
-                SECOND_DRIVER_INSURANCE_SERVICE_NAME);
-
-        createTrackEventBookingServiceIfMissing(CARLOS_DISPLAY_NAME,
-                CALAFAT_TRACK_NAME,
-                PAST_CALAFAT_EVENT_DATE,
-                SKIDPAD_SERVICE_NAME);
-        createOrganizerEventBookingServiceIfMissing(MARIA_DISPLAY_NAME,
-                CALAFAT_TRACK_NAME,
-                PAST_CALAFAT_EVENT_DATE,
-                INSTRUCTOR_SERVICE_NAME);
-        createOrganizerEventBookingServiceIfMissing(MARIA_DISPLAY_NAME,
-                CALAFAT_TRACK_NAME,
-                PAST_CALAFAT_EVENT_DATE,
-                COPILOT_INSURANCE_SERVICE_NAME);
-
-        createTrackEventBookingServiceIfMissing(ALEX_PALAU_DISPLAY_NAME,
-                RICARDO_TORMO_TRACK_NAME,
-                PAST_RICARDO_TORMO_EVENT_DATE,
-                BOX_RENTAL_SERVICE_NAME);
-        createOrganizerEventBookingServiceIfMissing(ALEX_PALAU_DISPLAY_NAME,
-                RICARDO_TORMO_TRACK_NAME,
-                PAST_RICARDO_TORMO_EVENT_DATE,
-                EVENT_PHOTOGRAPHY_SERVICE_NAME);
-        createOrganizerEventBookingServiceIfMissing(JUANJE_DISPLAY_NAME,
-                RICARDO_TORMO_TRACK_NAME,
-                PAST_RICARDO_TORMO_EVENT_DATE,
-                INSTRUCTOR_SERVICE_NAME);
-        createOrganizerEventBookingServiceIfMissing(JUANJE_DISPLAY_NAME,
-                RICARDO_TORMO_TRACK_NAME,
-                PAST_RICARDO_TORMO_EVENT_DATE,
-                SECOND_DRIVER_INSURANCE_SERVICE_NAME);
-
-        createTrackEventBookingServiceIfMissing(FERNANDO_ALONSO_DISPLAY_NAME,
-                ALGARVE_TRACK_NAME,
-                PAST_ALGARVE_EVENT_DATE,
-                BOX_RENTAL_SERVICE_NAME);
-        createTrackEventBookingServiceIfMissing(FERNANDO_ALONSO_DISPLAY_NAME,
-                ALGARVE_TRACK_NAME,
-                PAST_ALGARVE_EVENT_DATE,
-                TRANSPONDER_TIMING_SERVICE_NAME);
-        createOrganizerEventBookingServiceIfMissing(ALEX_PALAU_DISPLAY_NAME,
-                ALGARVE_TRACK_NAME,
-                PAST_ALGARVE_EVENT_DATE,
-                EVENT_PHOTOGRAPHY_SERVICE_NAME);
-        createOrganizerEventBookingServiceIfMissing(CARLOS_DISPLAY_NAME,
-                ALGARVE_TRACK_NAME,
-                PAST_ALGARVE_EVENT_DATE,
-                WELCOME_PACK_SERVICE_NAME);
-        createOrganizerEventBookingServiceIfMissing(CARLOS_DISPLAY_NAME,
-                ALGARVE_TRACK_NAME,
-                PAST_ALGARVE_EVENT_DATE,
-                COPILOT_INSURANCE_SERVICE_NAME);
+        seedEventBookingServices(pastAttendanceSeeds());
     }
 
     private void seedFutureEvents() {
-        createEventIfMissing(TRACKEVENTS_LEGAL_NAME,
-                JARAMA_TRACK_NAME,
-                calculateFutureEventDate(FUTURE_JARAMA_EVENT_OFFSET_DAYS),
-                new BigDecimal("205.00"),
-                60);
-        createEventIfMissing(RACINGPRO_LEGAL_NAME,
-                CALAFAT_TRACK_NAME,
-                calculateFutureEventDate(FUTURE_CALAFAT_EVENT_OFFSET_DAYS),
-                new BigDecimal("155.00"),
-                36);
-        createEventIfMissing(IBERIAN_MOTORSPORT_LEGAL_NAME,
-                RICARDO_TORMO_TRACK_NAME,
-                calculateFutureEventDate(FUTURE_RICARDO_TORMO_EVENT_OFFSET_DAYS),
-                new BigDecimal("225.00"),
-                72);
-        createEventIfMissing(TRACKEVENTS_LEGAL_NAME,
-                ALGARVE_TRACK_NAME,
-                calculateFutureEventDate(FUTURE_ALGARVE_EVENT_OFFSET_DAYS),
-                new BigDecimal("285.00"),
-                48);
+        seedEvents(futureEventSeeds());
     }
 
     private void seedFutureEventServices() {
-        LocalDate futureJaramaEventDate = calculateFutureEventDate(FUTURE_JARAMA_EVENT_OFFSET_DAYS);
-        LocalDate futureCalafatEventDate = calculateFutureEventDate(FUTURE_CALAFAT_EVENT_OFFSET_DAYS);
-        LocalDate futureRicardoTormoEventDate = calculateFutureEventDate(FUTURE_RICARDO_TORMO_EVENT_OFFSET_DAYS);
-        LocalDate futureAlgarveEventDate = calculateFutureEventDate(FUTURE_ALGARVE_EVENT_OFFSET_DAYS);
-
-        createTrackEventServiceIfMissing(JARAMA_TRACK_NAME, futureJaramaEventDate, BOX_RENTAL_SERVICE_NAME, new BigDecimal("38.00"));
-        createTrackEventServiceIfMissing(JARAMA_TRACK_NAME,
-                futureJaramaEventDate,
-                COVERED_PADDOCK_SERVICE_NAME,
-                PRICE_20_00);
-        createTrackEventServiceIfMissing(JARAMA_TRACK_NAME,
-                futureJaramaEventDate,
-                TRANSPONDER_TIMING_SERVICE_NAME,
-                new BigDecimal("16.00"));
-        createOrganizerEventServiceIfMissing(JARAMA_TRACK_NAME,
-                futureJaramaEventDate,
-                EVENT_PHOTOGRAPHY_SERVICE_NAME,
-                PRICE_24_00);
-        createOrganizerEventServiceIfMissing(JARAMA_TRACK_NAME,
-                futureJaramaEventDate,
-                WELCOME_PACK_SERVICE_NAME,
-                new BigDecimal("11.00"));
-        createOrganizerEventServiceIfMissing(JARAMA_TRACK_NAME,
-                futureJaramaEventDate,
-                SECOND_DRIVER_INSURANCE_SERVICE_NAME,
-                new BigDecimal("30.00"));
-
-        createTrackEventServiceIfMissing(CALAFAT_TRACK_NAME, futureCalafatEventDate, SKIDPAD_SERVICE_NAME, new BigDecimal("27.00"));
-        createOrganizerEventServiceIfMissing(CALAFAT_TRACK_NAME,
-                futureCalafatEventDate,
-                EVENT_VIDEO_SERVICE_NAME,
-                PRICE_22_00);
-        createOrganizerEventServiceIfMissing(CALAFAT_TRACK_NAME,
-                futureCalafatEventDate,
-                INSTRUCTOR_SERVICE_NAME,
-                new BigDecimal("48.00"));
-        createOrganizerEventServiceIfMissing(CALAFAT_TRACK_NAME,
-                futureCalafatEventDate,
-                SECOND_DRIVER_INSURANCE_SERVICE_NAME,
-                PRICE_25_00);
-        createOrganizerEventServiceIfMissing(CALAFAT_TRACK_NAME,
-                futureCalafatEventDate,
-                COPILOT_INSURANCE_SERVICE_NAME,
-                new BigDecimal("16.00"));
-
-        createTrackEventServiceIfMissing(RICARDO_TORMO_TRACK_NAME,
-                futureRicardoTormoEventDate,
-                BOX_RENTAL_SERVICE_NAME,
-                new BigDecimal("42.00"));
-        createTrackEventServiceIfMissing(RICARDO_TORMO_TRACK_NAME,
-                futureRicardoTormoEventDate,
-                COVERED_PADDOCK_SERVICE_NAME,
-                PRICE_22_00);
-        createTrackEventServiceIfMissing(RICARDO_TORMO_TRACK_NAME,
-                futureRicardoTormoEventDate,
-                TRANSPONDER_TIMING_SERVICE_NAME,
-                new BigDecimal("19.00"));
-        createOrganizerEventServiceIfMissing(RICARDO_TORMO_TRACK_NAME,
-                futureRicardoTormoEventDate,
-                EVENT_PHOTOGRAPHY_SERVICE_NAME,
-                new BigDecimal("27.00"));
-        createOrganizerEventServiceIfMissing(RICARDO_TORMO_TRACK_NAME,
-                futureRicardoTormoEventDate,
-                INSTRUCTOR_SERVICE_NAME,
-                new BigDecimal("52.00"));
-        createOrganizerEventServiceIfMissing(RICARDO_TORMO_TRACK_NAME,
-                futureRicardoTormoEventDate,
-                SECOND_DRIVER_INSURANCE_SERVICE_NAME,
-                new BigDecimal("31.00"));
-
-        createTrackEventServiceIfMissing(ALGARVE_TRACK_NAME, futureAlgarveEventDate, BOX_RENTAL_SERVICE_NAME, new BigDecimal("48.00"));
-        createTrackEventServiceIfMissing(ALGARVE_TRACK_NAME,
-                futureAlgarveEventDate,
-                COVERED_PADDOCK_SERVICE_NAME,
-                new BigDecimal("28.00"));
-        createTrackEventServiceIfMissing(ALGARVE_TRACK_NAME,
-                futureAlgarveEventDate,
-                TRANSPONDER_TIMING_SERVICE_NAME,
-                PRICE_22_00);
-        createOrganizerEventServiceIfMissing(ALGARVE_TRACK_NAME,
-                futureAlgarveEventDate,
-                EVENT_PHOTOGRAPHY_SERVICE_NAME,
-                new BigDecimal("26.00"));
-        createOrganizerEventServiceIfMissing(ALGARVE_TRACK_NAME,
-                futureAlgarveEventDate,
-                WELCOME_PACK_SERVICE_NAME,
-                new BigDecimal("13.00"));
-        createOrganizerEventServiceIfMissing(ALGARVE_TRACK_NAME,
-                futureAlgarveEventDate,
-                COPILOT_INSURANCE_SERVICE_NAME,
-                new BigDecimal("20.00"));
+        seedEventServices(futureEventSeeds());
     }
 
     private void seedFutureEventBookings() {
-        LocalDate futureJaramaEventDate = calculateFutureEventDate(FUTURE_JARAMA_EVENT_OFFSET_DAYS);
-        LocalDate futureCalafatEventDate = calculateFutureEventDate(FUTURE_CALAFAT_EVENT_OFFSET_DAYS);
-        LocalDate futureRicardoTormoEventDate = calculateFutureEventDate(FUTURE_RICARDO_TORMO_EVENT_OFFSET_DAYS);
-        LocalDate futureAlgarveEventDate = calculateFutureEventDate(FUTURE_ALGARVE_EVENT_OFFSET_DAYS);
-
-        createEventBookingIfMissing(JUANJE_DISPLAY_NAME,
-                JARAMA_TRACK_NAME,
-                futureJaramaEventDate,
-                LocalDateTime.now().minusDays(5));
-        createEventBookingIfMissing(MARIA_DISPLAY_NAME,
-                JARAMA_TRACK_NAME,
-                futureJaramaEventDate,
-                LocalDateTime.now().minusDays(4));
-        createEventBookingIfMissing(ALEX_PALAU_DISPLAY_NAME,
-                JARAMA_TRACK_NAME,
-                futureJaramaEventDate,
-                LocalDateTime.now().minusDays(3));
-
-        createEventBookingIfMissing(CARLOS_DISPLAY_NAME,
-                CALAFAT_TRACK_NAME,
-                futureCalafatEventDate,
-                LocalDateTime.now().minusDays(8));
-        createEventBookingIfMissing(FERNANDO_ALONSO_DISPLAY_NAME,
-                CALAFAT_TRACK_NAME,
-                futureCalafatEventDate,
-                LocalDateTime.now().minusDays(6));
-
-        createEventBookingIfMissing(ALEX_PALAU_DISPLAY_NAME,
-                RICARDO_TORMO_TRACK_NAME,
-                futureRicardoTormoEventDate,
-                LocalDateTime.now().minusDays(10));
-        createEventBookingIfMissing(JUANJE_DISPLAY_NAME,
-                RICARDO_TORMO_TRACK_NAME,
-                futureRicardoTormoEventDate,
-                LocalDateTime.now().minusDays(9));
-
-        createEventBookingIfMissing(FERNANDO_ALONSO_DISPLAY_NAME,
-                ALGARVE_TRACK_NAME,
-                futureAlgarveEventDate,
-                LocalDateTime.now().minusDays(12));
-        createEventBookingIfMissing(MARIA_DISPLAY_NAME,
-                ALGARVE_TRACK_NAME,
-                futureAlgarveEventDate,
-                LocalDateTime.now().minusDays(11));
-        createEventBookingIfMissing(CARLOS_DISPLAY_NAME,
-                ALGARVE_TRACK_NAME,
-                futureAlgarveEventDate,
-                LocalDateTime.now().minusDays(7));
+        seedEventBookings(futureAttendanceSeeds());
     }
 
     private void seedFutureEventBookingServices() {
-        LocalDate futureJaramaEventDate = calculateFutureEventDate(FUTURE_JARAMA_EVENT_OFFSET_DAYS);
-        LocalDate futureCalafatEventDate = calculateFutureEventDate(FUTURE_CALAFAT_EVENT_OFFSET_DAYS);
-        LocalDate futureRicardoTormoEventDate = calculateFutureEventDate(FUTURE_RICARDO_TORMO_EVENT_OFFSET_DAYS);
-        LocalDate futureAlgarveEventDate = calculateFutureEventDate(FUTURE_ALGARVE_EVENT_OFFSET_DAYS);
-
-        createTrackEventBookingServiceIfMissing(JUANJE_DISPLAY_NAME,
-                JARAMA_TRACK_NAME,
-                futureJaramaEventDate,
-                TRANSPONDER_TIMING_SERVICE_NAME);
-        createOrganizerEventBookingServiceIfMissing(JUANJE_DISPLAY_NAME,
-                JARAMA_TRACK_NAME,
-                futureJaramaEventDate,
-                WELCOME_PACK_SERVICE_NAME);
-        createOrganizerEventBookingServiceIfMissing(MARIA_DISPLAY_NAME,
-                JARAMA_TRACK_NAME,
-                futureJaramaEventDate,
-                EVENT_PHOTOGRAPHY_SERVICE_NAME);
-        createTrackEventBookingServiceIfMissing(ALEX_PALAU_DISPLAY_NAME,
-                JARAMA_TRACK_NAME,
-                futureJaramaEventDate,
-                BOX_RENTAL_SERVICE_NAME);
-        createOrganizerEventBookingServiceIfMissing(ALEX_PALAU_DISPLAY_NAME,
-                JARAMA_TRACK_NAME,
-                futureJaramaEventDate,
-                SECOND_DRIVER_INSURANCE_SERVICE_NAME);
-
-        createTrackEventBookingServiceIfMissing(CARLOS_DISPLAY_NAME,
-                CALAFAT_TRACK_NAME,
-                futureCalafatEventDate,
-                SKIDPAD_SERVICE_NAME);
-        createOrganizerEventBookingServiceIfMissing(FERNANDO_ALONSO_DISPLAY_NAME,
-                CALAFAT_TRACK_NAME,
-                futureCalafatEventDate,
-                INSTRUCTOR_SERVICE_NAME);
-        createOrganizerEventBookingServiceIfMissing(FERNANDO_ALONSO_DISPLAY_NAME,
-                CALAFAT_TRACK_NAME,
-                futureCalafatEventDate,
-                COPILOT_INSURANCE_SERVICE_NAME);
-
-        createTrackEventBookingServiceIfMissing(ALEX_PALAU_DISPLAY_NAME,
-                RICARDO_TORMO_TRACK_NAME,
-                futureRicardoTormoEventDate,
-                BOX_RENTAL_SERVICE_NAME);
-        createOrganizerEventBookingServiceIfMissing(ALEX_PALAU_DISPLAY_NAME,
-                RICARDO_TORMO_TRACK_NAME,
-                futureRicardoTormoEventDate,
-                EVENT_PHOTOGRAPHY_SERVICE_NAME);
-        createOrganizerEventBookingServiceIfMissing(JUANJE_DISPLAY_NAME,
-                RICARDO_TORMO_TRACK_NAME,
-                futureRicardoTormoEventDate,
-                INSTRUCTOR_SERVICE_NAME);
-        createOrganizerEventBookingServiceIfMissing(JUANJE_DISPLAY_NAME,
-                RICARDO_TORMO_TRACK_NAME,
-                futureRicardoTormoEventDate,
-                SECOND_DRIVER_INSURANCE_SERVICE_NAME);
-
-        createTrackEventBookingServiceIfMissing(FERNANDO_ALONSO_DISPLAY_NAME,
-                ALGARVE_TRACK_NAME,
-                futureAlgarveEventDate,
-                BOX_RENTAL_SERVICE_NAME);
-        createTrackEventBookingServiceIfMissing(FERNANDO_ALONSO_DISPLAY_NAME,
-                ALGARVE_TRACK_NAME,
-                futureAlgarveEventDate,
-                TRANSPONDER_TIMING_SERVICE_NAME);
-        createOrganizerEventBookingServiceIfMissing(MARIA_DISPLAY_NAME,
-                ALGARVE_TRACK_NAME,
-                futureAlgarveEventDate,
-                EVENT_PHOTOGRAPHY_SERVICE_NAME);
-        createOrganizerEventBookingServiceIfMissing(CARLOS_DISPLAY_NAME,
-                ALGARVE_TRACK_NAME,
-                futureAlgarveEventDate,
-                WELCOME_PACK_SERVICE_NAME);
-        createOrganizerEventBookingServiceIfMissing(CARLOS_DISPLAY_NAME,
-                ALGARVE_TRACK_NAME,
-                futureAlgarveEventDate,
-                COPILOT_INSURANCE_SERVICE_NAME);
+        seedEventBookingServices(futureAttendanceSeeds());
     }
 
     private void seedLapTimes() {
-        createLapTimeIfMissing(FERNANDO_ALONSO_DISPLAY_NAME, JARAMA_TRACK_NAME, LocalDate.of(2026, 3, 8), 107215L, "Alpine A110 R");
-        createLapTimeIfMissing(JUANJE_DISPLAY_NAME, JARAMA_TRACK_NAME, LocalDate.of(2026, 3, 8), 111842L, "BMW M2");
-        createLapTimeIfMissing(MARIA_DISPLAY_NAME, JARAMA_TRACK_NAME, LocalDate.of(2026, 3, 8), 118530L, "Toyota GR86");
+        lapTimeSeeds().forEach(lapTimeSeed -> createLapTimeIfMissing(
+                lapTimeSeed.displayName(),
+                lapTimeSeed.trackName(),
+                lapTimeSeed.lapDate(),
+                lapTimeSeed.lapTimeMs(),
+                lapTimeSeed.vehicle()
+        ));
+    }
 
-        createLapTimeIfMissing(ALEX_PALAU_DISPLAY_NAME, RICARDO_TORMO_TRACK_NAME, LocalDate.of(2026, 3, 12), 102480L, "Porsche 911 GT3");
-        createLapTimeIfMissing(CARLOS_DISPLAY_NAME, RICARDO_TORMO_TRACK_NAME, LocalDate.of(2026, 3, 12), 111965L, "MINI John Cooper Works");
+    private void registerOrganizerServices(String legalName, String... serviceNames) {
+        for (String serviceName : serviceNames) {
+            createOrganizerServiceIfMissing(legalName, serviceName);
+        }
+    }
 
-        createLapTimeIfMissing(MARIA_DISPLAY_NAME, CALAFAT_TRACK_NAME, LocalDate.of(2026, 3, 15), 95620L, "Hyundai i30 N");
-        createLapTimeIfMissing(JUANJE_DISPLAY_NAME, CALAFAT_TRACK_NAME, LocalDate.of(2026, 3, 15), 98640L, "Mazda MX-5 NA 1.8");
+    private void registerTrackServices(String trackName, String... serviceNames) {
+        for (String serviceName : serviceNames) {
+            createTrackServiceIfMissing(trackName, serviceName);
+        }
+    }
 
-        createLapTimeIfMissing(FERNANDO_ALONSO_DISPLAY_NAME, GUADIX_TRACK_NAME, LocalDate.of(2026, 3, 18), 101870L, "Alpine A110 R");
-        createLapTimeIfMissing(ALEX_PALAU_DISPLAY_NAME, GUADIX_TRACK_NAME, LocalDate.of(2026, 3, 18), 104450L, "CUPRA Leon VZ");
+    private void migrateLegacyFutureEvent(String organizerLegalName,
+                                          String trackName,
+                                          LocalDate legacyEventDate,
+                                          LocalDate targetEventDate,
+                                          BigDecimal basePrice,
+                                          int maxParticipants) {
+        Track track = findTrackByNameOrThrow(trackName);
 
-        createLapTimeIfMissing(JUANJE_DISPLAY_NAME, ALGARVE_TRACK_NAME, LocalDate.of(2026, 3, 20), 121930L, "Porsche Cayman S");
+        eventRepository.findByTrackIdAndEventDate(track.getId(), legacyEventDate)
+                .ifPresent(legacyEvent -> {
+                    if (eventRepository.findByTrackIdAndEventDate(track.getId(), targetEventDate).isPresent()) {
+                        return;
+                    }
+
+                    legacyEvent.setOrganizer(findOrganizerByLegalNameOrThrow(organizerLegalName));
+                    legacyEvent.setEventDate(targetEventDate);
+                    legacyEvent.setBasePrice(basePrice);
+                    legacyEvent.setMaxParticipants(maxParticipants);
+                    eventRepository.save(legacyEvent);
+                });
+    }
+
+    private void seedEvents(List<EventSeed> eventSeeds) {
+        eventSeeds.forEach(eventSeed -> createEventIfMissing(
+                eventSeed.organizerLegalName(),
+                eventSeed.trackName(),
+                eventSeed.eventDate(),
+                eventSeed.basePrice(),
+                eventSeed.maxParticipants()
+        ));
+    }
+
+    private void seedEventServices(List<EventSeed> eventSeeds) {
+        eventSeeds.forEach(eventSeed -> {
+            createTrackEventServiceIfSupported(eventSeed.trackName(), eventSeed.eventDate(), BOX_RENTAL_SERVICE_NAME, BOX_RENTAL_PRICE);
+            createTrackEventServiceIfSupported(eventSeed.trackName(), eventSeed.eventDate(), COVERED_PADDOCK_SERVICE_NAME, COVERED_PADDOCK_PRICE);
+            createTrackEventServiceIfSupported(eventSeed.trackName(), eventSeed.eventDate(), SKIDPAD_SERVICE_NAME, SKIDPAD_PRICE);
+            createTrackEventServiceIfSupported(eventSeed.trackName(), eventSeed.eventDate(), TRANSPONDER_TIMING_SERVICE_NAME, TRANSPONDER_PRICE);
+            createOrganizerEventServiceIfSupported(eventSeed.trackName(), eventSeed.eventDate(), EVENT_PHOTOGRAPHY_SERVICE_NAME, EVENT_PHOTOGRAPHY_PRICE);
+            createOrganizerEventServiceIfSupported(eventSeed.trackName(), eventSeed.eventDate(), EVENT_VIDEO_SERVICE_NAME, EVENT_VIDEO_PRICE);
+            createOrganizerEventServiceIfSupported(eventSeed.trackName(), eventSeed.eventDate(), CATERING_SERVICE_NAME, CATERING_PRICE);
+            createOrganizerEventServiceIfSupported(eventSeed.trackName(), eventSeed.eventDate(), WELCOME_PACK_SERVICE_NAME, WELCOME_PACK_PRICE);
+            createOrganizerEventServiceIfSupported(eventSeed.trackName(), eventSeed.eventDate(), INSTRUCTOR_SERVICE_NAME, INSTRUCTOR_PRICE);
+            createOrganizerEventServiceIfSupported(eventSeed.trackName(), eventSeed.eventDate(), SECOND_DRIVER_INSURANCE_SERVICE_NAME, SECOND_DRIVER_INSURANCE_PRICE);
+            createOrganizerEventServiceIfSupported(eventSeed.trackName(), eventSeed.eventDate(), COPILOT_INSURANCE_SERVICE_NAME, COPILOT_INSURANCE_PRICE);
+        });
+    }
+
+    private void createTrackEventServiceIfSupported(String trackName,
+                                                    LocalDate eventDate,
+                                                    String serviceName,
+                                                    BigDecimal price) {
+        Track track = findTrackByNameOrThrow(trackName);
+        Service service = findServiceByNameOrThrow(serviceName);
+
+        if (trackServiceRepository.findByTrackIdAndServiceId(track.getId(), service.getId()).isEmpty()) {
+            return;
+        }
+
+        createTrackEventServiceIfMissing(trackName, eventDate, serviceName, price);
+    }
+
+    private void createOrganizerEventServiceIfSupported(String trackName,
+                                                        LocalDate eventDate,
+                                                        String serviceName,
+                                                        BigDecimal price) {
+        Event event = findEventByTrackAndDateOrThrow(trackName, eventDate);
+        Service service = findServiceByNameOrThrow(serviceName);
+
+        if (organizerServiceRepository.findByOrganizerIdUserAndServiceId(event.getOrganizer().getIdUser(), service.getId()).isEmpty()) {
+            return;
+        }
+
+        createOrganizerEventServiceIfMissing(trackName, eventDate, serviceName, price);
+    }
+
+    private void seedEventBookings(List<EventAttendanceSeed> attendanceSeeds) {
+        attendanceSeeds.forEach(attendanceSeed -> {
+            for (int attendeeIndex = 0; attendeeIndex < attendanceSeed.attendees().size(); attendeeIndex++) {
+                createEventBookingIfMissing(
+                        attendanceSeed.attendees().get(attendeeIndex),
+                        attendanceSeed.trackName(),
+                        attendanceSeed.eventDate(),
+                        bookingTimestamp(attendanceSeed.eventDate(), attendeeIndex)
+                );
+            }
+        });
+    }
+
+    private LocalDateTime bookingTimestamp(LocalDate eventDate, int attendeeIndex) {
+        int hour = attendeeIndex % 2 == 0 ? 19 - attendeeIndex : 9 + attendeeIndex;
+        int minute = 5 + (attendeeIndex * 11);
+        return eventDate.minusDays(45L - (attendeeIndex * 5L)).atTime(hour, minute);
+    }
+
+    private void seedEventBookingServices(List<EventAttendanceSeed> attendanceSeeds) {
+        attendanceSeeds.forEach(this::seedDefaultBookingServices);
+    }
+
+    private void seedDefaultBookingServices(EventAttendanceSeed attendanceSeed) {
+        List<String> attendees = attendanceSeed.attendees();
+
+        if (!attendees.isEmpty()) {
+            createTrackEventBookingServiceIfMissing(
+                    attendees.getFirst(),
+                    attendanceSeed.trackName(),
+                    attendanceSeed.eventDate(),
+                    TRANSPONDER_TIMING_SERVICE_NAME
+            );
+            createOrganizerEventBookingServiceIfMissing(
+                    attendees.getFirst(),
+                    attendanceSeed.trackName(),
+                    attendanceSeed.eventDate(),
+                    WELCOME_PACK_SERVICE_NAME
+            );
+        }
+
+        if (attendees.size() > 1) {
+            createOrganizerEventBookingServiceIfMissing(
+                    attendees.get(1),
+                    attendanceSeed.trackName(),
+                    attendanceSeed.eventDate(),
+                    EVENT_PHOTOGRAPHY_SERVICE_NAME
+            );
+            createOrganizerEventBookingServiceIfMissing(
+                    attendees.get(1),
+                    attendanceSeed.trackName(),
+                    attendanceSeed.eventDate(),
+                    INSTRUCTOR_SERVICE_NAME
+            );
+        }
+
+        if (attendees.size() > 2) {
+            createTrackEventBookingServiceIfMissing(
+                    attendees.get(2),
+                    attendanceSeed.trackName(),
+                    attendanceSeed.eventDate(),
+                    BOX_RENTAL_SERVICE_NAME
+            );
+            createOrganizerEventBookingServiceIfMissing(
+                    attendees.get(2),
+                    attendanceSeed.trackName(),
+                    attendanceSeed.eventDate(),
+                    SECOND_DRIVER_INSURANCE_SERVICE_NAME
+            );
+        }
+
+        if (attendees.size() > 3) {
+            createOrganizerEventBookingServiceIfMissing(
+                    attendees.get(3),
+                    attendanceSeed.trackName(),
+                    attendanceSeed.eventDate(),
+                    EVENT_VIDEO_SERVICE_NAME
+            );
+            createOrganizerEventBookingServiceIfMissing(
+                    attendees.get(3),
+                    attendanceSeed.trackName(),
+                    attendanceSeed.eventDate(),
+                    COPILOT_INSURANCE_SERVICE_NAME
+            );
+        }
+    }
+
+    private BigDecimal price(String value) {
+        return new BigDecimal(value);
+    }
+
+    private List<UserSeed> standardUserSeeds() {
+        return List.of(
+                new UserSeed(JUANJE_DISPLAY_NAME, "juanje@example.com", "Juanje", "Demo"),
+                new UserSeed(MARIA_DISPLAY_NAME, "maria@example.com", "Maria", "Demo"),
+                new UserSeed(CARLOS_DISPLAY_NAME, "carlos@example.com", "Carlos", "Demo"),
+                new UserSeed(FERNANDO_ALONSO_DISPLAY_NAME, "fernando.alonso@example.com", "Fernando", "Alonso"),
+                new UserSeed(ALEX_PALAU_DISPLAY_NAME, "alex.palau@example.com", "Alex", "Palou"),
+                new UserSeed(LATEBRAKER_88_DISPLAY_NAME, "laura.sanz@example.com", "Laura", "Sanz"),
+                new UserSeed(CURVA_PERALTADA_DISPLAY_NAME, "sergio.rivas@example.com", "Sergio", "Rivas"),
+                new UserSeed(APEXHUNTER_DISPLAY_NAME, "diego.mena@example.com", "Diego", "Mena"),
+                new UserSeed(PITLANE_JUNKIE_DISPLAY_NAME, "ines.duarte@example.com", "Ines", "Duarte"),
+                new UserSeed(KERB_RIDER_DISPLAY_NAME, "marta.nogueira@example.com", "Marta", "Nogueira"),
+                new UserSeed(FLATOUT_MARTA_DISPLAY_NAME, "marta.cabrera@example.com", "Marta", "Cabrera"),
+                new UserSeed(HEELTOE_DANI_DISPLAY_NAME, "daniel.pardo@example.com", "Daniel", "Pardo"),
+                new UserSeed(TRACKRAT_77_DISPLAY_NAME, "raul.vega@example.com", "Raul", "Vega"),
+                new UserSeed(BOXBOX_RAUL_DISPLAY_NAME, "raul.ochoa@example.com", "Raul", "Ochoa"),
+                new UserSeed(REDFLAG_INES_DISPLAY_NAME, "ines.pastor@example.com", "Ines", "Pastor"),
+                new UserSeed(CHICANE_CHASER_DISPLAY_NAME, "pablo.ordonez@example.com", "Pablo", "Ordonez"),
+                new UserSeed(FULLTHROTTLE_EVA_DISPLAY_NAME, "eva.silva@example.com", "Eva", "Silva"),
+                new UserSeed(GRIDWALKER_DISPLAY_NAME, "hugo.lemos@example.com", "Hugo", "Lemos"),
+                new UserSeed(OVERSTEER_MIGUEL_DISPLAY_NAME, "miguel.costa@example.com", "Miguel", "Costa"),
+                new UserSeed(TYRESMOKE_LUCIA_DISPLAY_NAME, "lucia.roman@example.com", "Lucia", "Roman"),
+                new UserSeed(CURB_ATTACK_DISPLAY_NAME, "adrian.prieto@example.com", "Adrian", "Prieto"),
+                new UserSeed(BRAKEPOINT_NORA_DISPLAY_NAME, "nora.campos@example.com", "Nora", "Campos"),
+                new UserSeed(PADDOCK_PAULA_DISPLAY_NAME, "paula.freitas@example.com", "Paula", "Freitas"),
+                new UserSeed(STINTMASTER_DISPLAY_NAME, "alvaro.nieto@example.com", "Alvaro", "Nieto"),
+                new UserSeed(APEX_LUSO_DISPLAY_NAME, "tiago.martins@example.com", "Tiago", "Martins")
+        );
+    }
+
+    private List<OrganizerSeed> organizerSeeds() {
+        return List.of(
+                new OrganizerSeed(
+                        TRACKEVENTS_DISPLAY_NAME,
+                        "trackevents@example.com",
+                        "Trackevents",
+                        "Demo",
+                        TRACKEVENTS_LEGAL_NAME,
+                        "B00000001"
+                ),
+                new OrganizerSeed(
+                        RACINGPRO_DISPLAY_NAME,
+                        "racingpro@example.com",
+                        "Racingpro",
+                        "Demo",
+                        RACINGPRO_LEGAL_NAME,
+                        "B00000002"
+                ),
+                new OrganizerSeed(
+                        IBERIAN_MOTORSPORT_DISPLAY_NAME,
+                        "iberianmotorsport@example.com",
+                        "Iberian",
+                        "Motorsport",
+                        IBERIAN_MOTORSPORT_LEGAL_NAME,
+                        "B00000003"
+                ),
+                new OrganizerSeed(
+                        TRACKLIMITS_IBERIA_DISPLAY_NAME,
+                        "tracklimits.iberia@example.com",
+                        "Tracklimits",
+                        "Iberia",
+                        TRACKLIMITS_IBERIA_LEGAL_NAME,
+                        "B00000004"
+                ),
+                new OrganizerSeed(
+                        APEX_IBERIA_DISPLAY_NAME,
+                        "apex.iberia@example.com",
+                        "Apex",
+                        "Iberia",
+                        APEX_IBERIA_LEGAL_NAME,
+                        "B00000005"
+                ),
+                new OrganizerSeed(
+                        LUSITANIA_RACING_DISPLAY_NAME,
+                        "lusitania.racing@example.com",
+                        "Lusitania",
+                        "Racing",
+                        LUSITANIA_RACING_LEGAL_NAME,
+                        "PT500000001"
+                ),
+                new OrganizerSeed(
+                        MEDITERRANEAN_MOTORSPORT_DISPLAY_NAME,
+                        "mediterranean.motorsport@example.com",
+                        "Mediterranean",
+                        "Motorsport",
+                        MEDITERRANEAN_MOTORSPORT_LEGAL_NAME,
+                        "B00000006"
+                )
+        );
+    }
+
+    private List<TrackSeed> trackSeeds() {
+        return List.of(
+                new TrackSeed(
+                        CALAFAT_TRACK_NAME,
+                        "L'Ametlla de Mar, Tarragona, Espana",
+                        "Circuito junto al Mediterraneo, conocido por sus cursos de conduccion y tandas privadas en la costa de Tarragona."
+                ),
+                new TrackSeed(
+                        JARAMA_TRACK_NAME,
+                        "San Sebastian de los Reyes, Madrid, Espana",
+                        "Trazado historico del automovilismo espanol, sede habitual de eventos, track days y experiencias de conduccion cerca de Madrid."
+                ),
+                new TrackSeed(
+                        RICARDO_TORMO_TRACK_NAME,
+                        "Cheste, Valencia, Espana",
+                        "Circuito permanente de la Comunitat Valenciana, referencia nacional para motociclismo y automovilismo con gradas panoramicas."
+                ),
+                new TrackSeed(
+                        GUADIX_TRACK_NAME,
+                        "Guadix, Granada, Espana",
+                        "Circuito andaluz muy usado para tandas, pruebas de desarrollo y entrenamientos, situado en el altiplano granadino."
+                ),
+                new TrackSeed(
+                        ALGARVE_TRACK_NAME,
+                        "Portimao, Faro, Portugal",
+                        "Circuito portugues famoso por sus desniveles y curvas ciegas, habitual en competiciones internacionales y pruebas de equipos."
+                ),
+                new TrackSeed(
+                        NURBURGRING_TRACK_NAME,
+                        "Nurburg, Renania-Palatinado, Alemania",
+                        "Complejo aleman de referencia mundial, celebre por la Nordschleife y por su importancia historica en el automovilismo europeo."
+                ),
+                new TrackSeed(
+                        BARCELONA_TRACK_NAME,
+                        "Montmelo, Barcelona, Espana",
+                        "Circuito catalan de referencia internacional, habitual en competiciones de primer nivel y en jornadas privadas de alto ritmo."
+                ),
+                new TrackSeed(
+                        JEREZ_TRACK_NAME,
+                        "Jerez de la Frontera, Cadiz, Espana",
+                        "Trazado andaluz muy conocido por su fluidez y por acoger programas de tandas, cursos avanzados y pruebas privadas."
+                ),
+                new TrackSeed(
+                        MOTORLAND_TRACK_NAME,
+                        "Alcaniz, Teruel, Espana",
+                        "Complejo aragones moderno y tecnico, con grandes escapatorias y un paddock preparado para eventos de gran afluencia."
+                ),
+                new TrackSeed(
+                        NAVARRA_TRACK_NAME,
+                        "Los Arcos, Navarra, Espana",
+                        "Circuito rapido y variado del norte de Espana, popular entre clubes y organizadores que buscan fines de semana completos."
+                ),
+                new TrackSeed(
+                        ALBACETE_TRACK_NAME,
+                        "Albacete, Castilla-La Mancha, Espana",
+                        "Trazado muy apreciado por su equilibrio entre tecnica y velocidad, habitual para entrenamientos y tandas de aficionados."
+                ),
+                new TrackSeed(
+                        MONTEBLANCO_TRACK_NAME,
+                        "La Palma del Condado, Huelva, Espana",
+                        "Instalacion moderna del sur peninsular, utilizada para track days, desarrollo de vehiculos y jornadas corporativas."
+                ),
+                new TrackSeed(
+                        CARTAGENA_TRACK_NAME,
+                        "Fuente Alamo, Murcia, Espana",
+                        "Circuito compacto y tecnico del sureste espanol, ideal para tandas privadas y sesiones con coches ligeros."
+                ),
+                new TrackSeed(
+                        ESTORIL_TRACK_NAME,
+                        "Cascais, Lisboa, Portugal",
+                        "Circuito historico portugues junto al Atlantico, muy atractivo para eventos ibericos y tandas con ambiente premium."
+                ),
+                new TrackSeed(
+                        BRAGA_TRACK_NAME,
+                        "Braga, Norte, Portugal",
+                        "Trazado portugues de longitud contenida, perfecto para jornadas de comunidad, formacion y sesiones técnicas."
+                ),
+                new TrackSeed(
+                        VILA_REAL_TRACK_NAME,
+                        "Vila Real, Norte, Portugal",
+                        "Recorrido urbano portugues de caracter rapido y exigente, plausible para eventos demo y experiencias especiales."
+                ),
+                new TrackSeed(
+                        BOAVISTA_TRACK_NAME,
+                        "Porto, Norte, Portugal",
+                        "Circuito urbano iconico del entorno de Porto, util como referencia para eventos especiales de exhibicion y comunidad."
+                ),
+                new TrackSeed(
+                        SPA_TRACK_NAME,
+                        "Stavelot, Lieja, Belgica",
+                        "Uno de los circuitos mas emblematicos de Europa, muy asociado a tandas premium y a experiencias de alto nivel."
+                ),
+                new TrackSeed(
+                        MUGELLO_TRACK_NAME,
+                        "Scarperia e San Piero, Toscana, Italia",
+                        "Trazado italiano muy apreciado por su desnivel, enlazadas rapidas y ambiente de paddock de primer nivel."
+                ),
+                new TrackSeed(
+                        PAUL_RICARD_TRACK_NAME,
+                        "Le Castellet, Provenza-Alpes-Costa Azul, Francia",
+                        "Circuito frances moderno y versatil, frecuentemente utilizado para entrenamientos privados y eventos internacionales."
+                )
+        );
+    }
+
+    private List<EventSeed> pastEventSeeds() {
+        return List.of(
+                new EventSeed(TRACKEVENTS_LEGAL_NAME, JARAMA_TRACK_NAME, PAST_JARAMA_EVENT_DATE, price("180.00"), 55),
+                new EventSeed(RACINGPRO_LEGAL_NAME, CALAFAT_TRACK_NAME, PAST_CALAFAT_EVENT_DATE, price("145.00"), 35),
+                new EventSeed(IBERIAN_MOTORSPORT_LEGAL_NAME, RICARDO_TORMO_TRACK_NAME, PAST_RICARDO_TORMO_EVENT_DATE, price("210.00"), 70),
+                new EventSeed(TRACKEVENTS_LEGAL_NAME, ALGARVE_TRACK_NAME, PAST_ALGARVE_EVENT_DATE, price("260.00"), 45),
+                new EventSeed(APEX_IBERIA_LEGAL_NAME, BARCELONA_TRACK_NAME, PAST_BARCELONA_EVENT_DATE, price("245.00"), 68),
+                new EventSeed(TRACKLIMITS_IBERIA_LEGAL_NAME, JEREZ_TRACK_NAME, PAST_JEREZ_EVENT_DATE, price("195.00"), 50),
+                new EventSeed(LUSITANIA_RACING_LEGAL_NAME, ESTORIL_TRACK_NAME, PAST_ESTORIL_EVENT_DATE, price("215.00"), 48),
+                new EventSeed(MEDITERRANEAN_MOTORSPORT_LEGAL_NAME, MOTORLAND_TRACK_NAME, PAST_MOTORLAND_EVENT_DATE, price("225.00"), 60)
+        );
+    }
+
+    private List<EventSeed> futureEventSeeds() {
+        return List.of(
+                new EventSeed(TRACKEVENTS_LEGAL_NAME, JARAMA_TRACK_NAME, FUTURE_JARAMA_EVENT_DATE, price("205.00"), 60),
+                new EventSeed(RACINGPRO_LEGAL_NAME, CALAFAT_TRACK_NAME, FUTURE_CALAFAT_EVENT_DATE, price("160.00"), 38),
+                new EventSeed(LUSITANIA_RACING_LEGAL_NAME, ESTORIL_TRACK_NAME, FUTURE_ESTORIL_EVENT_DATE, price("220.00"), 48),
+                new EventSeed(TRACKLIMITS_IBERIA_LEGAL_NAME, JEREZ_TRACK_NAME, FUTURE_JEREZ_EVENT_DATE, price("198.00"), 52),
+                new EventSeed(APEX_IBERIA_LEGAL_NAME, BARCELONA_TRACK_NAME, FUTURE_BARCELONA_EVENT_DATE, price("255.00"), 70),
+                new EventSeed(TRACKEVENTS_LEGAL_NAME, ALGARVE_TRACK_NAME, FUTURE_ALGARVE_EVENT_DATE, price("285.00"), 50),
+                new EventSeed(IBERIAN_MOTORSPORT_LEGAL_NAME, RICARDO_TORMO_TRACK_NAME, FUTURE_RICARDO_TORMO_EVENT_DATE, price("225.00"), 72),
+                new EventSeed(RACINGPRO_LEGAL_NAME, NAVARRA_TRACK_NAME, FUTURE_NAVARRA_EVENT_DATE, price("185.00"), 44),
+                new EventSeed(MEDITERRANEAN_MOTORSPORT_LEGAL_NAME, MOTORLAND_TRACK_NAME, FUTURE_MOTORLAND_EVENT_DATE, price("235.00"), 62),
+                new EventSeed(TRACKLIMITS_IBERIA_LEGAL_NAME, CARTAGENA_TRACK_NAME, FUTURE_CARTAGENA_EVENT_DATE, price("175.00"), 40),
+                new EventSeed(APEX_IBERIA_LEGAL_NAME, ALBACETE_TRACK_NAME, FUTURE_ALBACETE_EVENT_DATE, price("165.00"), 36),
+                new EventSeed(IBERIAN_MOTORSPORT_LEGAL_NAME, SPA_TRACK_NAME, FUTURE_SPA_EVENT_DATE, price("325.00"), 58),
+                new EventSeed(LUSITANIA_RACING_LEGAL_NAME, MUGELLO_TRACK_NAME, FUTURE_MUGELLO_EVENT_DATE, price("310.00"), 56)
+        );
+    }
+
+    private List<EventAttendanceSeed> pastAttendanceSeeds() {
+        return List.of(
+                new EventAttendanceSeed(JARAMA_TRACK_NAME, PAST_JARAMA_EVENT_DATE, List.of(
+                        JUANJE_DISPLAY_NAME,
+                        MARIA_DISPLAY_NAME,
+                        HEELTOE_DANI_DISPLAY_NAME,
+                        LATEBRAKER_88_DISPLAY_NAME
+                )),
+                new EventAttendanceSeed(CALAFAT_TRACK_NAME, PAST_CALAFAT_EVENT_DATE, List.of(
+                        CARLOS_DISPLAY_NAME,
+                        REDFLAG_INES_DISPLAY_NAME,
+                        APEXHUNTER_DISPLAY_NAME,
+                        PADDOCK_PAULA_DISPLAY_NAME
+                )),
+                new EventAttendanceSeed(RICARDO_TORMO_TRACK_NAME, PAST_RICARDO_TORMO_EVENT_DATE, List.of(
+                        ALEX_PALAU_DISPLAY_NAME,
+                        JUANJE_DISPLAY_NAME,
+                        OVERSTEER_MIGUEL_DISPLAY_NAME,
+                        CURB_ATTACK_DISPLAY_NAME
+                )),
+                new EventAttendanceSeed(ALGARVE_TRACK_NAME, PAST_ALGARVE_EVENT_DATE, List.of(
+                        FERNANDO_ALONSO_DISPLAY_NAME,
+                        APEX_LUSO_DISPLAY_NAME,
+                        TRACKRAT_77_DISPLAY_NAME,
+                        TYRESMOKE_LUCIA_DISPLAY_NAME
+                )),
+                new EventAttendanceSeed(BARCELONA_TRACK_NAME, PAST_BARCELONA_EVENT_DATE, List.of(
+                        LATEBRAKER_88_DISPLAY_NAME,
+                        CURVA_PERALTADA_DISPLAY_NAME,
+                        FLATOUT_MARTA_DISPLAY_NAME,
+                        GRIDWALKER_DISPLAY_NAME
+                )),
+                new EventAttendanceSeed(JEREZ_TRACK_NAME, PAST_JEREZ_EVENT_DATE, List.of(
+                        PITLANE_JUNKIE_DISPLAY_NAME,
+                        FULLTHROTTLE_EVA_DISPLAY_NAME,
+                        BOXBOX_RAUL_DISPLAY_NAME,
+                        BRAKEPOINT_NORA_DISPLAY_NAME
+                )),
+                new EventAttendanceSeed(ESTORIL_TRACK_NAME, PAST_ESTORIL_EVENT_DATE, List.of(
+                        APEX_LUSO_DISPLAY_NAME,
+                        OVERSTEER_MIGUEL_DISPLAY_NAME,
+                        PADDOCK_PAULA_DISPLAY_NAME,
+                        KERB_RIDER_DISPLAY_NAME
+                )),
+                new EventAttendanceSeed(MOTORLAND_TRACK_NAME, PAST_MOTORLAND_EVENT_DATE, List.of(
+                        STINTMASTER_DISPLAY_NAME,
+                        CHICANE_CHASER_DISPLAY_NAME,
+                        CURB_ATTACK_DISPLAY_NAME,
+                        MARIA_DISPLAY_NAME
+                ))
+        );
+    }
+
+    private List<EventAttendanceSeed> futureAttendanceSeeds() {
+        return List.of(
+                new EventAttendanceSeed(JARAMA_TRACK_NAME, FUTURE_JARAMA_EVENT_DATE, List.of(
+                        JUANJE_DISPLAY_NAME,
+                        LATEBRAKER_88_DISPLAY_NAME,
+                        APEXHUNTER_DISPLAY_NAME
+                )),
+                new EventAttendanceSeed(CALAFAT_TRACK_NAME, FUTURE_CALAFAT_EVENT_DATE, List.of(
+                        CARLOS_DISPLAY_NAME,
+                        REDFLAG_INES_DISPLAY_NAME,
+                        STINTMASTER_DISPLAY_NAME
+                )),
+                new EventAttendanceSeed(ESTORIL_TRACK_NAME, FUTURE_ESTORIL_EVENT_DATE, List.of(
+                        APEX_LUSO_DISPLAY_NAME,
+                        KERB_RIDER_DISPLAY_NAME,
+                        OVERSTEER_MIGUEL_DISPLAY_NAME
+                )),
+                new EventAttendanceSeed(JEREZ_TRACK_NAME, FUTURE_JEREZ_EVENT_DATE, List.of(
+                        HEELTOE_DANI_DISPLAY_NAME,
+                        PITLANE_JUNKIE_DISPLAY_NAME,
+                        BRAKEPOINT_NORA_DISPLAY_NAME
+                )),
+                new EventAttendanceSeed(BARCELONA_TRACK_NAME, FUTURE_BARCELONA_EVENT_DATE, List.of(
+                        ALEX_PALAU_DISPLAY_NAME,
+                        GRIDWALKER_DISPLAY_NAME,
+                        TYRESMOKE_LUCIA_DISPLAY_NAME
+                )),
+                new EventAttendanceSeed(ALGARVE_TRACK_NAME, FUTURE_ALGARVE_EVENT_DATE, List.of(
+                        FERNANDO_ALONSO_DISPLAY_NAME,
+                        FULLTHROTTLE_EVA_DISPLAY_NAME,
+                        TRACKRAT_77_DISPLAY_NAME
+                )),
+                new EventAttendanceSeed(RICARDO_TORMO_TRACK_NAME, FUTURE_RICARDO_TORMO_EVENT_DATE, List.of(
+                        CARLOS_DISPLAY_NAME,
+                        BOXBOX_RAUL_DISPLAY_NAME,
+                        PADDOCK_PAULA_DISPLAY_NAME
+                )),
+                new EventAttendanceSeed(NAVARRA_TRACK_NAME, FUTURE_NAVARRA_EVENT_DATE, List.of(
+                        CHICANE_CHASER_DISPLAY_NAME,
+                        CURVA_PERALTADA_DISPLAY_NAME,
+                        KERB_RIDER_DISPLAY_NAME
+                )),
+                new EventAttendanceSeed(MOTORLAND_TRACK_NAME, FUTURE_MOTORLAND_EVENT_DATE, List.of(
+                        MARIA_DISPLAY_NAME,
+                        STINTMASTER_DISPLAY_NAME,
+                        CURB_ATTACK_DISPLAY_NAME
+                )),
+                new EventAttendanceSeed(CARTAGENA_TRACK_NAME, FUTURE_CARTAGENA_EVENT_DATE, List.of(
+                        FLATOUT_MARTA_DISPLAY_NAME,
+                        REDFLAG_INES_DISPLAY_NAME,
+                        TRACKRAT_77_DISPLAY_NAME
+                )),
+                new EventAttendanceSeed(ALBACETE_TRACK_NAME, FUTURE_ALBACETE_EVENT_DATE, List.of(
+                        PITLANE_JUNKIE_DISPLAY_NAME,
+                        LATEBRAKER_88_DISPLAY_NAME,
+                        BOXBOX_RAUL_DISPLAY_NAME
+                )),
+                new EventAttendanceSeed(SPA_TRACK_NAME, FUTURE_SPA_EVENT_DATE, List.of(
+                        ALEX_PALAU_DISPLAY_NAME,
+                        FULLTHROTTLE_EVA_DISPLAY_NAME,
+                        APEXHUNTER_DISPLAY_NAME
+                )),
+                new EventAttendanceSeed(MUGELLO_TRACK_NAME, FUTURE_MUGELLO_EVENT_DATE, List.of(
+                        FERNANDO_ALONSO_DISPLAY_NAME,
+                        APEX_LUSO_DISPLAY_NAME,
+                        OVERSTEER_MIGUEL_DISPLAY_NAME
+                ))
+        );
+    }
+
+    private List<LapTimeSeed> lapTimeSeeds() {
+        return List.of(
+                new LapTimeSeed(FERNANDO_ALONSO_DISPLAY_NAME, JARAMA_TRACK_NAME, LocalDate.of(2026, 3, 8), 107215L, "Alpine A110 R"),
+                new LapTimeSeed(JUANJE_DISPLAY_NAME, JARAMA_TRACK_NAME, LocalDate.of(2026, 3, 8), 111842L, "BMW M2"),
+                new LapTimeSeed(LATEBRAKER_88_DISPLAY_NAME, JARAMA_TRACK_NAME, LocalDate.of(2026, 3, 8), 114960L, "Toyota GR86"),
+                new LapTimeSeed(ALEX_PALAU_DISPLAY_NAME, RICARDO_TORMO_TRACK_NAME, LocalDate.of(2026, 3, 12), 102480L, "Porsche 911 GT3"),
+                new LapTimeSeed(CARLOS_DISPLAY_NAME, RICARDO_TORMO_TRACK_NAME, LocalDate.of(2026, 3, 12), 111965L, "MINI John Cooper Works"),
+                new LapTimeSeed(BOXBOX_RAUL_DISPLAY_NAME, RICARDO_TORMO_TRACK_NAME, LocalDate.of(2026, 3, 12), 115410L, "Renault Megane RS"),
+                new LapTimeSeed(MARIA_DISPLAY_NAME, CALAFAT_TRACK_NAME, LocalDate.of(2026, 3, 15), 95620L, "Hyundai i30 N"),
+                new LapTimeSeed(JUANJE_DISPLAY_NAME, CALAFAT_TRACK_NAME, LocalDate.of(2026, 3, 15), 98640L, "Mazda MX-5 NA 1.8"),
+                new LapTimeSeed(REDFLAG_INES_DISPLAY_NAME, CALAFAT_TRACK_NAME, LocalDate.of(2026, 3, 15), 100280L, "Volkswagen Golf GTI Clubsport"),
+                new LapTimeSeed(FERNANDO_ALONSO_DISPLAY_NAME, GUADIX_TRACK_NAME, LocalDate.of(2026, 3, 18), 101870L, "Alpine A110 R"),
+                new LapTimeSeed(ALEX_PALAU_DISPLAY_NAME, GUADIX_TRACK_NAME, LocalDate.of(2026, 3, 18), 104450L, "CUPRA Leon VZ"),
+                new LapTimeSeed(APEXHUNTER_DISPLAY_NAME, GUADIX_TRACK_NAME, LocalDate.of(2026, 3, 18), 109260L, "Honda Civic Type R"),
+                new LapTimeSeed(JUANJE_DISPLAY_NAME, ALGARVE_TRACK_NAME, LocalDate.of(2026, 3, 20), 121930L, "Porsche Cayman S"),
+                new LapTimeSeed(FERNANDO_ALONSO_DISPLAY_NAME, ALGARVE_TRACK_NAME, LocalDate.of(2026, 3, 20), 117640L, "Aston Martin Vantage"),
+                new LapTimeSeed(APEX_LUSO_DISPLAY_NAME, ALGARVE_TRACK_NAME, LocalDate.of(2026, 3, 20), 124850L, "BMW M240i"),
+                new LapTimeSeed(ALEX_PALAU_DISPLAY_NAME, BARCELONA_TRACK_NAME, LocalDate.of(2026, 3, 22), 109930L, "Porsche 718 Cayman GT4"),
+                new LapTimeSeed(CURVA_PERALTADA_DISPLAY_NAME, BARCELONA_TRACK_NAME, LocalDate.of(2026, 3, 22), 118770L, "BMW M3 E46"),
+                new LapTimeSeed(GRIDWALKER_DISPLAY_NAME, BARCELONA_TRACK_NAME, LocalDate.of(2026, 3, 22), 121580L, "SEAT Leon Cupra"),
+                new LapTimeSeed(FULLTHROTTLE_EVA_DISPLAY_NAME, JEREZ_TRACK_NAME, LocalDate.of(2026, 3, 24), 119460L, "Audi TTS"),
+                new LapTimeSeed(PITLANE_JUNKIE_DISPLAY_NAME, JEREZ_TRACK_NAME, LocalDate.of(2026, 3, 24), 123820L, "Toyota GR Yaris"),
+                new LapTimeSeed(BRAKEPOINT_NORA_DISPLAY_NAME, JEREZ_TRACK_NAME, LocalDate.of(2026, 3, 24), 126910L, "Mazda MX-5 ND"),
+                new LapTimeSeed(CURB_ATTACK_DISPLAY_NAME, MOTORLAND_TRACK_NAME, LocalDate.of(2026, 3, 26), 132210L, "BMW M2 Competition"),
+                new LapTimeSeed(STINTMASTER_DISPLAY_NAME, MOTORLAND_TRACK_NAME, LocalDate.of(2026, 3, 26), 129740L, "Alpine A110 S"),
+                new LapTimeSeed(MARIA_DISPLAY_NAME, MOTORLAND_TRACK_NAME, LocalDate.of(2026, 3, 26), 137380L, "Subaru BRZ"),
+                new LapTimeSeed(CHICANE_CHASER_DISPLAY_NAME, NAVARRA_TRACK_NAME, LocalDate.of(2026, 3, 28), 111320L, "Renault Clio RS"),
+                new LapTimeSeed(KERB_RIDER_DISPLAY_NAME, NAVARRA_TRACK_NAME, LocalDate.of(2026, 3, 28), 114470L, "Ford Fiesta ST"),
+                new LapTimeSeed(CURVA_PERALTADA_DISPLAY_NAME, NAVARRA_TRACK_NAME, LocalDate.of(2026, 3, 28), 116880L, "Toyota GT86"),
+                new LapTimeSeed(BOXBOX_RAUL_DISPLAY_NAME, ALBACETE_TRACK_NAME, LocalDate.of(2026, 3, 29), 104530L, "Honda S2000"),
+                new LapTimeSeed(LATEBRAKER_88_DISPLAY_NAME, ALBACETE_TRACK_NAME, LocalDate.of(2026, 3, 29), 106920L, "Audi RS3"),
+                new LapTimeSeed(PITLANE_JUNKIE_DISPLAY_NAME, ALBACETE_TRACK_NAME, LocalDate.of(2026, 3, 29), 109870L, "Renault Clio Cup"),
+                new LapTimeSeed(TRACKRAT_77_DISPLAY_NAME, CARTAGENA_TRACK_NAME, LocalDate.of(2026, 3, 30), 103240L, "Lotus Elise S"),
+                new LapTimeSeed(FLATOUT_MARTA_DISPLAY_NAME, CARTAGENA_TRACK_NAME, LocalDate.of(2026, 3, 30), 105910L, "Mini Cooper S"),
+                new LapTimeSeed(TYRESMOKE_LUCIA_DISPLAY_NAME, CARTAGENA_TRACK_NAME, LocalDate.of(2026, 3, 30), 108330L, "Toyota GR86"),
+                new LapTimeSeed(OVERSTEER_MIGUEL_DISPLAY_NAME, ESTORIL_TRACK_NAME, LocalDate.of(2026, 4, 1), 115760L, "Porsche 911 Carrera S"),
+                new LapTimeSeed(APEX_LUSO_DISPLAY_NAME, ESTORIL_TRACK_NAME, LocalDate.of(2026, 4, 1), 118140L, "BMW M4"),
+                new LapTimeSeed(KERB_RIDER_DISPLAY_NAME, ESTORIL_TRACK_NAME, LocalDate.of(2026, 4, 1), 121020L, "Hyundai Elantra N"),
+                new LapTimeSeed(REDFLAG_INES_DISPLAY_NAME, BRAGA_TRACK_NAME, LocalDate.of(2026, 4, 2), 94980L, "Abarth 595"),
+                new LapTimeSeed(FULLTHROTTLE_EVA_DISPLAY_NAME, BRAGA_TRACK_NAME, LocalDate.of(2026, 4, 2), 92840L, "Caterham Seven 420R"),
+                new LapTimeSeed(CHICANE_CHASER_DISPLAY_NAME, BRAGA_TRACK_NAME, LocalDate.of(2026, 4, 2), 97350L, "Suzuki Swift Sport"),
+                new LapTimeSeed(CURB_ATTACK_DISPLAY_NAME, SPA_TRACK_NAME, LocalDate.of(2026, 4, 4), 160520L, "BMW M4 CSL"),
+                new LapTimeSeed(ALEX_PALAU_DISPLAY_NAME, SPA_TRACK_NAME, LocalDate.of(2026, 4, 4), 151880L, "Porsche 911 GT3"),
+                new LapTimeSeed(FERNANDO_ALONSO_DISPLAY_NAME, SPA_TRACK_NAME, LocalDate.of(2026, 4, 4), 149330L, "Aston Martin Vantage GT8"),
+                new LapTimeSeed(APEX_LUSO_DISPLAY_NAME, MUGELLO_TRACK_NAME, LocalDate.of(2026, 4, 6), 128910L, "Ferrari 488 GTB"),
+                new LapTimeSeed(OVERSTEER_MIGUEL_DISPLAY_NAME, MUGELLO_TRACK_NAME, LocalDate.of(2026, 4, 6), 133420L, "BMW M3 Touring"),
+                new LapTimeSeed(FULLTHROTTLE_EVA_DISPLAY_NAME, MUGELLO_TRACK_NAME, LocalDate.of(2026, 4, 6), 135110L, "Porsche Cayman GTS"),
+                new LapTimeSeed(ALEX_PALAU_DISPLAY_NAME, NURBURGRING_TRACK_NAME, LocalDate.of(2026, 4, 8), 456210L, "Porsche 911 GT3 RS"),
+                new LapTimeSeed(FERNANDO_ALONSO_DISPLAY_NAME, NURBURGRING_TRACK_NAME, LocalDate.of(2026, 4, 8), 448960L, "Aston Martin Vantage AMR"),
+                new LapTimeSeed(STINTMASTER_DISPLAY_NAME, NURBURGRING_TRACK_NAME, LocalDate.of(2026, 4, 8), 487340L, "Honda Civic Type R"),
+                new LapTimeSeed(PADDOCK_PAULA_DISPLAY_NAME, PAUL_RICARD_TRACK_NAME, LocalDate.of(2026, 4, 10), 134570L, "Alpine A110 S"),
+                new LapTimeSeed(CARLOS_DISPLAY_NAME, PAUL_RICARD_TRACK_NAME, LocalDate.of(2026, 4, 10), 131240L, "BMW M2"),
+                new LapTimeSeed(APEXHUNTER_DISPLAY_NAME, PAUL_RICARD_TRACK_NAME, LocalDate.of(2026, 4, 10), 129880L, "Porsche 718 Cayman GT4")
+        );
     }
 
     private void seedMessages() {
@@ -1223,5 +1528,36 @@ public class DemoDataSeeder implements CommandLineRunner {
                                 + " and service: "
                                 + serviceName
                 ));
+    }
+
+    private record UserSeed(String displayName, String email, String name, String surname) {
+    }
+
+    private record OrganizerSeed(String displayName,
+                                 String email,
+                                 String name,
+                                 String surname,
+                                 String legalName,
+                                 String cif) {
+    }
+
+    private record TrackSeed(String name, String location, String description) {
+    }
+
+    private record EventSeed(String organizerLegalName,
+                             String trackName,
+                             LocalDate eventDate,
+                             BigDecimal basePrice,
+                             int maxParticipants) {
+    }
+
+    private record EventAttendanceSeed(String trackName, LocalDate eventDate, List<String> attendees) {
+    }
+
+    private record LapTimeSeed(String displayName,
+                               String trackName,
+                               LocalDate lapDate,
+                               long lapTimeMs,
+                               String vehicle) {
     }
 }
