@@ -92,6 +92,9 @@ public class DemoDataSeeder implements CommandLineRunner {
     private static final String GUADIX_TRACK_NAME = "Circuito Mike G Guadix";
     private static final String ALGARVE_TRACK_NAME = "Autodromo Internacional do Algarve";
     private static final String NURBURGRING_TRACK_NAME = "Nurburgring";
+    private static final String LE_MANS_SARTHE_TRACK_NAME = "Circuit de la Sarthe";
+    private static final String LE_MANS_BUGATTI_TRACK_NAME = "Bugatti Circuit";
+    private static final String NURBURGRING_GP_TRACK_NAME = "Nurburgring Grand Prix-Strecke";
     private static final String BARCELONA_TRACK_NAME = "Circuit de Barcelona-Catalunya";
     private static final String JEREZ_TRACK_NAME = "Circuito de Jerez - Angel Nieto";
     private static final String MOTORLAND_TRACK_NAME = "MotorLand Aragon";
@@ -129,7 +132,7 @@ public class DemoDataSeeder implements CommandLineRunner {
     private static final BigDecimal PRICE_20_00 = new BigDecimal("20.00");
     private static final BigDecimal PRICE_22_00 = new BigDecimal("22.00");
     private static final BigDecimal PRICE_24_00 = new BigDecimal("24.00");
-    private static final BigDecimal PRICE_25_00 = new BigDecimal("25.00");
+    private static final BigDecimal PRICE_225_00 = new BigDecimal("225.00");
     private static final BigDecimal BOX_RENTAL_PRICE = new BigDecimal("35.00");
     private static final BigDecimal COVERED_PADDOCK_PRICE = PRICE_20_00;
     private static final BigDecimal SKIDPAD_PRICE = new BigDecimal("27.00");
@@ -479,6 +482,21 @@ public class DemoDataSeeder implements CommandLineRunner {
                 COVERED_PADDOCK_SERVICE_NAME,
                 NOISE_CONTROL_SERVICE_NAME,
                 TRANSPONDER_TIMING_SERVICE_NAME);
+        registerTrackServices(LE_MANS_SARTHE_TRACK_NAME,
+                BOX_RENTAL_SERVICE_NAME,
+                COVERED_PADDOCK_SERVICE_NAME,
+                NOISE_CONTROL_SERVICE_NAME,
+                TRANSPONDER_TIMING_SERVICE_NAME);
+        registerTrackServices(LE_MANS_BUGATTI_TRACK_NAME,
+                BOX_RENTAL_SERVICE_NAME,
+                COVERED_PADDOCK_SERVICE_NAME,
+                NOISE_CONTROL_SERVICE_NAME,
+                TRANSPONDER_TIMING_SERVICE_NAME);
+        registerTrackServices(NURBURGRING_GP_TRACK_NAME,
+                BOX_RENTAL_SERVICE_NAME,
+                COVERED_PADDOCK_SERVICE_NAME,
+                NOISE_CONTROL_SERVICE_NAME,
+                TRANSPONDER_TIMING_SERVICE_NAME);
         registerTrackServices(BARCELONA_TRACK_NAME,
                 BOX_RENTAL_SERVICE_NAME,
                 COVERED_PADDOCK_SERVICE_NAME,
@@ -571,7 +589,7 @@ public class DemoDataSeeder implements CommandLineRunner {
                 RICARDO_TORMO_TRACK_NAME,
                 calculateFutureEventDate(FUTURE_RICARDO_TORMO_EVENT_OFFSET_DAYS),
                 FUTURE_RICARDO_TORMO_EVENT_DATE,
-                price("225.00"),
+                PRICE_225_00,
                 72
         );
         migrateLegacyFutureEvent(
@@ -929,6 +947,21 @@ public class DemoDataSeeder implements CommandLineRunner {
                         "Complejo aleman de referencia mundial, celebre por la Nordschleife y por su importancia historica en el automovilismo europeo."
                 ),
                 new TrackSeed(
+                        LE_MANS_SARTHE_TRACK_NAME,
+                        "Le Mans, Sarthe, Francia",
+                        "Trazado semipermanente celebre por las 24 Horas de Le Mans, mezcla de rectas larguisimas y enlazadas rapidas en el oeste de Francia."
+                ),
+                new TrackSeed(
+                        LE_MANS_BUGATTI_TRACK_NAME,
+                        "Le Mans, Sarthe, Francia",
+                        "Circuito permanente dentro del complejo de Le Mans, habitual para pruebas, competiciones nacionales y track days tecnicos."
+                ),
+                new TrackSeed(
+                        NURBURGRING_GP_TRACK_NAME,
+                        "Nurburg, Renania-Palatinado, Alemania",
+                        "Variante de gran premio del complejo de Nurburgring, con instalaciones modernas y un paddock preparado para eventos internacionales."
+                ),
+                new TrackSeed(
                         BARCELONA_TRACK_NAME,
                         "Montmelo, Barcelona, Espana",
                         "Circuito catalan de referencia internacional, habitual en competiciones de primer nivel y en jornadas privadas de alto ritmo."
@@ -1010,7 +1043,7 @@ public class DemoDataSeeder implements CommandLineRunner {
                 new EventSeed(APEX_IBERIA_LEGAL_NAME, BARCELONA_TRACK_NAME, PAST_BARCELONA_EVENT_DATE, price("245.00"), 68),
                 new EventSeed(TRACKLIMITS_IBERIA_LEGAL_NAME, JEREZ_TRACK_NAME, PAST_JEREZ_EVENT_DATE, price("195.00"), 50),
                 new EventSeed(LUSITANIA_RACING_LEGAL_NAME, ESTORIL_TRACK_NAME, PAST_ESTORIL_EVENT_DATE, price("215.00"), 48),
-                new EventSeed(MEDITERRANEAN_MOTORSPORT_LEGAL_NAME, MOTORLAND_TRACK_NAME, PAST_MOTORLAND_EVENT_DATE, price("225.00"), 60)
+                new EventSeed(MEDITERRANEAN_MOTORSPORT_LEGAL_NAME, MOTORLAND_TRACK_NAME, PAST_MOTORLAND_EVENT_DATE, PRICE_225_00, 60)
         );
     }
 
@@ -1022,7 +1055,7 @@ public class DemoDataSeeder implements CommandLineRunner {
                 new EventSeed(TRACKLIMITS_IBERIA_LEGAL_NAME, JEREZ_TRACK_NAME, FUTURE_JEREZ_EVENT_DATE, price("198.00"), 52),
                 new EventSeed(APEX_IBERIA_LEGAL_NAME, BARCELONA_TRACK_NAME, FUTURE_BARCELONA_EVENT_DATE, price("255.00"), 70),
                 new EventSeed(TRACKEVENTS_LEGAL_NAME, ALGARVE_TRACK_NAME, FUTURE_ALGARVE_EVENT_DATE, price("285.00"), 50),
-                new EventSeed(IBERIAN_MOTORSPORT_LEGAL_NAME, RICARDO_TORMO_TRACK_NAME, FUTURE_RICARDO_TORMO_EVENT_DATE, price("225.00"), 72),
+                new EventSeed(IBERIAN_MOTORSPORT_LEGAL_NAME, RICARDO_TORMO_TRACK_NAME, FUTURE_RICARDO_TORMO_EVENT_DATE, PRICE_225_00, 72),
                 new EventSeed(RACINGPRO_LEGAL_NAME, NAVARRA_TRACK_NAME, FUTURE_NAVARRA_EVENT_DATE, price("185.00"), 44),
                 new EventSeed(MEDITERRANEAN_MOTORSPORT_LEGAL_NAME, MOTORLAND_TRACK_NAME, FUTURE_MOTORLAND_EVENT_DATE, price("235.00"), 62),
                 new EventSeed(TRACKLIMITS_IBERIA_LEGAL_NAME, CARTAGENA_TRACK_NAME, FUTURE_CARTAGENA_EVENT_DATE, price("175.00"), 40),
