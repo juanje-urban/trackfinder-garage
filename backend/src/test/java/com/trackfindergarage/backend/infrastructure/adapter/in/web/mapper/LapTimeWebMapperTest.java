@@ -5,6 +5,7 @@ import com.trackfindergarage.backend.domain.model.Track;
 import com.trackfindergarage.backend.domain.model.User;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.CreateLapTimeRequest;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.LapTimeResponse;
+import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.TrackRecordResponse;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.UpdateLapTimeRequest;
 import org.junit.jupiter.api.Test;
 
@@ -15,6 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class LapTimeWebMapperTest {
 
     private final LapTimeWebMapper lapTimeWebMapper = new LapTimeWebMapper();
+    private final TrackRecordWebMapper trackRecordWebMapper = new TrackRecordWebMapper();
 
     @Test
     void toDomainMapsCreateRequestToLapTime() {
@@ -78,6 +80,34 @@ class LapTimeWebMapperTest {
         assertEquals("Juanje", response.getUserDisplayName());
         assertEquals(2L, response.getTrackId());
         assertEquals("Jarama", response.getTrackName());
+        assertEquals(LocalDate.of(2026, 3, 20), response.getLapDate());
+        assertEquals(87000L, response.getLapTimeMs());
+        assertEquals("Car", response.getVehicle());
+    }
+
+    @Test
+    void toTrackRecordResponseMapsLapTimeToPublicRecordResponse() {
+        User user = new User();
+        user.setId(1L);
+        user.setDisplayName("Juanje");
+
+        Track track = new Track();
+        track.setId(2L);
+        track.setName("Jarama");
+
+        LapTime lapTime = new LapTime();
+        lapTime.setId(10L);
+        lapTime.setUser(user);
+        lapTime.setTrack(track);
+        lapTime.setLapDate(LocalDate.of(2026, 3, 20));
+        lapTime.setLapTimeMs(87000L);
+        lapTime.setVehicle("Car");
+
+        TrackRecordResponse response = trackRecordWebMapper.toResponse(lapTime);
+
+        assertEquals(2L, response.getTrackId());
+        assertEquals("Jarama", response.getTrackName());
+        assertEquals("Juanje", response.getUserDisplayName());
         assertEquals(LocalDate.of(2026, 3, 20), response.getLapDate());
         assertEquals(87000L, response.getLapTimeMs());
         assertEquals("Car", response.getVehicle());

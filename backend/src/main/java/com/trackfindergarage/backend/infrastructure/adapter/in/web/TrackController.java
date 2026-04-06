@@ -1,10 +1,14 @@
 package com.trackfindergarage.backend.infrastructure.adapter.in.web;
 
+import com.trackfindergarage.backend.application.port.in.LapTimeUseCase;
 import com.trackfindergarage.backend.application.port.in.TrackUseCase;
+import com.trackfindergarage.backend.domain.model.LapTime;
 import com.trackfindergarage.backend.domain.model.Track;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.CreateTrackRequest;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.TrackResponse;
+import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.TrackRecordResponse;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.UpdateTrackRequest;
+import com.trackfindergarage.backend.infrastructure.adapter.in.web.mapper.TrackRecordWebMapper;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.mapper.TrackWebMapper;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -17,11 +21,18 @@ import java.util.List;
 public class TrackController {
 
     private final TrackUseCase trackUseCase;
+    private final LapTimeUseCase lapTimeUseCase;
     private final TrackWebMapper trackWebMapper;
+    private final TrackRecordWebMapper trackRecordWebMapper;
 
-    public TrackController(TrackUseCase trackUseCase, TrackWebMapper trackWebMapper) {
+    public TrackController(TrackUseCase trackUseCase,
+                           LapTimeUseCase lapTimeUseCase,
+                           TrackWebMapper trackWebMapper,
+                           TrackRecordWebMapper trackRecordWebMapper) {
         this.trackUseCase = trackUseCase;
+        this.lapTimeUseCase = lapTimeUseCase;
         this.trackWebMapper = trackWebMapper;
+        this.trackRecordWebMapper = trackRecordWebMapper;
     }
 
     @PostMapping
@@ -58,5 +69,11 @@ public class TrackController {
     @GetMapping("/{id}")
     public TrackResponse getTrackById(@PathVariable Long id) {
         return trackWebMapper.toResponse(trackUseCase.getTrackById(id));
+    }
+
+    @GetMapping("/{id}/record")
+    public TrackRecordResponse getTrackRecord(@PathVariable Long id) {
+        LapTime bestLapTime = lapTimeUseCase.getBestLapTimeByTrackId(id);
+        return trackRecordWebMapper.toResponse(bestLapTime);
     }
 }

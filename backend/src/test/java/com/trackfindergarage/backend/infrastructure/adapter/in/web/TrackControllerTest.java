@@ -1,13 +1,19 @@
 package com.trackfindergarage.backend.infrastructure.adapter.in.web;
 
+import com.trackfindergarage.backend.application.port.in.LapTimeUseCase;
+import com.trackfindergarage.backend.domain.model.LapTime;
 import com.trackfindergarage.backend.application.port.in.TrackUseCase;
 import com.trackfindergarage.backend.domain.model.Track;
+import com.trackfindergarage.backend.domain.model.User;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.CreateTrackRequest;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.TrackResponse;
+import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.TrackRecordResponse;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.UpdateTrackRequest;
+import com.trackfindergarage.backend.infrastructure.adapter.in.web.mapper.TrackRecordWebMapper;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.mapper.TrackWebMapper;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -20,8 +26,15 @@ import static org.mockito.Mockito.when;
 class TrackControllerTest {
 
     private final TrackUseCase trackUseCase = mock(TrackUseCase.class);
+    private final LapTimeUseCase lapTimeUseCase = mock(LapTimeUseCase.class);
     private final TrackWebMapper trackWebMapper = new TrackWebMapper();
-    private final TrackController trackController = new TrackController(trackUseCase, trackWebMapper);
+    private final TrackRecordWebMapper trackRecordWebMapper = new TrackRecordWebMapper();
+    private final TrackController trackController = new TrackController(
+            trackUseCase,
+            lapTimeUseCase,
+            trackWebMapper,
+            trackRecordWebMapper
+    );
 
     @Test
     void createTrackDelegatesToUseCaseAndReturnsMappedResponse() {
@@ -76,6 +89,20 @@ class TrackControllerTest {
     }
 
     @Test
+    void getTrackRecordReturnsMappedPublicLapRecord() {
+        when(lapTimeUseCase.getBestLapTimeByTrackId(3L)).thenReturn(bestLapTimeForTrack(3L, "Montmelo"));
+
+        TrackRecordResponse response = trackController.getTrackRecord(3L);
+
+        assertEquals(3L, response.getTrackId());
+        assertEquals("Montmelo", response.getTrackName());
+        assertEquals("apexhunter", response.getUserDisplayName());
+        assertEquals(87234L, response.getLapTimeMs());
+        assertEquals("Porsche 718 Cayman GT4", response.getVehicle());
+        verify(lapTimeUseCase).getBestLapTimeByTrackId(3L);
+    }
+
+    @Test
     void deleteTrackDelegatesToUseCase() {
         trackController.deleteTrack(4L);
 
@@ -89,5 +116,22 @@ class TrackControllerTest {
         track.setLocation("Location");
         track.setDescription("Description");
         return track;
+    }
+
+    private LapTime bestLapTimeForTrack(Long trackId, String trackName) {
+        User user = new User();
+        user.setId(11L);
+        user.setDisplayName("apexhunter");
+
+        Track track = trackWithId(trackId, trackName);
+
+        LapTime lapTime = new LapTime();
+        lapTime.setId(21L);
+        lapTime.setUser(user);
+        lapTime.setTrack(track);
+        lapTime.setLapDate(LocalDate.of(2026, 4, 5));
+        lapTime.setLapTimeMs(87234L);
+        lapTime.setVehicle("Porsche 718 Cayman GT4");
+        return lapTime;
     }
 }
