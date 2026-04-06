@@ -103,6 +103,24 @@ class TrackControllerTest {
     }
 
     @Test
+    void getTrackRankingReturnsLimitedMappedPublicLapRecords() {
+        LapTime fastestLap = bestLapTimeForTrack(3L, "Montmelo");
+        LapTime secondLap = bestLapTimeForTrack(3L, "Montmelo");
+        secondLap.setId(22L);
+        secondLap.setLapTimeMs(88111L);
+        secondLap.getUser().setDisplayName("latebraker88");
+
+        when(lapTimeUseCase.getRankingByTrackId(3L)).thenReturn(List.of(fastestLap, secondLap));
+
+        List<TrackRecordResponse> response = trackController.getTrackRanking(3L, 1);
+
+        assertEquals(1, response.size());
+        assertEquals("apexhunter", response.getFirst().getUserDisplayName());
+        assertEquals(87234L, response.getFirst().getLapTimeMs());
+        verify(lapTimeUseCase).getRankingByTrackId(3L);
+    }
+
+    @Test
     void deleteTrackDelegatesToUseCase() {
         trackController.deleteTrack(4L);
 

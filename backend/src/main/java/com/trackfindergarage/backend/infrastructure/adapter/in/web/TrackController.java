@@ -76,4 +76,18 @@ public class TrackController {
         LapTime bestLapTime = lapTimeUseCase.getBestLapTimeByTrackId(id);
         return trackRecordWebMapper.toResponse(bestLapTime);
     }
+
+    @GetMapping("/{id}/ranking")
+    public List<TrackRecordResponse> getTrackRanking(@PathVariable Long id,
+                                                     @RequestParam(defaultValue = "3") int limit) {
+        if (limit < 1) {
+            throw new IllegalArgumentException("Limit must be greater than 0");
+        }
+
+        return lapTimeUseCase.getRankingByTrackId(id)
+                .stream()
+                .limit(limit)
+                .map(trackRecordWebMapper::toResponse)
+                .toList();
+    }
 }
