@@ -1,0 +1,137 @@
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-shell__body {
+  flex: 1;
+}
+
+.shell-container {
+  width: min(1220px, calc(100% - 32px));
+  margin: 0 auto;
+}
+
+.shell-container--wide {
+  width: min(1260px, calc(100% - 32px));
+}
+
+.page-shell {
+  width: min(1220px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: var(--space-4xl) 0 var(--space-6xl);
+}
+
+.section-stack {
+  display: grid;
+  gap: var(--space-3xl);
+}
+
+.metrics-grid {
+  display: grid;
+  gap: var(--space-lg);
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.cards-grid {
+  display: grid;
+  gap: var(--space-xl);
+}
+
+.cards-grid--events,
+.cards-grid--tracks {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.section-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: var(--space-lg);
+}
+
+.section-heading__copy {
+  display: grid;
+  gap: var(--space-2xs);
+}
+
+.section-heading__eyebrow {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: var(--fs-badge);
+  font-weight: 700;
+  color: var(--accent-strong);
+}
+
+.section-heading__title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--fs-title-section);
+  line-height: 1.05;
+  color: var(--text-strong);
+}
+
+.section-heading__hint {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--fs-body);
+}
+
+.filter-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-lg);
+  padding: var(--space-lg) var(--space-xl);
+}
+
+.filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: 10px 14px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-pill);
+  background: var(--surface-glass);
+  color: var(--text-body);
+  font-size: var(--fs-meta);
+}
+
+.filter-chip--accent {
+  border-color: var(--line-strong);
+  background: var(--accent-soft);
+  color: var(--text-strong);
+}
+
+.subtle-note {
+  color: var(--text-muted);
+  font-size: var(--fs-meta);
+}
+
+@media (max-width: 780px) {
+  .page-shell {
+    width: min(100% - 20px, 1220px);
+    padding: var(--space-2xl) 0 var(--space-5xl);
+  }
+
+  .filter-strip,
+  .section-heading {
+    align-items: start;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 640px) {
+  .shell-container,
+  .shell-container--wide {
+    width: min(100% - 20px, 1260px);
+  }
+}

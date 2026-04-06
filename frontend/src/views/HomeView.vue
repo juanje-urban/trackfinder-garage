@@ -1,0 +1,268 @@
+<script setup lang="ts">
+import { computed, onMounted, ref } from 'vue'
+import { RouterLink } from 'vue-router'
+import ContentSection from '@/components/ContentSection.vue'
+import EventCard from '@/components/EventCard.vue'
+import HeroInfoPanel from '@/components/HeroInfoPanel.vue'
+import MetricCard from '@/components/MetricCard.vue'
+import PageHero from '@/components/PageHero.vue'
+import TrackRecordBoard from '@/components/TrackRecordBoard.vue'
+import { getFutureEvents } from '@/services/eventService'
+import { getTrackRanking, getTracks } from '@/services/trackService'
+import type { Event } from '@/types/event'
+import type { Track } from '@/types/track'
+import type { TrackRecord } from '@/types/trackRecord'
+import { formatCurrency, formatDisplayDate } from '@/utils/format'
+import heroImage from '@/assets/home/hero_page_jarama.jpg'
+
+type HomeTrackRanking = {
+  event: Event
+  ranking: TrackRecord[]
+}
+
+const events = ref<Event[]>([])
+const tracks = ref<Track[]>([])
+const lapRecordBoards = ref<HomeTrackRanking[]>([])
+const loading = ref(true)
+const eventsError = ref('')
+const lapRecordsError = ref('')
+
+const sortedEvents = computed(() =>
+  [...events.value].sort((left, right) => left.eventDate.localeCompare(right.eventDate)),
+)
+
+const featuredEvent = computed(() => sortedEvents.value[0] ?? null)
+const homeEvents = computed(() => sortedEvents.value.slice(0, 3))
+
+const openSpots = computed(() =>
+  sortedEvents.value.reduce((sum, event) => sum + event.remainingCapacity, 0),
+)
+
+const totalLocations = computed(() => new Set(tracks.value.map((track) => track.location)).size)
+
+const heroCaption = computed(() => {
+  if (!featuredEvent.value) {
+    return 'Las proximas sesiones apareceran aqui tan pronto como esten disponibles.'
+  }
+
+  return `${formatDisplayDate(featuredEvent.value.eventDate)} - ${formatCurrency(featuredEvent.value.basePrice)} - ${featuredEvent.value.organizerLegalName}`
+})
+
+const featuredEventTitle = computed(() => {
+  if (!featuredEvent.value) {
+    return 'Proximamente'
+  }
+
+  return featuredEvent.value.trackName
+})
+
+const featuredAvailabilityLabel = computed(() => {
+  if (!featuredEvent.value) {
+    return 'Sin eventos programados'
+  }
+
+  return `${featuredEvent.value.remainingCapacity} plazas disponibles`
+})
+
+function selectUpcomingUniqueTrackEvents(sourceEvents: Event[], limit: number): Event[] {
+  const seenTrackIds = new Set<number>()
+
+  return sourceEvents
+    .filter((event) => {
+      if (seenTrackIds.has(event.trackId)) {
+        return false
+      }
+
+      seenTrackIds.add(event.trackId)
+      return true
+    })
+    .slice(0, limit)
+}
+
+onMounted(async () => {
+  const [eventsResult, tracksResult] = await Promise.allSettled([
+    getFutureEvents(),
+    getTracks(),
+  ])
+
+  if (eventsResult.status === 'fulfilled') {
+    events.value = eventsResult.value
+  } else {
+    eventsError.value = 'No se pudieron cargar los eventos destacados.'
+  }
+
+  if (tracksResult.status === 'fulfilled') {
+    tracks.value = tracksResult.value
+  }
+
+  if (eventsResult.status === 'fulfilled') {
+    const rankingCandidates = selectUpcomingUniqueTrackEvents(
+      [...eventsResult.value].sort((left, right) => left.eventDate.localeCompare(right.eventDate)),
+      3,
+    )
+
+    const rankingResults = await Promise.allSettled(
+      rankingCandidates.map(async (event) => ({
+        event,
+        ranking: await getTrackRanking(event.trackId, 3),
+      })),
+    )
+
+    lapRecordBoards.value = rankingResults
+      .filter((result): result is PromiseFulfilledResult<HomeTrackRanking> => result.status === 'fulfilled')
+      .map((result) => result.value)
+      .filter((entry) => entry.ranking.length > 0)
+
+    if (rankingCandidates.length > 0 && lapRecordBoards.value.length === 0) {
+      lapRecordsError.value = 'No se pudieron cargar los récords de vuelta.'
+    }
+  }
+
+  loading.value = false
+})
+</script>
+
+<template>
+  <main class="page-shell section-stack">
+    <PageHero
+      eyebrow="Proximo evento"
+      title="Jarama a Fondo"
+      description="Preparate para una jornada brutal de tandas libres en el Circuito del Jarama. Saca todo el potencial de tu coche, rueda al limite en un entorno seguro y vive el autentico ambiente racing con plazas limitadas."
+      :image-url="heroImage"
+      image-alt="Circuito del Jarama"
+    >
+      <template #aside>
+        <HeroInfoPanel label="Semáforo en verde" :caption="heroCaption">
+          <strong>{{ featuredEventTitle }}</strong>
+          <span>{{ featuredAvailabilityLabel }}</span>
+        </HeroInfoPanel>
+      </template>
+    </PageHero>
+
+    <section class="metrics-grid">
+      <MetricCard
+        label="Sesiones programadas"
+        :value="String(sortedEvents.length)"
+        hint="Eventos en la agenda"
+        tone="accent"
+      />
+      <MetricCard
+        label="Plazas disponibles"
+        :value="String(openSpots)"
+        hint="Aforo en tiempo real"
+        tone="success"
+      />
+      <MetricCard
+        label="Circuitos"
+        :value="String(tracks.length)"
+        hint="Pistas para nuestros eventos"
+      />
+      <MetricCard
+        label="Localizaciones"
+        :value="String(totalLocations)"
+        hint="Ciudades europeas diferentes"
+      />
+    </section>
+
+    <section class="panel launch-strip">
+      <div class="panel-copy">
+        <p class="section-heading__eyebrow">Gas a fondo</p>
+        <h2 class="ui-title-section">Encuentra tu siguiente trackday</h2>
+        <p class="launch-strip__hint ui-copy-muted">
+          Descubre eventos en los mejores circuitos, compara fechas y servicios, y preparate para vivir una jornada de motor pensada para disfrutar al maximo dentro y fuera de pista.
+        </p>
+      </div>
+
+      <div class="action-row">
+        <RouterLink class="action-button" to="/events">Buscar eventos</RouterLink>
+        <RouterLink class="action-button action-button--ghost" to="/tracks">Explorar circuitos</RouterLink>
+      </div>
+    </section>
+
+    <section class="panel panel-pad-lg panel-stack-lg">
+      <div class="home-records__header">
+        <h2 class="ui-title-section">Récords de vuelta</h2>
+      </div>
+
+      <p v-if="loading" class="status-message">Cargando récords de vuelta...</p>
+      <p
+        v-else-if="lapRecordBoards.length === 0 && lapRecordsError"
+        class="status-message status-message--error"
+      >
+        {{ lapRecordsError }}
+      </p>
+      <p v-else-if="lapRecordBoards.length === 0" class="status-message">
+        Todavía no hay récords de vuelta publicados para la home.
+      </p>
+
+      <div v-else class="records-grid">
+        <TrackRecordBoard
+          v-for="board in lapRecordBoards"
+          :key="board.event.trackId"
+          :track-name="board.event.trackName"
+          :event-date="board.event.eventDate"
+          :ranking="board.ranking"
+        />
+      </div>
+    </section>
+
+    <ContentSection
+      eyebrow="Agenda"
+      title="Próximos eventos programados"
+      hint="Echa un vistazo a los track days que se celebrarán pronto."
+      :loading="loading"
+      loading-message="Loading home previews..."
+      :error="homeEvents.length === 0 ? eventsError : ''"
+      :empty="homeEvents.length === 0"
+      empty-message="Sin eventos programados."
+    >
+      <template #action>
+        <RouterLink class="action-button action-button--ghost" to="/events">
+          Ver todos los eventos
+        </RouterLink>
+      </template>
+
+      <div class="cards-grid cards-grid--events">
+        <EventCard v-for="event in homeEvents" :key="event.id" :event="event" />
+      </div>
+    </ContentSection>
+  </main>
+</template>
+
+<style scoped>
+.launch-strip {
+  padding: var(--space-2xl) var(--space-3xl);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2xl);
+}
+
+.launch-strip__hint {
+  max-width: 62ch;
+}
+
+.records-grid {
+  display: grid;
+  gap: var(--space-xl);
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+
+.home-records__header {
+  padding-bottom: var(--space-sm);
+  border-bottom: 1px solid var(--line-faint);
+}
+
+@media (max-width: 980px) {
+  .launch-strip {
+    flex-direction: column;
+    align-items: start;
+  }
+}
+
+@media (max-width: 640px) {
+  .launch-strip {
+    padding: var(--space-xl);
+  }
+}
+</style>
