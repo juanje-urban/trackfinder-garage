@@ -23,6 +23,7 @@ public class OrganizerService implements OrganizerUseCase {
     private static final String ORGANIZER_NOT_FOUND_WITH_ID = "Organizer not found with id: ";
     private static final String USER_DISPLAY_NAME_ALREADY_EXISTS = "User with display name '%s' already exists";
     private static final String USER_EMAIL_ALREADY_EXISTS = "User with email '%s' already exists";
+    private static final String USER_PHONE_ALREADY_EXISTS = "User with phone '%s' already exists";
     private static final String ORGANIZER_LEGAL_NAME_ALREADY_EXISTS = "Organizer with legal name '%s' already exists";
     private static final String ORGANIZER_CIF_ALREADY_EXISTS = "Organizer with cif '%s' already exists";
 
@@ -47,6 +48,7 @@ public class OrganizerService implements OrganizerUseCase {
 
         validateDisplayNameForCreate(user.getDisplayName());
         validateEmailForCreate(user.getEmail());
+        validatePhoneForCreate(user.getPhone());
         validateLegalNameForCreate(organizer.getLegalName());
         validateCifForCreate(organizer.getCif());
 
@@ -73,6 +75,7 @@ public class OrganizerService implements OrganizerUseCase {
 
         validateDisplayNameForUpdate(id, user.getDisplayName());
         validateEmailForUpdate(id, user.getEmail());
+        validatePhoneForUpdate(id, user.getPhone());
         validateLegalNameForUpdate(id, organizer.getLegalName());
         validateCifForUpdate(id, organizer.getCif());
 
@@ -152,6 +155,13 @@ public class OrganizerService implements OrganizerUseCase {
                 });
     }
 
+    private void validatePhoneForCreate(String phone) {
+        userPersistencePort.findByPhone(phone)
+                .ifPresent(existingUser -> {
+                    throw new DuplicateResourceException(USER_PHONE_ALREADY_EXISTS.formatted(phone));
+                });
+    }
+
     private void validateCifForCreate(String cif) {
         organizerPersistencePort.findByCif(cif)
                 .ifPresent(existingOrganizer -> {
@@ -182,6 +192,15 @@ public class OrganizerService implements OrganizerUseCase {
                 .ifPresent(existingOrganizer -> {
                     if (!existingOrganizer.getIdUser().equals(organizerId)) {
                         throw new DuplicateResourceException(ORGANIZER_LEGAL_NAME_ALREADY_EXISTS.formatted(legalName));
+                    }
+                });
+    }
+
+    private void validatePhoneForUpdate(Long organizerId, String phone) {
+        userPersistencePort.findByPhone(phone)
+                .ifPresent(existingUser -> {
+                    if (!existingUser.getId().equals(organizerId)) {
+                        throw new DuplicateResourceException(USER_PHONE_ALREADY_EXISTS.formatted(phone));
                     }
                 });
     }

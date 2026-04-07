@@ -4,6 +4,7 @@ import com.trackfindergarage.backend.application.port.in.AuthUseCase;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.AuthLoginRequest;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.AuthRegisterRequest;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.AuthResponse;
+import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.CreateOrganizerRequest;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -66,6 +67,50 @@ class AuthControllerTest {
                 "Sanz",
                 "Calle Box 27",
                 "666555444"
+        );
+    }
+
+    @Test
+    void registerOrganizerDelegatesToUseCase() {
+        CreateOrganizerRequest request = new CreateOrganizerRequest();
+        request.setDisplayName("tracklimits");
+        request.setEmail("tracklimits@example.com");
+        request.setPassword("secret");
+        request.setName("Laura");
+        request.setSurname("Sanz");
+        request.setAddress("Calle Box 27");
+        request.setPhone("666555444");
+        request.setLegalName("Track Limits Iberia S.L.");
+        request.setCif("B12345678");
+
+        AuthResponse expected = response(8L, "tracklimits", "tracklimits@example.com");
+        expected.setRoleName("ORGANIZER");
+        when(authUseCase.registerOrganizer(
+                "tracklimits",
+                "tracklimits@example.com",
+                "secret",
+                "Laura",
+                "Sanz",
+                "Calle Box 27",
+                "666555444",
+                "Track Limits Iberia S.L.",
+                "B12345678"
+        )).thenReturn(expected);
+
+        AuthResponse response = authController.registerOrganizer(request);
+
+        assertEquals(expected.getUserId(), response.getUserId());
+        assertEquals(expected.getRoleName(), response.getRoleName());
+        verify(authUseCase).registerOrganizer(
+                "tracklimits",
+                "tracklimits@example.com",
+                "secret",
+                "Laura",
+                "Sanz",
+                "Calle Box 27",
+                "666555444",
+                "Track Limits Iberia S.L.",
+                "B12345678"
         );
     }
 

@@ -13,4 +13,14 @@ public interface AuthUseCase {
                           String surname,
                           String address,
                           String phone);
+
+    AuthResponse registerOrganizer(String displayName,
+                                   String email,
+                                   String rawPassword,
+                                   String name,
+                                   String surname,
+                                   String address,
+                                   String phone,
+                                   String legalName,
+                                   String cif);
 }

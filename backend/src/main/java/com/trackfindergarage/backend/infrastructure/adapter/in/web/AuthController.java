@@ -4,6 +4,7 @@ import com.trackfindergarage.backend.application.port.in.AuthUseCase;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.AuthLoginRequest;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.AuthRegisterRequest;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.AuthResponse;
+import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.CreateOrganizerRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -38,6 +39,22 @@ public class AuthController {
                 request.getSurname(),
                 request.getAddress(),
                 request.getPhone()
+        );
+    }
+
+    @PostMapping("/register/organizer")
+    @ResponseStatus(HttpStatus.CREATED)
+    public AuthResponse registerOrganizer(@Valid @RequestBody CreateOrganizerRequest request) {
+        return authUseCase.registerOrganizer(
+                request.getDisplayName(),
+                request.getEmail(),
+                request.getPassword(),
+                request.getName(),
+                request.getSurname(),
+                request.getAddress(),
+                request.getPhone(),
+                request.getLegalName(),
+                request.getCif()
         );
     }
 }

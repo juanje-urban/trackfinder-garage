@@ -11,6 +11,11 @@ export interface AuthRegisterPayload extends AuthCredentials {
   phone: string
 }
 
+export interface AuthOrganizerRegisterPayload extends AuthRegisterPayload {
+  legalName: string
+  cif: string
+}
+
 export interface AuthSession {
   userId: number
   displayName: string

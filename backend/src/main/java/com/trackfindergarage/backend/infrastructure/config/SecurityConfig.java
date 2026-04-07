@@ -27,7 +27,7 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register", "/auth/register/organizer").permitAll()
                         .requestMatchers(HttpMethod.GET, "/tracks", "/tracks/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/events/future", "/events/future/**").permitAll()
                         .requestMatchers("/error").permitAll()

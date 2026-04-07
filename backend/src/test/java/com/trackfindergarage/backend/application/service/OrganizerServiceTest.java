@@ -52,6 +52,7 @@ class OrganizerServiceTest {
 
         when(userPersistencePort.findByDisplayName("promoter")).thenReturn(Optional.empty());
         when(userPersistencePort.findByEmail("promoter@example.com")).thenReturn(Optional.empty());
+        when(userPersistencePort.findByPhone("123456789")).thenReturn(Optional.empty());
         when(organizerPersistencePort.findByLegalName("Track Finder S.L.")).thenReturn(Optional.empty());
         when(organizerPersistencePort.findByCif("B12345678")).thenReturn(Optional.empty());
         when(rolePersistencePort.findByRoleName("ORGANIZER")).thenReturn(Optional.of(organizerRole));
@@ -86,6 +87,7 @@ class OrganizerServiceTest {
 
         when(userPersistencePort.findByDisplayName("promoter")).thenReturn(Optional.empty());
         when(userPersistencePort.findByEmail("promoter@example.com")).thenReturn(Optional.empty());
+        when(userPersistencePort.findByPhone("123456789")).thenReturn(Optional.empty());
         when(organizerPersistencePort.findByLegalName("Track Finder S.L."))
                 .thenReturn(Optional.of(new Organizer()));
 
@@ -110,6 +112,7 @@ class OrganizerServiceTest {
         when(organizerPersistencePort.findById(5L)).thenReturn(Optional.of(existingOrganizer));
         when(userPersistencePort.findByDisplayName("new-promoter")).thenReturn(Optional.empty());
         when(userPersistencePort.findByEmail("new@example.com")).thenReturn(Optional.empty());
+        when(userPersistencePort.findByPhone("777")).thenReturn(Optional.empty());
         when(organizerPersistencePort.findByLegalName("New Legal")).thenReturn(Optional.empty());
         when(organizerPersistencePort.findByCif("B99999999")).thenReturn(Optional.empty());
         when(organizerPersistencePort.save(existingOrganizer)).thenReturn(existingOrganizer);
@@ -183,6 +186,18 @@ class OrganizerServiceTest {
         when(organizerPersistencePort.findById(77L)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> organizerService.getOrganizerById(77L));
+    }
+
+    @Test
+    void createOrganizerThrowsWhenPhoneAlreadyExists() {
+        Organizer organizer = organizerWithUser(null, "promoter");
+
+        when(userPersistencePort.findByDisplayName("promoter")).thenReturn(Optional.empty());
+        when(userPersistencePort.findByEmail("promoter@example.com")).thenReturn(Optional.empty());
+        when(userPersistencePort.findByPhone("123456789")).thenReturn(Optional.of(new User()));
+
+        assertThrows(DuplicateResourceException.class, () -> organizerService.createOrganizer(organizer, "plain-pass"));
+        verify(userPersistencePort, never()).save(organizer.getUser());
     }
 
     private Organizer organizerWithUser(Long idUser, String displayName) {

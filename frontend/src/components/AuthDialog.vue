@@ -5,16 +5,18 @@ import { Eye, EyeOff, Lock, Mail, User, X } from 'lucide-vue-next'
 import heroImage from '@/assets/tracks/cheste_1.jpg'
 import logoUrl from '@/assets/tfg_logo.svg'
 import { useAuth } from '@/composables/useAuth'
-import { login, register } from '@/services/authService'
-import type { AuthRegisterPayload } from '@/types/auth'
+import { login, register, registerOrganizer } from '@/services/authService'
+import type { AuthOrganizerRegisterPayload } from '@/types/auth'
 import { getDisplayNameMonogram } from '@/utils/identity'
 
-type AuthMode = 'login' | 'register'
+type AuthMode = 'login' | 'register' | 'organizer-register'
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const MAX_LONG_FIELD_LENGTH = 255
+const MAX_SHORT_FIELD_LENGTH = 20
 
 const auth = useAuth()
-const form = reactive<AuthRegisterPayload>({
+const form = reactive<AuthOrganizerRegisterPayload>({
   displayName: '',
   email: '',
   password: '',
@@ -22,6 +24,8 @@ const form = reactive<AuthRegisterPayload>({
   surname: '',
   address: '',
   phone: '',
+  legalName: '',
+  cif: '',
 })
 const mode = reactive<{ value: AuthMode }>({
   value: 'login',
@@ -32,9 +36,16 @@ const uiState = reactive({
   showPassword: false,
 })
 
+const isRegistrationMode = computed(() => mode.value !== 'login')
+const isOrganizerRegisterMode = computed(() => mode.value === 'organizer-register')
+
 const dialogTitle = computed(() => {
   if (auth.isAuthenticated.value) {
-    return 'Sesión iniciada'
+    return 'Sesion iniciada'
+  }
+
+  if (mode.value === 'organizer-register') {
+    return 'Crea tu cuenta de organizador'
   }
 
   return mode.value === 'login' ? 'Bienvenido de nuevo' : 'Crea tu cuenta'
@@ -42,24 +53,36 @@ const dialogTitle = computed(() => {
 
 const dialogSubtitle = computed(() => {
   if (auth.isAuthenticated.value) {
-    return 'Ya tienes acceso al garage. Puedes cerrar sesión cuando quieras.'
+    return 'Ya tienes acceso al garage. Puedes cerrar sesion cuando quieras.'
+  }
+
+  if (mode.value === 'organizer-register') {
+    return 'Podras iniciar sesion de inmediato. Tu perfil de organizador quedara pendiente de aprobacion.'
   }
 
   return mode.value === 'login'
-    ? 'Accede con tu correo y tu contraseña para entrar al garage.'
-    : 'Regístrate con correo y contraseña para guardar tu acceso.'
+    ? 'Accede con tu correo y tu contrasena para entrar al garage.'
+    : 'Registrate con correo y contrasena para guardar tu acceso.'
 })
 
-const submitLabel = computed(() => (mode.value === 'login' ? 'Iniciar sesión' : 'Crear cuenta'))
+const submitLabel = computed(() => {
+  if (mode.value === 'organizer-register') {
+    return 'Crear cuenta de organizador'
+  }
+
+  return mode.value === 'login' ? 'Iniciar sesion' : 'Crear cuenta'
+})
 
 const switchPrompt = computed(() =>
-  mode.value === 'login'
-    ? '¿Aún no tienes cuenta?'
-    : '¿Ya tienes una cuenta creada?',
+  mode.value === 'organizer-register'
+    ? 'Prefieres una cuenta estandar?'
+    : '¿Quieres trabajar con nosotros?',
 )
 
 const switchActionLabel = computed(() =>
-  mode.value === 'login' ? 'Regístrate' : 'Inicia sesión',
+  mode.value === 'organizer-register'
+    ? 'Volver al registro'
+    : 'Hazte organizador',
 )
 
 const profileMonogram = computed(() =>
@@ -101,38 +124,9 @@ onBeforeUnmount(() => {
 async function submit() {
   uiState.error = ''
 
-  if (!EMAIL_PATTERN.test(form.email.trim())) {
-    uiState.error = 'Introduce un correo electrónico válido.'
-    return
-  }
-
-  if (mode.value === 'register' && !form.displayName.trim()) {
-    uiState.error = 'Introduce un alias para tu perfil.'
-    return
-  }
-
-  if (mode.value === 'register' && !form.name.trim()) {
-    uiState.error = 'Introduce tu nombre.'
-    return
-  }
-
-  if (mode.value === 'register' && !form.surname.trim()) {
-    uiState.error = 'Introduce tus apellidos.'
-    return
-  }
-
-  if (mode.value === 'register' && !form.address.trim()) {
-    uiState.error = 'Introduce tu dirección.'
-    return
-  }
-
-  if (mode.value === 'register' && !form.phone.trim()) {
-    uiState.error = 'Introduce tu teléfono.'
-    return
-  }
-
-  if (!form.password.trim()) {
-    uiState.error = 'Introduce una contraseña.'
+  const validationError = validateForm(mode.value)
+  if (validationError) {
+    uiState.error = validationError
     return
   }
 
@@ -144,17 +138,31 @@ async function submit() {
       password: form.password,
     }
 
-    const session =
-      mode.value === 'login'
-        ? await login(payload)
-        : await register({
-            ...payload,
-            displayName: form.displayName.trim(),
-            name: form.name.trim(),
-            surname: form.surname.trim(),
-            address: form.address.trim(),
-            phone: form.phone.trim(),
-          })
+    let session
+
+    if (mode.value === 'login') {
+      session = await login(payload)
+    } else if (mode.value === 'organizer-register') {
+      session = await registerOrganizer({
+        ...payload,
+        displayName: form.displayName.trim(),
+        name: form.name.trim(),
+        surname: form.surname.trim(),
+        address: form.address.trim(),
+        phone: form.phone.trim(),
+        legalName: form.legalName.trim(),
+        cif: form.cif.trim(),
+      })
+    } else {
+      session = await register({
+        ...payload,
+        displayName: form.displayName.trim(),
+        name: form.name.trim(),
+        surname: form.surname.trim(),
+        address: form.address.trim(),
+        phone: form.phone.trim(),
+      })
+    }
 
     auth.setSession(session)
     auth.closeAuthDialog()
@@ -200,6 +208,8 @@ function resetDialog() {
   form.surname = ''
   form.address = ''
   form.phone = ''
+  form.legalName = ''
+  form.cif = ''
   uiState.error = ''
   uiState.showPassword = false
   uiState.isSubmitting = false
@@ -210,14 +220,14 @@ function getErrorMessage(error: unknown, currentMode: AuthMode): string {
     const status = error.response?.status
 
     if (status === 401) {
-      return 'Correo o contraseña incorrectos.'
+      return 'Correo o contrasena incorrectos.'
     }
 
-    if (status === 409 && currentMode === 'register') {
+    if (status === 409 && currentMode !== 'login') {
       const conflictMessage = extractBackendErrorMessage(error.response?.data)
 
       if (conflictMessage.includes('display name')) {
-        return 'Ese alias ya está en uso.'
+        return 'Ese alias ya esta en uso.'
       }
 
       if (conflictMessage.includes('email')) {
@@ -225,22 +235,33 @@ function getErrorMessage(error: unknown, currentMode: AuthMode): string {
       }
 
       if (conflictMessage.includes('phone')) {
-        return 'Ya existe una cuenta registrada con ese teléfono.'
+        return 'Ya existe una cuenta registrada con ese telefono.'
       }
 
-      return 'No se pudo crear la cuenta porque ya existe un dato duplicado.'
+      if (conflictMessage.includes('legal name')) {
+        return 'Ya existe un organizador con esa razon social.'
+      }
+
+      if (conflictMessage.includes('cif')) {
+        return 'Ya existe un organizador con ese CIF.'
+      }
+
+      return currentMode === 'organizer-register'
+        ? 'No se pudo crear la cuenta de organizador porque ya existe un dato duplicado.'
+        : 'No se pudo crear la cuenta porque ya existe un dato duplicado.'
     }
 
     const backendMessage = extractBackendErrorMessage(error.response?.data)
-
     if (backendMessage) {
       return backendMessage
     }
   }
 
   return currentMode === 'login'
-    ? 'No se pudo iniciar sesión.'
-    : 'No se pudo crear la cuenta.'
+    ? 'No se pudo iniciar sesion.'
+    : currentMode === 'organizer-register'
+      ? 'No se pudo crear la cuenta de organizador.'
+      : 'No se pudo crear la cuenta.'
 }
 
 function extractBackendErrorMessage(responseData: unknown): string {
@@ -258,6 +279,69 @@ function extractBackendErrorMessage(responseData: unknown): string {
 
   return firstFieldError ?? ''
 }
+
+function validateForm(currentMode: AuthMode): string {
+  const email = form.email.trim()
+
+  if (!email) {
+    return 'Introduce tu correo electronico.'
+  }
+
+  if (email.length > MAX_LONG_FIELD_LENGTH) {
+    return 'El correo electronico no puede superar 255 caracteres.'
+  }
+
+  if (!EMAIL_PATTERN.test(email)) {
+    return 'Introduce un correo electronico valido.'
+  }
+
+  if (!form.password.trim()) {
+    return 'Introduce una contrasena.'
+  }
+
+  if (form.password.length > MAX_LONG_FIELD_LENGTH) {
+    return 'La contrasena no puede superar 255 caracteres.'
+  }
+
+  if (currentMode === 'login') {
+    return ''
+  }
+
+  const commonRegisterError =
+    requireValue(form.displayName, 'Introduce un alias para tu perfil.') ||
+    validateMaxLength(form.displayName, MAX_LONG_FIELD_LENGTH, 'El alias') ||
+    requireValue(form.name, 'Introduce tu nombre.') ||
+    validateMaxLength(form.name, MAX_LONG_FIELD_LENGTH, 'El nombre') ||
+    requireValue(form.surname, 'Introduce tus apellidos.') ||
+    validateMaxLength(form.surname, MAX_LONG_FIELD_LENGTH, 'Los apellidos') ||
+    requireValue(form.address, 'Introduce tu direccion.') ||
+    validateMaxLength(form.address, MAX_LONG_FIELD_LENGTH, 'La direccion') ||
+    requireValue(form.phone, 'Introduce tu telefono.') ||
+    validateMaxLength(form.phone, MAX_SHORT_FIELD_LENGTH, 'El telefono')
+
+  if (commonRegisterError) {
+    return commonRegisterError
+  }
+
+  if (currentMode === 'organizer-register') {
+    return (
+      requireValue(form.legalName, 'Introduce la razon social.') ||
+      validateMaxLength(form.legalName, MAX_LONG_FIELD_LENGTH, 'La razon social') ||
+      requireValue(form.cif, 'Introduce el CIF.') ||
+      validateMaxLength(form.cif, MAX_SHORT_FIELD_LENGTH, 'El CIF')
+    )
+  }
+
+  return ''
+}
+
+function requireValue(value: string, message: string): string {
+  return value.trim() ? '' : message
+}
+
+function validateMaxLength(value: string, maxLength: number, label: string): string {
+  return value.length > maxLength ? `${label} no puede superar ${maxLength} caracteres.` : ''
+}
 </script>
 
 <template>
@@ -270,7 +354,7 @@ function extractBackendErrorMessage(responseData: unknown): string {
       <button
         class="auth-overlay__backdrop"
         type="button"
-        aria-label="Cerrar cuadro de autenticación"
+        aria-label="Cerrar cuadro de autenticacion"
         @click="closeDialog"
       ></button>
 
@@ -303,7 +387,7 @@ function extractBackendErrorMessage(responseData: unknown): string {
             <div class="auth-dialog__actions">
               <button class="action-button" type="button" @click="closeDialog">Seguir navegando</button>
               <button class="action-button action-button--ghost" type="button" @click="logout">
-                Cerrar sesión
+                Cerrar sesion
               </button>
             </div>
           </div>
@@ -315,14 +399,19 @@ function extractBackendErrorMessage(responseData: unknown): string {
               <p class="ui-copy-muted">{{ dialogSubtitle }}</p>
             </div>
 
-            <div class="auth-tabs" role="tablist" aria-label="Seleccionar modo de autenticación">
+            <div
+              v-if="!isOrganizerRegisterMode"
+              class="auth-tabs"
+              role="tablist"
+              aria-label="Seleccionar modo de autenticacion"
+            >
               <button
                 class="auth-tab"
                 :class="{ 'auth-tab--active': mode.value === 'login' }"
                 type="button"
                 @click="switchMode('login')"
               >
-                Iniciar sesión
+                Iniciar sesion
               </button>
               <button
                 class="auth-tab"
@@ -336,12 +425,12 @@ function extractBackendErrorMessage(responseData: unknown): string {
 
             <form
               class="auth-form"
-              :class="{ 'auth-form--register': mode.value === 'register' }"
+              :class="{ 'auth-form--register': isRegistrationMode }"
               novalidate
               @submit.prevent="submit"
             >
-              <label v-if="mode.value === 'register'" class="auth-field">
-                <span class="auth-field__label">Alias público</span>
+              <label v-if="isRegistrationMode" class="auth-field">
+                <span class="auth-field__label">Alias publico</span>
                 <span class="auth-field__control">
                   <User :size="16" class="auth-field__icon" />
                   <input
@@ -353,7 +442,7 @@ function extractBackendErrorMessage(responseData: unknown): string {
                 </span>
               </label>
 
-              <label v-if="mode.value === 'register'" class="auth-field">
+              <label v-if="isRegistrationMode" class="auth-field">
                 <span class="auth-field__label">Nombre</span>
                 <span class="auth-field__control">
                   <User :size="16" class="auth-field__icon" />
@@ -366,7 +455,7 @@ function extractBackendErrorMessage(responseData: unknown): string {
                 </span>
               </label>
 
-              <label v-if="mode.value === 'register'" class="auth-field">
+              <label v-if="isRegistrationMode" class="auth-field">
                 <span class="auth-field__label">Apellidos</span>
                 <span class="auth-field__control">
                   <User :size="16" class="auth-field__icon" />
@@ -379,34 +468,60 @@ function extractBackendErrorMessage(responseData: unknown): string {
                 </span>
               </label>
 
-              <label v-if="mode.value === 'register'" class="auth-field">
-                <span class="auth-field__label">Teléfono</span>
+              <label v-if="isRegistrationMode" class="auth-field">
+                <span class="auth-field__label">Telefono</span>
                 <span class="auth-field__control">
                   <Lock :size="16" class="auth-field__icon" />
                   <input
                     v-model="form.phone"
                     type="tel"
                     autocomplete="tel"
-                    placeholder="Tu teléfono"
+                    placeholder="Tu telefono"
                   />
                 </span>
               </label>
 
-              <label v-if="mode.value === 'register'" class="auth-field auth-field--full">
-                <span class="auth-field__label">Dirección</span>
+              <label v-if="isOrganizerRegisterMode" class="auth-field">
+                <span class="auth-field__label">Razon social</span>
+                <span class="auth-field__control">
+                  <User :size="16" class="auth-field__icon" />
+                  <input
+                    v-model="form.legalName"
+                    type="text"
+                    autocomplete="organization"
+                    placeholder="Nombre legal de la empresa"
+                  />
+                </span>
+              </label>
+
+              <label v-if="isOrganizerRegisterMode" class="auth-field">
+                <span class="auth-field__label">CIF</span>
+                <span class="auth-field__control">
+                  <Lock :size="16" class="auth-field__icon" />
+                  <input
+                    v-model="form.cif"
+                    type="text"
+                    autocomplete="off"
+                    placeholder="B12345678"
+                  />
+                </span>
+              </label>
+
+              <label v-if="isRegistrationMode" class="auth-field auth-field--full">
+                <span class="auth-field__label">Direccion</span>
                 <span class="auth-field__control">
                   <Mail :size="16" class="auth-field__icon" />
                   <input
                     v-model="form.address"
                     type="text"
                     autocomplete="street-address"
-                    placeholder="Tu dirección"
+                    placeholder="Tu direccion"
                   />
                 </span>
               </label>
 
-              <label class="auth-field" :class="{ 'auth-field--full': mode.value === 'register' }">
-                <span class="auth-field__label">Correo electrónico</span>
+              <label class="auth-field" :class="{ 'auth-field--full': isRegistrationMode }">
+                <span class="auth-field__label">Correo electronico</span>
                 <span class="auth-field__control">
                   <Mail :size="16" class="auth-field__icon" />
                   <input
@@ -419,20 +534,20 @@ function extractBackendErrorMessage(responseData: unknown): string {
                 </span>
               </label>
 
-              <label class="auth-field" :class="{ 'auth-field--full': mode.value === 'register' }">
-                <span class="auth-field__label">Contraseña</span>
+              <label class="auth-field" :class="{ 'auth-field--full': isRegistrationMode }">
+                <span class="auth-field__label">Contrasena</span>
                 <span class="auth-field__control">
                   <Lock :size="16" class="auth-field__icon" />
                   <input
                     v-model="form.password"
                     :type="uiState.showPassword ? 'text' : 'password'"
-                    autocomplete="current-password"
-                    placeholder="Introduce tu contraseña"
+                    :autocomplete="mode.value === 'login' ? 'current-password' : 'new-password'"
+                    placeholder="Introduce tu contrasena"
                   />
                   <button
                     class="auth-field__visibility"
                     type="button"
-                    :aria-label="uiState.showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+                    :aria-label="uiState.showPassword ? 'Ocultar contrasena' : 'Mostrar contrasena'"
                     @click="togglePasswordVisibility"
                   >
                     <EyeOff v-if="uiState.showPassword" :size="16" />
@@ -454,7 +569,11 @@ function extractBackendErrorMessage(responseData: unknown): string {
 
             <p class="auth-dialog__switch">
               {{ switchPrompt }}
-              <button class="auth-dialog__switch-action" type="button" @click="switchMode(mode.value === 'login' ? 'register' : 'login')">
+              <button
+                class="auth-dialog__switch-action"
+                type="button"
+                @click="switchMode(mode.value === 'organizer-register' ? 'register' : 'organizer-register')"
+              >
                 {{ switchActionLabel }}
               </button>
             </p>

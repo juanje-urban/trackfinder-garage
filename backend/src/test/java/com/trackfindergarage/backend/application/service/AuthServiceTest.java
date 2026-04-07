@@ -1,8 +1,10 @@
 package com.trackfindergarage.backend.application.service;
 
 import com.trackfindergarage.backend.application.port.in.UserUseCase;
+import com.trackfindergarage.backend.application.port.in.OrganizerUseCase;
 import com.trackfindergarage.backend.application.port.out.UserPersistencePort;
 import com.trackfindergarage.backend.common.exception.InvalidCredentialsException;
+import com.trackfindergarage.backend.domain.model.Organizer;
 import com.trackfindergarage.backend.domain.model.Role;
 import com.trackfindergarage.backend.domain.model.User;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.AuthResponse;
@@ -31,6 +33,9 @@ class AuthServiceTest {
 
     @Mock
     private UserUseCase userUseCase;
+
+    @Mock
+    private OrganizerUseCase organizerUseCase;
 
     @Mock
     private UserPersistencePort userPersistencePort;
@@ -129,6 +134,36 @@ class AuthServiceTest {
 
         assertThrows(InvalidCredentialsException.class, () -> authService.login("driver@example.com", "secret"));
         verify(passwordEncoder, never()).matches(any(), any());
+    }
+
+    @Test
+    void registerOrganizerReturnsOrganizerRole() {
+        when(organizerUseCase.createOrganizer(any(Organizer.class), eq("secret"))).thenAnswer(invocation -> {
+            Organizer createdOrganizer = invocation.getArgument(0);
+            createdOrganizer.setIdUser(20L);
+            User user = createdOrganizer.getUser();
+            user.setId(20L);
+            Role role = new Role();
+            role.setRoleName("ORGANIZER");
+            user.setRole(role);
+            return createdOrganizer;
+        });
+
+        AuthResponse response = authService.registerOrganizer(
+                "tracklimits",
+                "tracklimits@example.com",
+                "secret",
+                "Laura",
+                "Sanz",
+                "Calle Box 27",
+                "666555444",
+                "Track Limits Iberia S.L.",
+                "B12345678"
+        );
+
+        assertEquals(20L, response.getUserId());
+        assertEquals("tracklimits", response.getDisplayName());
+        assertEquals("ORGANIZER", response.getRoleName());
     }
 
     private User enabledUser(Long id, String displayName, String email) {
