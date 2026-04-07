@@ -72,6 +72,9 @@ class AuthServiceTest {
         when(userUseCase.createUser(any(User.class), eq("secret"))).thenAnswer(invocation -> {
             User createdUser = invocation.getArgument(0);
             createdUser.setId(11L);
+            Role role = new Role();
+            role.setRoleName("USER");
+            createdUser.setRole(role);
             return createdUser;
         });
 
@@ -96,7 +99,13 @@ class AuthServiceTest {
     @Test
     void registerTrimsProfileFieldsBeforeCreatingUser() {
         when(userUseCase.createUser(any(User.class), eq("secret")))
-                .thenAnswer(invocation -> invocation.getArgument(0));
+                .thenAnswer(invocation -> {
+                    User createdUser = invocation.getArgument(0);
+                    Role role = new Role();
+                    role.setRoleName("USER");
+                    createdUser.setRole(role);
+                    return createdUser;
+                });
 
         AuthResponse response = authService.register(
                 "  latebraker_88  ",
