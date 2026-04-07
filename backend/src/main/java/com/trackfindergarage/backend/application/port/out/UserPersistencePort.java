@@ -15,6 +15,8 @@ public interface UserPersistencePort {
 
     Optional<User> findByEmail(String email);
 
+    Optional<User> findByPhone(String phone);
+
     List<User> findAll();
 
     void delete(User user);

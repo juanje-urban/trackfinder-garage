@@ -22,6 +22,7 @@ public class UserService implements UserUseCase {
     private static final String USER_NOT_FOUND_WITH_ID = "User not found with id: ";
     private static final String USER_DISPLAY_NAME_ALREADY_EXISTS = "User with display name '%s' already exists";
     private static final String USER_EMAIL_ALREADY_EXISTS = "User with email '%s' already exists";
+    private static final String USER_PHONE_ALREADY_EXISTS = "User with phone '%s' already exists";
     private static final String ORGANIZER_USERS_MANAGED_THROUGH_ORGANIZER_SERVICE =
             "Organizer users must be managed through OrganizerService";
 
@@ -44,6 +45,7 @@ public class UserService implements UserUseCase {
     public User createUser(User user, String rawPassword) {
         validateDisplayNameForCreate(user.getDisplayName());
         validateEmailForCreate(user.getEmail());
+        validatePhoneForCreate(user.getPhone());
 
         Role role = getUserRole();
 
@@ -65,6 +67,7 @@ public class UserService implements UserUseCase {
 
         validateDisplayNameForUpdate(id, user.getDisplayName());
         validateEmailForUpdate(id, user.getEmail());
+        validatePhoneForUpdate(id, user.getPhone());
 
         existingUser.setDisplayName(user.getDisplayName());
         existingUser.setEmail(user.getEmail());
@@ -154,11 +157,27 @@ public class UserService implements UserUseCase {
                 });
     }
 
+    private void validatePhoneForCreate(String phone) {
+        userPersistencePort.findByPhone(phone)
+                .ifPresent(existingUser -> {
+                    throw new DuplicateResourceException(USER_PHONE_ALREADY_EXISTS.formatted(phone));
+                });
+    }
+
     private void validateEmailForUpdate(Long userId, String email) {
         userPersistencePort.findByEmail(email)
                 .ifPresent(existingUser -> {
                     if (!existingUser.getId().equals(userId)) {
                         throw new DuplicateResourceException(USER_EMAIL_ALREADY_EXISTS.formatted(email));
+                    }
+                });
+    }
+
+    private void validatePhoneForUpdate(Long userId, String phone) {
+        userPersistencePort.findByPhone(phone)
+                .ifPresent(existingUser -> {
+                    if (!existingUser.getId().equals(userId)) {
+                        throw new DuplicateResourceException(USER_PHONE_ALREADY_EXISTS.formatted(phone));
                     }
                 });
     }

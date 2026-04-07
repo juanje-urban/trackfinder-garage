@@ -1,7 +1,30 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import { Bell, User } from 'lucide-vue-next'
+import { useAuth } from '@/composables/useAuth'
 import logoUrl from '@/assets/tfg_logo.svg'
+import { getDisplayNameMonogram } from '@/utils/identity'
+
+const auth = useAuth()
+
+const profileMonogram = computed(() =>
+  getDisplayNameMonogram(auth.session.value?.displayName ?? ''),
+)
+
+const roleLabel = computed(() => {
+  const roleName = auth.session.value?.roleName?.toUpperCase() ?? ''
+
+  if (roleName === 'ADMIN') {
+    return 'Administrador'
+  }
+
+  if (roleName === 'ORGANIZER') {
+    return 'Organizador'
+  }
+
+  return ''
+})
 </script>
 
 <template>
@@ -21,12 +44,22 @@ import logoUrl from '@/assets/tfg_logo.svg'
       </nav>
 
       <div class="header-actions">
+        <span v-if="roleLabel" class="header-role-label">{{ roleLabel }}</span>
+
         <button class="header-action" type="button" aria-label="Notifications">
           <Bell :size="18" :stroke-width="2.2" />
         </button>
 
-        <button class="header-action header-action--profile" type="button" aria-label="Profile">
-           <User :size="18" :stroke-width="2.2" />
+        <button
+          class="header-action header-action--profile"
+          type="button"
+          :aria-label="auth.isAuthenticated.value ? 'Cuenta activa' : 'Acceso de usuario'"
+          @click="auth.openAuthDialog"
+        >
+          <span v-if="auth.isAuthenticated.value" class="header-action__monogram">
+            {{ profileMonogram }}
+          </span>
+          <User v-else :size="18" :stroke-width="2.2" />
         </button>
       </div>
     </div>
@@ -81,6 +114,13 @@ import logoUrl from '@/assets/tfg_logo.svg'
   justify-self: end;
 }
 
+.header-role-label {
+  color: var(--text-strong);
+  font-size: var(--fs-caption);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
 .header-action {
   width: 44px;
   height: 44px;
@@ -98,6 +138,11 @@ import logoUrl from '@/assets/tfg_logo.svg'
   background: var(--surface-light);
   color: var(--text-on-light);
   font-weight: 800;
+}
+
+.header-action__monogram {
+  font-size: var(--fs-caption);
+  letter-spacing: 0.08em;
 }
 
 @media (max-width: 980px) {
@@ -137,6 +182,10 @@ import logoUrl from '@/assets/tfg_logo.svg'
   .nav-link {
     padding-inline: 10px;
     font-size: var(--fs-caption);
+  }
+
+  .header-role-label {
+    display: none;
   }
 }
 </style>

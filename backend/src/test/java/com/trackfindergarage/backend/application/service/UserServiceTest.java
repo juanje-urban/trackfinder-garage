@@ -53,6 +53,7 @@ class UserServiceTest {
 
         when(userPersistencePort.findByDisplayName("driver")).thenReturn(Optional.empty());
         when(userPersistencePort.findByEmail("driver@example.com")).thenReturn(Optional.empty());
+        when(userPersistencePort.findByPhone("123456789")).thenReturn(Optional.empty());
         when(rolePersistencePort.findByRoleName("USER")).thenReturn(Optional.of(userRole));
         when(passwordEncoder.encode("plain-pass")).thenReturn("hashed-pass");
         when(userPersistencePort.save(user)).then(returnsFirstArg());
@@ -83,6 +84,7 @@ class UserServiceTest {
 
         when(userPersistencePort.findByDisplayName("driver")).thenReturn(Optional.empty());
         when(userPersistencePort.findByEmail("driver@example.com")).thenReturn(Optional.empty());
+        when(userPersistencePort.findByPhone("123456789")).thenReturn(Optional.empty());
         when(rolePersistencePort.findByRoleName("USER")).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> userService.createUser(user, "plain-pass"));
@@ -104,6 +106,7 @@ class UserServiceTest {
         when(userPersistencePort.findById(10L)).thenReturn(Optional.of(existingUser));
         when(userPersistencePort.findByDisplayName("new-driver")).thenReturn(Optional.empty());
         when(userPersistencePort.findByEmail("new@example.com")).thenReturn(Optional.empty());
+        when(userPersistencePort.findByPhone("999")).thenReturn(Optional.empty());
         when(userPersistencePort.save(existingUser)).thenReturn(existingUser);
 
         User updatedUser = userService.updateUser(10L, updateRequest);
@@ -195,6 +198,18 @@ class UserServiceTest {
         when(userPersistencePort.findById(42L)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> userService.getUserById(42L));
+    }
+
+    @Test
+    void createUserThrowsWhenPhoneAlreadyExists() {
+        User user = userWithId(null, "driver");
+
+        when(userPersistencePort.findByDisplayName("driver")).thenReturn(Optional.empty());
+        when(userPersistencePort.findByEmail("driver@example.com")).thenReturn(Optional.empty());
+        when(userPersistencePort.findByPhone("123456789")).thenReturn(Optional.of(new User()));
+
+        assertThrows(DuplicateResourceException.class, () -> userService.createUser(user, "plain-pass"));
+        verify(userPersistencePort, never()).save(user);
     }
 
     private User userWithId(Long id, String displayName) {

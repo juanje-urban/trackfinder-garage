@@ -37,6 +37,11 @@ public class UserPersistenceAdapter implements UserPersistencePort {
     }
 
     @Override
+    public Optional<User> findByPhone(String phone) {
+        return springDataUserRepository.findByPhone(phone);
+    }
+
+    @Override
     public List<User> findAll() {
         return springDataUserRepository.findAll();
     }
