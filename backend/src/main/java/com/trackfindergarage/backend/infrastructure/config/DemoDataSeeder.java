@@ -757,7 +757,9 @@ public class DemoDataSeeder implements CommandLineRunner {
 
     private LocalDateTime bookingTimestamp(LocalDate eventDate, int attendeeIndex) {
         int hour = attendeeIndex % 2 == 0 ? 19 - attendeeIndex : 9 + attendeeIndex;
-        int minute = 5 + (attendeeIndex * 11);
+        int minuteOffset = 5 + (attendeeIndex * 11);
+        hour += minuteOffset / 60;
+        int minute = minuteOffset % 60;
         return eventDate.minusDays(45L - (attendeeIndex * 5L)).atTime(hour, minute);
     }
 
