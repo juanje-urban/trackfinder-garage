@@ -32,7 +32,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigInteger;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -281,12 +285,23 @@ public class DemoDataSeeder implements CommandLineRunner {
         user.setName(name);
         user.setSurname(surname);
         user.setAddress("Direccion demo");
-        user.setPhone("600000000");
+        user.setPhone(demoPhoneNumber(email));
         user.setRole(role);
         user.setPasswordHash(passwordEncoder.encode(rawPassword));
         user.setCreated(LocalDateTime.now());
         user.setEnabled(true);
         return userRepository.save(user);
+    }
+
+    private String demoPhoneNumber(String uniqueKey) {
+        try {
+            byte[] digest = MessageDigest.getInstance("SHA-256")
+                    .digest(uniqueKey.getBytes(StandardCharsets.UTF_8));
+            String digits = new BigInteger(1, digest).toString();
+            return "6" + digits.substring(0, 11);
+        } catch (NoSuchAlgorithmException exception) {
+            throw new IllegalStateException("SHA-256 not available for demo phone generation", exception);
+        }
     }
 
     private void createOrganizer(String displayName,
