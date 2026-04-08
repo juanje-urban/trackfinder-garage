@@ -14,7 +14,7 @@ const locationCount = computed(
   () => new Set(tracks.value.map((track) => track.location)).size,
 )
 
-const featuredTrack = computed(() => tracks.value[0]?.name ?? 'Catalog pending')
+const featuredTrack = computed(() => tracks.value[0])
 
 onMounted(async () => {
   try {
@@ -50,7 +50,7 @@ onMounted(async () => {
     empty-message="No public circuits are available right now."
   >
     <template #hero-value>
-      <strong>{{ featuredTrack }}</strong>
+      <strong v-if="featuredTrack">{{ featuredTrack.name }}</strong>
       <span>Circuit catalog powered by the public API</span>
     </template>
 

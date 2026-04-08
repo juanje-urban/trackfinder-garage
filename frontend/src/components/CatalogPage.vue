@@ -4,23 +4,32 @@ import ContentSection from '@/components/ContentSection.vue'
 import HeroInfoPanel from '@/components/HeroInfoPanel.vue'
 import PageHero from '@/components/PageHero.vue'
 
-defineProps<{
-  heroEyebrow: string
-  heroTitle: string
-  heroDescription: string
-  infoLabel: string
-  infoCaption: string
-  toolbarChips: Array<{ label: string; accent?: boolean }>
-  toolbarNote: string
-  sectionEyebrow: string
-  sectionTitle: string
-  sectionHint: string
-  loading: boolean
-  loadingMessage: string
-  error: string
-  empty: boolean
-  emptyMessage: string
-}>()
+withDefaults(
+  defineProps<{
+    heroEyebrow: string
+    heroTitle: string
+    heroDescription: string
+    infoLabel: string
+    infoCaption: string
+    toolbarChips?: Array<{ label: string; accent?: boolean }>
+    toolbarNote?: string
+    sectionEyebrow?: string
+    sectionTitle?: string
+    sectionHint?: string
+    loading: boolean
+    loadingMessage: string
+    error: string
+    empty: boolean
+    emptyMessage: string
+  }>(),
+  {
+    toolbarChips: () => [],
+    toolbarNote: '',
+    sectionEyebrow: '',
+    sectionTitle: '',
+    sectionHint: '',
+  },
+)
 </script>
 
 <template>
@@ -37,11 +46,15 @@ defineProps<{
       </template>
     </PageHero>
 
-    <section class="metrics-grid">
+    <section v-if="$slots.metrics" class="metrics-grid">
       <slot name="metrics" />
     </section>
 
-    <CatalogToolbar :chips="toolbarChips" :note="toolbarNote" />
+    <slot name="summary" />
+
+    <slot name="toolbar">
+      <CatalogToolbar :chips="toolbarChips" :note="toolbarNote" />
+    </slot>
 
     <ContentSection
       :eyebrow="sectionEyebrow"

@@ -9,7 +9,7 @@ const props = defineProps<{
   ranking: TrackRecord[]
 }>()
 
-const bestLap = computed(() => props.ranking[0] ?? null)
+const bestLap = computed(() => props.ranking[0])
 
 function positionLabel(index: number): string {
   return `P${index + 1}`

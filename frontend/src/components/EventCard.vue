@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import type { Event } from '@/types/event'
 import { formatCurrency, formatDisplayDate } from '@/utils/format'
+import { getTrackMedia } from '@/utils/trackMedia'
 import { createVisualStyle, eventVisualPalettes } from '@/utils/visualPalettes'
 
 const props = defineProps<{
@@ -10,11 +11,20 @@ const props = defineProps<{
 }>()
 
 const mediaStyle = computed(() => {
+  const trackMedia = getTrackMedia(props.event.trackName)
+
   return createVisualStyle(
     props.event.id,
     eventVisualPalettes,
     '--event-start',
     '--event-end',
+    trackMedia.coverImage
+      ? {
+          '--event-photo-image': `url("${trackMedia.coverImage}")`,
+        }
+      : {
+          '--event-photo-image': 'linear-gradient(135deg, var(--event-start), var(--event-end))',
+        },
   )
 })
 
@@ -35,15 +45,8 @@ const availabilityLabel = computed(() => {
 })
 
 const capacityFill = computed(() => {
-  const remaining = props.event.remainingCapacity
-  const capacity = props.event.maxParticipants
-
-  if (capacity <= 0) {
-    return 56
-  }
-
-  const booked = Math.max(0, capacity - remaining)
-  return Math.min(100, Math.max(8, (booked / capacity) * 100))
+  const booked = props.event.maxParticipants - props.event.remainingCapacity
+  return (booked / props.event.maxParticipants) * 100
 })
 
 const remainingText = computed(() => {
@@ -56,7 +59,6 @@ const remainingText = computed(() => {
     <div class="event-card__media" :style="mediaStyle">
       <div class="media-card__badges">
         <span class="badge badge--accent">{{ availabilityLabel }}</span>
-        <span class="badge badge--soft">Proximo evento</span>
       </div>
     </div>
 
@@ -102,8 +104,11 @@ const remainingText = computed(() => {
   justify-content: space-between;
   background:
     linear-gradient(180deg, var(--surface-glass-strong), var(--media-overlay-bottom)),
-    linear-gradient(135deg, var(--event-start), var(--event-end));
+    var(--event-photo-image);
   position: relative;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .event-card__media::before {

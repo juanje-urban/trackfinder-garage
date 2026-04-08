@@ -1,9 +1,9 @@
 <script setup lang="ts">
 withDefaults(
   defineProps<{
-    eyebrow: string
-    title: string
-    hint: string
+    eyebrow?: string
+    title?: string
+    hint?: string
     loading?: boolean
     loadingMessage?: string
     error?: string
@@ -11,6 +11,9 @@ withDefaults(
     emptyMessage?: string
   }>(),
   {
+    eyebrow: '',
+    title: '',
+    hint: '',
     loading: false,
     loadingMessage: '',
     error: '',
@@ -22,11 +25,11 @@ withDefaults(
 
 <template>
   <section class="section-stack">
-    <div class="section-heading">
+    <div v-if="eyebrow || title || hint || $slots.action" class="section-heading">
       <div class="section-heading__copy">
-        <p class="section-heading__eyebrow">{{ eyebrow }}</p>
-        <h2 class="section-heading__title">{{ title }}</h2>
-        <p class="section-heading__hint">{{ hint }}</p>
+        <p v-if="eyebrow" class="section-heading__eyebrow">{{ eyebrow }}</p>
+        <h2 v-if="title" class="section-heading__title">{{ title }}</h2>
+        <p v-if="hint" class="section-heading__hint">{{ hint }}</p>
       </div>
 
       <slot name="action" />

@@ -9,6 +9,7 @@ import { getTrackById } from '@/services/trackService'
 import type { Event } from '@/types/event'
 import type { Track } from '@/types/track'
 import { formatCurrency, formatDisplayDate } from '@/utils/format'
+import { getTrackMedia } from '@/utils/trackMedia'
 import { createVisualStyle, eventVisualPalettes } from '@/utils/visualPalettes'
 
 const route = useRoute()
@@ -28,16 +29,21 @@ const formattedPrice = computed(() =>
   event.value ? formatCurrency(event.value.basePrice) : '',
 )
 
-const locationLabel = computed(() => track.value?.location ?? 'Location pending')
+function getHeroStyle(eventId: number) {
+  const coverImage = track.value ? getTrackMedia(track.value.name).coverImage : undefined
 
-const heroStyle = computed(() => {
   return createVisualStyle(
-    event.value?.id ?? 0,
+    eventId,
     eventVisualPalettes,
     '--detail-start',
     '--detail-end',
+    {
+      '--detail-photo-image': coverImage
+        ? `url("${coverImage}")`
+        : 'linear-gradient(135deg, var(--detail-start), var(--detail-end))',
+    },
   )
-})
+}
 
 const schedule = computed(() => [
   { label: 'Sign-on and briefing', time: '07:30' },
@@ -67,21 +73,20 @@ const includedBookingItems = computed(() => [
 
 const optionalBookingItems = computed(() => optionalExtras.value)
 
-const availabilityTone = computed(() => {
-  const remaining = event.value?.remainingCapacity ?? 0
-  if (remaining <= 3) {
+function getAvailabilityTone(remainingCapacity: number): string {
+  if (remainingCapacity <= 3) {
     return 'Last spots available'
   }
-  if (remaining <= 10) {
+  if (remainingCapacity <= 10) {
     return 'Limited availability'
   }
 
   return 'Booking open'
-})
+}
 
-const remainingLabel = computed(() => {
-  return `${event.value?.remainingCapacity ?? 0} spots remaining for this event`
-})
+function getRemainingLabel(remainingCapacity: number): string {
+  return `${remainingCapacity} spots remaining for this event`
+}
 
 onMounted(async () => {
   try {
@@ -107,7 +112,7 @@ onMounted(async () => {
     <p v-if="loading" class="status-message">Loading event details...</p>
     <p v-else-if="error" class="status-message status-message--error">{{ error }}</p>
 
-    <template v-else-if="event">
+    <template v-else-if="event && track">
       <nav class="event-detail__breadcrumbs">
         <RouterLink to="/events">Events</RouterLink>
         <span>/</span>
@@ -116,16 +121,16 @@ onMounted(async () => {
 
       <section class="event-detail__hero-layout">
         <article class="event-detail__hero panel">
-          <div class="event-detail__hero-media" :style="heroStyle">
+          <div class="event-detail__hero-media" :style="getHeroStyle(event.id)">
             <div class="media-card__badges">
-              <span class="badge badge--accent">{{ availabilityTone }}</span>
+              <span class="badge badge--accent">{{ getAvailabilityTone(event.remainingCapacity) }}</span>
               <span class="badge badge--soft">Public session</span>
             </div>
 
             <div class="event-detail__hero-copy">
               <p class="event-detail__hero-date">{{ formattedDate }}</p>
               <h1 class="ui-title-hero">{{ event.trackName }} Track Day</h1>
-              <p class="event-detail__hero-location">{{ locationLabel }}</p>
+              <p class="event-detail__hero-location">{{ track.location }}</p>
             </div>
           </div>
         </article>
@@ -140,7 +145,13 @@ onMounted(async () => {
           />
 
           <DetailInfoCard eyebrow="Track map" title="Layout preview" subtitle="Concept visualization">
-            <div class="track-map-placeholder">
+            <img
+              v-if="getTrackMedia(track.name).layoutImage"
+              :src="getTrackMedia(track.name).layoutImage"
+              :alt="`Trazado de ${track.name}`"
+              class="track-map-image"
+            />
+            <div v-else class="track-map-placeholder">
               <span class="track-map-placeholder__line"></span>
             </div>
           </DetailInfoCard>
@@ -155,7 +166,7 @@ onMounted(async () => {
             description="This public detail page now follows the premium racing layout language from your references."
           >
             <p class="ui-copy-body">
-              {{ track?.description || 'This circuit will host a public track session designed for drivers who want a focused, high-energy day on track.' }}
+              {{ track.description }}
             </p>
             <p class="ui-copy-body">
               The current frontend uses the real event and circuit data already exposed by the backend, wrapped in a more polished event-detail presentation inspired by your references.
@@ -192,7 +203,7 @@ onMounted(async () => {
               <div class="info-tile">
                 <span class="info-tile__label">Venue</span>
                 <strong class="info-tile__title">{{ event.trackName }}</strong>
-                <p class="info-tile__body">{{ locationLabel }}</p>
+                <p class="info-tile__body">{{ track.location }}</p>
               </div>
 
               <div class="info-tile">
@@ -204,12 +215,12 @@ onMounted(async () => {
               <div class="info-tile">
                 <span class="info-tile__label">Capacity</span>
                 <strong class="info-tile__title">{{ event.maxParticipants }}</strong>
-                <p class="info-tile__body">{{ remainingLabel }}</p>
+                <p class="info-tile__body">{{ getRemainingLabel(event.remainingCapacity) }}</p>
               </div>
 
               <div class="info-tile">
                 <span class="info-tile__label">Catalog state</span>
-                <strong class="info-tile__title">{{ availabilityTone }}</strong>
+                <strong class="info-tile__title">{{ getAvailabilityTone(event.remainingCapacity) }}</strong>
                 <p class="info-tile__body">Booking button intentionally protected for now</p>
               </div>
             </div>
@@ -226,8 +237,8 @@ onMounted(async () => {
 
           <DetailInfoCard
             eyebrow="Availability"
-            :title="availabilityTone"
-            :subtitle="remainingLabel"
+            :title="getAvailabilityTone(event.remainingCapacity)"
+            :subtitle="getRemainingLabel(event.remainingCapacity)"
             tone="success"
           />
         </aside>
@@ -263,8 +274,11 @@ onMounted(async () => {
   justify-content: space-between;
   background:
     linear-gradient(180deg, var(--media-overlay-top), var(--media-overlay-bottom-strong)),
-    linear-gradient(135deg, var(--detail-start), var(--detail-end));
+    var(--detail-photo-image);
   position: relative;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .event-detail__hero-media::before {
@@ -320,6 +334,15 @@ onMounted(async () => {
   background:
     linear-gradient(90deg, var(--map-surface-start), var(--map-surface-end)),
     linear-gradient(180deg, var(--map-paper-start), var(--map-paper-end));
+}
+
+.track-map-image {
+  width: 100%;
+  min-height: 170px;
+  border-radius: var(--radius-inner);
+  object-fit: cover;
+  display: block;
+  background: var(--surface-light);
 }
 
 .track-map-placeholder::before,

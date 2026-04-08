@@ -2,7 +2,7 @@
 import { computed, onBeforeUnmount, reactive, watch } from 'vue'
 import { AxiosError } from 'axios'
 import { Eye, EyeOff, Lock, Mail, User, X } from 'lucide-vue-next'
-import heroImage from '@/assets/tracks/cheste_1.jpg'
+import heroImage from '@/assets/tracks/ricardo_tormo_cover_1.jpg'
 import logoUrl from '@/assets/tfg_logo.svg'
 import { useAuth } from '@/composables/useAuth'
 import { login, register, registerOrganizer } from '@/services/authService'

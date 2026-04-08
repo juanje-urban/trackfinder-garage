@@ -142,7 +142,9 @@ class DemoDataSeederTest {
         assertTrue(state.tracksByName.size() >= 20);
         assertTrue(state.servicesByName.size() >= 12);
         assertTrue(countEventsBefore(state, FUTURE_EVENTS_THRESHOLD) >= 8);
-        assertTrue(countEventsFrom(state, FUTURE_EVENTS_THRESHOLD) >= 13);
+        assertTrue(countEventsFrom(state, FUTURE_EVENTS_THRESHOLD) >= 23);
+        assertEquals(state.tracksByName.size(), countTracksWithFutureEvents(state, FUTURE_EVENTS_THRESHOLD));
+        assertEquals(countEventsFrom(state, FUTURE_EVENTS_THRESHOLD), countFutureEventsWithBookings(state, FUTURE_EVENTS_THRESHOLD));
         assertTrue(state.eventBookings.size() >= 71);
         assertTrue(state.eventBookings.stream()
                 .allMatch(eventBooking -> USER_ROLE_NAME.equals(eventBooking.getUser().getRole().getRoleName())));
@@ -222,6 +224,23 @@ class DemoDataSeederTest {
     private int countEventsFrom(SeedState state, LocalDate threshold) {
         return Math.toIntExact(state.eventsByTrackAndDate.values().stream()
                 .filter(event -> !event.getEventDate().isBefore(threshold))
+                .count());
+    }
+
+    private int countTracksWithFutureEvents(SeedState state, LocalDate threshold) {
+        return Math.toIntExact(state.eventsByTrackAndDate.values().stream()
+                .filter(event -> !event.getEventDate().isBefore(threshold))
+                .map(event -> event.getTrack().getId())
+                .distinct()
+                .count());
+    }
+
+    private int countFutureEventsWithBookings(SeedState state, LocalDate threshold) {
+        return Math.toIntExact(state.eventBookings.stream()
+                .map(EventBooking::getEvent)
+                .filter(event -> !event.getEventDate().isBefore(threshold))
+                .map(Event::getId)
+                .distinct()
                 .count());
     }
 

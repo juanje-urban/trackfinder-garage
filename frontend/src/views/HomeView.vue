@@ -31,7 +31,7 @@ const sortedEvents = computed(() =>
   [...events.value].sort((left, right) => left.eventDate.localeCompare(right.eventDate)),
 )
 
-const featuredEvent = computed(() => sortedEvents.value[0] ?? null)
+const featuredEvent = computed(() => sortedEvents.value[0])
 const homeEvents = computed(() => sortedEvents.value.slice(0, 3))
 
 const openSpots = computed(() =>
@@ -39,30 +39,6 @@ const openSpots = computed(() =>
 )
 
 const totalLocations = computed(() => new Set(tracks.value.map((track) => track.location)).size)
-
-const heroCaption = computed(() => {
-  if (!featuredEvent.value) {
-    return 'Las proximas sesiones apareceran aqui tan pronto como esten disponibles.'
-  }
-
-  return `${formatDisplayDate(featuredEvent.value.eventDate)} - ${formatCurrency(featuredEvent.value.basePrice)} - ${featuredEvent.value.organizerLegalName}`
-})
-
-const featuredEventTitle = computed(() => {
-  if (!featuredEvent.value) {
-    return 'Proximamente'
-  }
-
-  return featuredEvent.value.trackName
-})
-
-const featuredAvailabilityLabel = computed(() => {
-  if (!featuredEvent.value) {
-    return 'Sin eventos programados'
-  }
-
-  return `${featuredEvent.value.remainingCapacity} plazas disponibles`
-})
 
 function selectUpcomingUniqueTrackEvents(sourceEvents: Event[], limit: number): Event[] {
   const seenTrackIds = new Set<number>()
@@ -131,10 +107,13 @@ onMounted(async () => {
       :image-url="heroImage"
       image-alt="Circuito del Jarama"
     >
-      <template #aside>
-        <HeroInfoPanel label="Semáforo en verde" :caption="heroCaption">
-          <strong>{{ featuredEventTitle }}</strong>
-          <span>{{ featuredAvailabilityLabel }}</span>
+      <template v-if="featuredEvent" #aside>
+        <HeroInfoPanel
+          label="Semaforo en verde"
+          :caption="`${formatDisplayDate(featuredEvent.eventDate)} - ${formatCurrency(featuredEvent.basePrice)} - ${featuredEvent.organizerLegalName}`"
+        >
+          <strong>{{ featuredEvent.trackName }}</strong>
+          <span>{{ featuredEvent.remainingCapacity }} plazas disponibles</span>
         </HeroInfoPanel>
       </template>
     </PageHero>

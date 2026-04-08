@@ -156,13 +156,23 @@ public class DemoDataSeeder implements CommandLineRunner {
     private static final LocalDate FUTURE_JARAMA_EVENT_DATE = LocalDate.of(2026, 7, 12);
     private static final LocalDate FUTURE_CALAFAT_EVENT_DATE = LocalDate.of(2026, 7, 19);
     private static final LocalDate FUTURE_ESTORIL_EVENT_DATE = LocalDate.of(2026, 7, 26);
+    private static final LocalDate FUTURE_GUADIX_EVENT_DATE = LocalDate.of(2026, 8, 2);
     private static final LocalDate FUTURE_JEREZ_EVENT_DATE = LocalDate.of(2026, 8, 9);
+    private static final LocalDate FUTURE_BUGATTI_EVENT_DATE = LocalDate.of(2026, 8, 16);
+    private static final LocalDate FUTURE_MONTEBLANCO_EVENT_DATE = LocalDate.of(2026, 8, 23);
     private static final LocalDate FUTURE_BARCELONA_EVENT_DATE = LocalDate.of(2026, 8, 30);
+    private static final LocalDate FUTURE_BRAGA_EVENT_DATE = LocalDate.of(2026, 9, 6);
     private static final LocalDate FUTURE_ALGARVE_EVENT_DATE = LocalDate.of(2026, 9, 13);
+    private static final LocalDate FUTURE_VILA_REAL_EVENT_DATE = LocalDate.of(2026, 9, 20);
+    private static final LocalDate FUTURE_NURBURGRING_EVENT_DATE = LocalDate.of(2026, 9, 27);
     private static final LocalDate FUTURE_RICARDO_TORMO_EVENT_DATE = LocalDate.of(2026, 10, 4);
+    private static final LocalDate FUTURE_SARTHE_EVENT_DATE = LocalDate.of(2026, 10, 11);
     private static final LocalDate FUTURE_NAVARRA_EVENT_DATE = LocalDate.of(2026, 10, 18);
+    private static final LocalDate FUTURE_NURBURGRING_GP_EVENT_DATE = LocalDate.of(2026, 10, 25);
     private static final LocalDate FUTURE_MOTORLAND_EVENT_DATE = LocalDate.of(2026, 11, 8);
+    private static final LocalDate FUTURE_PAUL_RICARD_EVENT_DATE = LocalDate.of(2026, 11, 15);
     private static final LocalDate FUTURE_CARTAGENA_EVENT_DATE = LocalDate.of(2026, 11, 29);
+    private static final LocalDate FUTURE_BOAVISTA_EVENT_DATE = LocalDate.of(2026, 12, 6);
     private static final LocalDate FUTURE_ALBACETE_EVENT_DATE = LocalDate.of(2027, 1, 24);
     private static final LocalDate FUTURE_SPA_EVENT_DATE = LocalDate.of(2027, 2, 14);
     private static final LocalDate FUTURE_MUGELLO_EVENT_DATE = LocalDate.of(2027, 3, 14);
@@ -1052,13 +1062,23 @@ public class DemoDataSeeder implements CommandLineRunner {
                 new EventSeed(TRACKEVENTS_LEGAL_NAME, JARAMA_TRACK_NAME, FUTURE_JARAMA_EVENT_DATE, price("205.00"), 60),
                 new EventSeed(RACINGPRO_LEGAL_NAME, CALAFAT_TRACK_NAME, FUTURE_CALAFAT_EVENT_DATE, price("160.00"), 38),
                 new EventSeed(LUSITANIA_RACING_LEGAL_NAME, ESTORIL_TRACK_NAME, FUTURE_ESTORIL_EVENT_DATE, price("220.00"), 48),
+                new EventSeed(RACINGPRO_LEGAL_NAME, GUADIX_TRACK_NAME, FUTURE_GUADIX_EVENT_DATE, price("150.00"), 6),
                 new EventSeed(TRACKLIMITS_IBERIA_LEGAL_NAME, JEREZ_TRACK_NAME, FUTURE_JEREZ_EVENT_DATE, price("198.00"), 52),
+                new EventSeed(APEX_IBERIA_LEGAL_NAME, LE_MANS_BUGATTI_TRACK_NAME, FUTURE_BUGATTI_EVENT_DATE, price("275.00"), 8),
+                new EventSeed(TRACKLIMITS_IBERIA_LEGAL_NAME, MONTEBLANCO_TRACK_NAME, FUTURE_MONTEBLANCO_EVENT_DATE, price("178.00"), 14),
                 new EventSeed(APEX_IBERIA_LEGAL_NAME, BARCELONA_TRACK_NAME, FUTURE_BARCELONA_EVENT_DATE, price("255.00"), 70),
+                new EventSeed(LUSITANIA_RACING_LEGAL_NAME, BRAGA_TRACK_NAME, FUTURE_BRAGA_EVENT_DATE, price("155.00"), 12),
                 new EventSeed(TRACKEVENTS_LEGAL_NAME, ALGARVE_TRACK_NAME, FUTURE_ALGARVE_EVENT_DATE, price("285.00"), 50),
+                new EventSeed(LUSITANIA_RACING_LEGAL_NAME, VILA_REAL_TRACK_NAME, FUTURE_VILA_REAL_EVENT_DATE, price("190.00"), 6),
+                new EventSeed(IBERIAN_MOTORSPORT_LEGAL_NAME, NURBURGRING_TRACK_NAME, FUTURE_NURBURGRING_EVENT_DATE, price("340.00"), 12),
                 new EventSeed(IBERIAN_MOTORSPORT_LEGAL_NAME, RICARDO_TORMO_TRACK_NAME, FUTURE_RICARDO_TORMO_EVENT_DATE, PRICE_225_00, 72),
+                new EventSeed(TRACKEVENTS_LEGAL_NAME, LE_MANS_SARTHE_TRACK_NAME, FUTURE_SARTHE_EVENT_DATE, price("295.00"), 16),
                 new EventSeed(RACINGPRO_LEGAL_NAME, NAVARRA_TRACK_NAME, FUTURE_NAVARRA_EVENT_DATE, price("185.00"), 44),
+                new EventSeed(IBERIAN_MOTORSPORT_LEGAL_NAME, NURBURGRING_GP_TRACK_NAME, FUTURE_NURBURGRING_GP_EVENT_DATE, price("255.00"), 7),
                 new EventSeed(MEDITERRANEAN_MOTORSPORT_LEGAL_NAME, MOTORLAND_TRACK_NAME, FUTURE_MOTORLAND_EVENT_DATE, price("235.00"), 62),
+                new EventSeed(MEDITERRANEAN_MOTORSPORT_LEGAL_NAME, PAUL_RICARD_TRACK_NAME, FUTURE_PAUL_RICARD_EVENT_DATE, price("265.00"), 15),
                 new EventSeed(TRACKLIMITS_IBERIA_LEGAL_NAME, CARTAGENA_TRACK_NAME, FUTURE_CARTAGENA_EVENT_DATE, price("175.00"), 40),
+                new EventSeed(LUSITANIA_RACING_LEGAL_NAME, BOAVISTA_TRACK_NAME, FUTURE_BOAVISTA_EVENT_DATE, price("168.00"), 6),
                 new EventSeed(APEX_IBERIA_LEGAL_NAME, ALBACETE_TRACK_NAME, FUTURE_ALBACETE_EVENT_DATE, price("165.00"), 36),
                 new EventSeed(IBERIAN_MOTORSPORT_LEGAL_NAME, SPA_TRACK_NAME, FUTURE_SPA_EVENT_DATE, price("325.00"), 58),
                 new EventSeed(LUSITANIA_RACING_LEGAL_NAME, MUGELLO_TRACK_NAME, FUTURE_MUGELLO_EVENT_DATE, price("310.00"), 56)
@@ -1135,14 +1155,40 @@ public class DemoDataSeeder implements CommandLineRunner {
                         KERB_RIDER_DISPLAY_NAME,
                         OVERSTEER_MIGUEL_DISPLAY_NAME
                 )),
+                new EventAttendanceSeed(GUADIX_TRACK_NAME, FUTURE_GUADIX_EVENT_DATE, List.of(
+                        JUANJE_DISPLAY_NAME,
+                        MARIA_DISPLAY_NAME,
+                        APEXHUNTER_DISPLAY_NAME,
+                        TRACKRAT_77_DISPLAY_NAME
+                )),
                 new EventAttendanceSeed(JEREZ_TRACK_NAME, FUTURE_JEREZ_EVENT_DATE, List.of(
                         HEELTOE_DANI_DISPLAY_NAME,
                         PITLANE_JUNKIE_DISPLAY_NAME,
                         BRAKEPOINT_NORA_DISPLAY_NAME
                 )),
+                new EventAttendanceSeed(LE_MANS_BUGATTI_TRACK_NAME, FUTURE_BUGATTI_EVENT_DATE, List.of(
+                        ALEX_PALAU_DISPLAY_NAME,
+                        FERNANDO_ALONSO_DISPLAY_NAME,
+                        BOXBOX_RAUL_DISPLAY_NAME,
+                        FULLTHROTTLE_EVA_DISPLAY_NAME,
+                        APEX_LUSO_DISPLAY_NAME
+                )),
+                new EventAttendanceSeed(MONTEBLANCO_TRACK_NAME, FUTURE_MONTEBLANCO_EVENT_DATE, List.of(
+                        HEELTOE_DANI_DISPLAY_NAME,
+                        PADDOCK_PAULA_DISPLAY_NAME,
+                        BRAKEPOINT_NORA_DISPLAY_NAME,
+                        KERB_RIDER_DISPLAY_NAME,
+                        CURB_ATTACK_DISPLAY_NAME
+                )),
                 new EventAttendanceSeed(BARCELONA_TRACK_NAME, FUTURE_BARCELONA_EVENT_DATE, List.of(
                         ALEX_PALAU_DISPLAY_NAME,
                         GRIDWALKER_DISPLAY_NAME,
+                        TYRESMOKE_LUCIA_DISPLAY_NAME
+                )),
+                new EventAttendanceSeed(BRAGA_TRACK_NAME, FUTURE_BRAGA_EVENT_DATE, List.of(
+                        REDFLAG_INES_DISPLAY_NAME,
+                        FULLTHROTTLE_EVA_DISPLAY_NAME,
+                        CHICANE_CHASER_DISPLAY_NAME,
                         TYRESMOKE_LUCIA_DISPLAY_NAME
                 )),
                 new EventAttendanceSeed(ALGARVE_TRACK_NAME, FUTURE_ALGARVE_EVENT_DATE, List.of(
@@ -1150,25 +1196,64 @@ public class DemoDataSeeder implements CommandLineRunner {
                         FULLTHROTTLE_EVA_DISPLAY_NAME,
                         TRACKRAT_77_DISPLAY_NAME
                 )),
+                new EventAttendanceSeed(VILA_REAL_TRACK_NAME, FUTURE_VILA_REAL_EVENT_DATE, List.of(
+                        APEX_LUSO_DISPLAY_NAME,
+                        OVERSTEER_MIGUEL_DISPLAY_NAME,
+                        GRIDWALKER_DISPLAY_NAME
+                )),
+                new EventAttendanceSeed(NURBURGRING_TRACK_NAME, FUTURE_NURBURGRING_EVENT_DATE, List.of(
+                        ALEX_PALAU_DISPLAY_NAME,
+                        FERNANDO_ALONSO_DISPLAY_NAME,
+                        STINTMASTER_DISPLAY_NAME,
+                        CURVA_PERALTADA_DISPLAY_NAME
+                )),
                 new EventAttendanceSeed(RICARDO_TORMO_TRACK_NAME, FUTURE_RICARDO_TORMO_EVENT_DATE, List.of(
                         CARLOS_DISPLAY_NAME,
                         BOXBOX_RAUL_DISPLAY_NAME,
                         PADDOCK_PAULA_DISPLAY_NAME
+                )),
+                new EventAttendanceSeed(LE_MANS_SARTHE_TRACK_NAME, FUTURE_SARTHE_EVENT_DATE, List.of(
+                        JUANJE_DISPLAY_NAME,
+                        LATEBRAKER_88_DISPLAY_NAME,
+                        APEXHUNTER_DISPLAY_NAME,
+                        BOXBOX_RAUL_DISPLAY_NAME,
+                        TRACKRAT_77_DISPLAY_NAME,
+                        FULLTHROTTLE_EVA_DISPLAY_NAME
                 )),
                 new EventAttendanceSeed(NAVARRA_TRACK_NAME, FUTURE_NAVARRA_EVENT_DATE, List.of(
                         CHICANE_CHASER_DISPLAY_NAME,
                         CURVA_PERALTADA_DISPLAY_NAME,
                         KERB_RIDER_DISPLAY_NAME
                 )),
+                new EventAttendanceSeed(NURBURGRING_GP_TRACK_NAME, FUTURE_NURBURGRING_GP_EVENT_DATE, List.of(
+                        FERNANDO_ALONSO_DISPLAY_NAME,
+                        ALEX_PALAU_DISPLAY_NAME,
+                        STINTMASTER_DISPLAY_NAME,
+                        APEX_LUSO_DISPLAY_NAME,
+                        OVERSTEER_MIGUEL_DISPLAY_NAME
+                )),
                 new EventAttendanceSeed(MOTORLAND_TRACK_NAME, FUTURE_MOTORLAND_EVENT_DATE, List.of(
                         MARIA_DISPLAY_NAME,
                         STINTMASTER_DISPLAY_NAME,
                         CURB_ATTACK_DISPLAY_NAME
                 )),
+                new EventAttendanceSeed(PAUL_RICARD_TRACK_NAME, FUTURE_PAUL_RICARD_EVENT_DATE, List.of(
+                        PADDOCK_PAULA_DISPLAY_NAME,
+                        CARLOS_DISPLAY_NAME,
+                        APEXHUNTER_DISPLAY_NAME,
+                        BRAKEPOINT_NORA_DISPLAY_NAME,
+                        LATEBRAKER_88_DISPLAY_NAME,
+                        GRIDWALKER_DISPLAY_NAME
+                )),
                 new EventAttendanceSeed(CARTAGENA_TRACK_NAME, FUTURE_CARTAGENA_EVENT_DATE, List.of(
                         FLATOUT_MARTA_DISPLAY_NAME,
                         REDFLAG_INES_DISPLAY_NAME,
                         TRACKRAT_77_DISPLAY_NAME
+                )),
+                new EventAttendanceSeed(BOAVISTA_TRACK_NAME, FUTURE_BOAVISTA_EVENT_DATE, List.of(
+                        KERB_RIDER_DISPLAY_NAME,
+                        BOXBOX_RAUL_DISPLAY_NAME,
+                        FULLTHROTTLE_EVA_DISPLAY_NAME
                 )),
                 new EventAttendanceSeed(ALBACETE_TRACK_NAME, FUTURE_ALBACETE_EVENT_DATE, List.of(
                         PITLANE_JUNKIE_DISPLAY_NAME,

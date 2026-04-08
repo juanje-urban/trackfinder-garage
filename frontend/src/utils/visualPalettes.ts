@@ -19,6 +19,7 @@ export function createVisualStyle(
   palettes: readonly (readonly [string, string])[],
   startVar: string,
   endVar: string,
+  extraStyles: Record<string, string> = {},
 ): Record<string, string> {
   const palette = palettes[index % palettes.length] ?? fallbackPalette
   const [start, end] = palette
@@ -26,5 +27,6 @@ export function createVisualStyle(
   return {
     [startVar]: start,
     [endVar]: end,
+    ...extraStyles,
   }
 }
