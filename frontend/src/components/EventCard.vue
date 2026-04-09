@@ -6,6 +6,8 @@ import { formatCurrency, formatDisplayDate } from '@/utils/format'
 import { getTrackMedia } from '@/utils/trackMedia'
 import { createVisualStyle, eventVisualPalettes } from '@/utils/visualPalettes'
 
+type AvailabilityState = 'urgent' | 'limited' | 'open'
+
 const props = defineProps<{
   event: Event
 }>()
@@ -31,13 +33,24 @@ const mediaStyle = computed(() => {
 const formattedDate = computed(() => formatDisplayDate(props.event.eventDate))
 const formattedPrice = computed(() => formatCurrency(props.event.basePrice))
 
-const availabilityLabel = computed(() => {
+const availabilityState = computed<AvailabilityState>(() => {
   const remaining = props.event.remainingCapacity
 
   if (remaining <= 3) {
-    return 'Ultimas plazas'
+    return 'urgent'
   }
   if (remaining <= 10) {
+    return 'limited'
+  }
+
+  return 'open'
+})
+
+const availabilityLabel = computed(() => {
+  if (availabilityState.value === 'urgent') {
+    return 'Ultimas plazas'
+  }
+  if (availabilityState.value === 'limited') {
     return 'Plazas limitadas'
   }
 
@@ -55,14 +68,14 @@ const remainingText = computed(() => {
 </script>
 
 <template>
-  <article class="event-card media-card panel">
+  <article class="event-card media-card panel" :class="`event-card--${availabilityState}`">
     <div class="event-card__media" :style="mediaStyle">
       <div class="media-card__badges">
-        <span class="badge badge--accent">{{ availabilityLabel }}</span>
+        <span class="badge event-card__badge">{{ availabilityLabel }}</span>
       </div>
     </div>
 
-    <div class="media-card__body">
+    <div class="media-card__body event-card__body">
       <div class="media-card__headline">
         <div>
           <p class="event-card__date">{{ formattedDate }}</p>
@@ -75,11 +88,11 @@ const remainingText = computed(() => {
         </div>
       </div>
 
-      <p class="event-card__host ui-copy-body">Organiza {{ event.organizerLegalName }}</p>
+      <p class="event-card__host ui-copy-body">{{ event.organizerLegalName }}</p>
 
       <div class="media-card__meta event-card__meta">
         <span>Aforo {{ event.maxParticipants }}</span>
-        <span>{{ remainingText }}</span>
+        <span class="event-card__remaining">{{ remainingText }}</span>
       </div>
 
       <div class="event-card__progress">
@@ -96,6 +109,52 @@ const remainingText = computed(() => {
 </template>
 
 <style scoped>
+.event-card {
+  --event-state-surface: rgba(17, 92, 55, 0.86);
+  --event-state-border: rgba(122, 246, 184, 0.58);
+  --event-state-text: #d6ffe6;
+  --event-state-accent: #5adf97;
+  --event-state-glow: rgba(58, 215, 134, 0.24);
+  display: grid;
+  grid-template-rows: 210px 1fr;
+  min-height: 500px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--event-state-border);
+  box-shadow:
+    var(--shadow-panel),
+    0 0 0 1px var(--event-state-glow);
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.event-card::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent 0%, var(--event-state-accent) 28%, transparent 100%);
+  opacity: 0.96;
+}
+
+.event-card--urgent {
+  --event-state-surface: rgba(122, 22, 22, 0.88);
+  --event-state-border: rgba(255, 128, 118, 0.6);
+  --event-state-text: #fff0ed;
+  --event-state-accent: #ff7165;
+  --event-state-glow: rgba(255, 45, 32, 0.3);
+}
+
+.event-card--limited {
+  --event-state-surface: rgba(104, 67, 14, 0.88);
+  --event-state-border: rgba(255, 205, 92, 0.56);
+  --event-state-text: #ffe5a5;
+  --event-state-accent: #ffbf3c;
+  --event-state-glow: rgba(255, 191, 60, 0.24);
+}
+
 .event-card__media {
   min-height: 210px;
   padding: var(--space-lg);
@@ -109,6 +168,13 @@ const remainingText = computed(() => {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+}
+
+.event-card__body {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
 }
 
 .event-card__media::before {
@@ -128,6 +194,14 @@ const remainingText = computed(() => {
   mix-blend-mode: screen;
 }
 
+.event-card__badge {
+  background: var(--event-state-surface);
+  color: var(--event-state-text);
+  border: 1px solid var(--event-state-border);
+  box-shadow: 0 12px 22px var(--event-state-glow);
+  backdrop-filter: blur(8px);
+}
+
 .event-card__date {
   margin: 0 0 6px;
   color: var(--text-muted);
@@ -142,24 +216,51 @@ const remainingText = computed(() => {
   display: block;
 }
 
+.event-card__title {
+  display: -webkit-box;
+  min-height: 3.24em;
+  overflow: hidden;
+  line-height: 1.08;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
 .event-card__meta {
   color: var(--text-muted);
   font-size: var(--fs-meta);
 }
 
+.event-card__host {
+  display: -webkit-box;
+  min-height: 3.4em;
+  overflow: hidden;
+  line-height: 1.7;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.event-card__remaining {
+  color: var(--event-state-text);
+  font-weight: 700;
+  text-shadow: 0 0 14px var(--event-state-glow);
+}
+
 .event-card__progress {
   width: 100%;
-  height: 8px;
+  height: 10px;
   overflow: hidden;
   border-radius: var(--radius-pill);
-  background: var(--info-surface);
+  border: 1px solid var(--event-state-border);
+  background: var(--event-state-surface);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
 }
 
 .event-card__progress span {
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: var(--accent-gradient-horizontal);
+  background: linear-gradient(90deg, var(--event-state-accent) 0%, var(--event-state-text) 100%);
+  box-shadow: 0 0 18px var(--event-state-glow);
 }
 
 .event-card__footer {
@@ -167,6 +268,7 @@ const remainingText = computed(() => {
   align-items: center;
   justify-content: space-between;
   gap: var(--space-md);
+  margin-top: auto;
 }
 
 @media (max-width: 560px) {

@@ -1,6 +1,6 @@
 type TrackMediaManifestEntry = {
   gallery: string[]
-  layout: string
+  layoutBaseName: string
 }
 
 export type TrackMedia = {
@@ -20,7 +20,7 @@ function defineTrackMedia(slug: string, galleryCount = 2): TrackMediaManifestEnt
       { length: galleryCount },
       (_, index) => `${slug}_cover_${index + 1}.jpg`,
     ),
-    layout: `${slug}_layout.jpg`,
+    layoutBaseName: `${slug}_layout`,
   }
 }
 
@@ -60,6 +60,14 @@ function resolveTrackAsset(fileName: string): string | undefined {
   return assetPath ? trackAssetUrls[assetPath] : undefined
 }
 
+function resolveTrackAssetByBaseName(baseName: string): string | undefined {
+  const layoutExtensions = ['svg', 'jpg', 'jpeg', 'png', 'webp', 'avif']
+
+  return layoutExtensions
+    .map((extension) => resolveTrackAsset(`${baseName}.${extension}`))
+    .find((assetUrl): assetUrl is string => Boolean(assetUrl))
+}
+
 export function getTrackMedia(trackName: string): TrackMedia {
   const manifestEntry = trackMediaManifest[trackName]
 
@@ -74,6 +82,6 @@ export function getTrackMedia(trackName: string): TrackMedia {
   return {
     gallery,
     coverImage: gallery[0],
-    layoutImage: resolveTrackAsset(manifestEntry.layout),
+    layoutImage: resolveTrackAssetByBaseName(manifestEntry.layoutBaseName),
   }
 }
