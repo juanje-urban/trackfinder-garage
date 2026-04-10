@@ -51,6 +51,24 @@ public class AuthService implements AuthUseCase {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public AuthResponse getCurrentSession(String authenticatedEmail, String authorizationHeader) {
+        String normalizedEmail = normalizeEmail(authenticatedEmail);
+
+        User user = userPersistencePort.findByEmail(normalizedEmail)
+                .filter(existingUser -> Boolean.TRUE.equals(existingUser.getEnabled()))
+                .orElseThrow(() -> new InvalidCredentialsException(INVALID_CREDENTIALS_MESSAGE));
+
+        AuthResponse response = new AuthResponse();
+        response.setUserId(user.getId());
+        response.setDisplayName(user.getDisplayName());
+        response.setEmail(user.getEmail());
+        response.setRoleName(user.getRole() != null ? user.getRole().getRoleName() : null);
+        response.setAuthorizationHeader(authorizationHeader);
+        return response;
+    }
+
+    @Override
     public AuthResponse register(String displayName,
                                  String email,
                                  String rawPassword,

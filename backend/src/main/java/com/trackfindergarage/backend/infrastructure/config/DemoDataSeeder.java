@@ -40,6 +40,7 @@ import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 @Component
 @Profile("demo")
@@ -120,7 +121,7 @@ public class DemoDataSeeder implements CommandLineRunner {
     private static final String SKIDPAD_SERVICE_NAME = "Pista deslizante";
     private static final String EVENT_PHOTOGRAPHY_SERVICE_NAME = "Fotografia del evento";
     private static final String EVENT_VIDEO_SERVICE_NAME = "Video resumen del evento";
-    private static final String CATERING_SERVICE_NAME = "Catering para participantes";
+    private static final String CATERING_SERVICE_NAME = "Catering";
     private static final String WELCOME_PACK_SERVICE_NAME = "Welcome pack";
     private static final String INSTRUCTOR_SERVICE_NAME = "Instructor de conduccion";
     private static final String SECOND_DRIVER_INSURANCE_SERVICE_NAME = "Seguro para segundo conductor";
@@ -245,10 +246,12 @@ public class DemoDataSeeder implements CommandLineRunner {
         seedTrackServices();
         migrateLegacyFutureEvents();
         seedPastEvents();
+        syncEventDescriptions(pastEventSeeds());
         seedPastEventServices();
         seedPastEventBookings();
         seedPastEventBookingServices();
         seedFutureEvents();
+        syncEventDescriptions(futureEventSeeds());
         seedFutureEventServices();
         seedFutureEventBookings();
         seedFutureEventBookingServices();
@@ -709,8 +712,21 @@ public class DemoDataSeeder implements CommandLineRunner {
                 eventSeed.trackName(),
                 eventSeed.eventDate(),
                 eventSeed.basePrice(),
-                eventSeed.maxParticipants()
+                eventSeed.maxParticipants(),
+                eventSeed.description()
         ));
+    }
+
+    private void syncEventDescriptions(List<EventSeed> eventSeeds) {
+        eventSeeds.forEach(eventSeed -> {
+            Event event = findEventByTrackAndDateOrThrow(eventSeed.trackName(), eventSeed.eventDate());
+            String normalizedDescription = eventSeed.description().trim();
+
+            if (!Objects.equals(event.getDescription(), normalizedDescription)) {
+                event.setDescription(normalizedDescription);
+                eventRepository.save(event);
+            }
+        });
     }
 
     private void seedEventServices(List<EventSeed> eventSeeds) {
@@ -1061,44 +1077,395 @@ public class DemoDataSeeder implements CommandLineRunner {
         );
     }
 
+    private String eventDescription(String organizerLegalName, String trackName, String focus) {
+        return "Jornada organizada por "
+                + organizerLegalName
+                + " en "
+                + trackName
+                + ". "
+                + focus
+                + " La experiencia incluye briefing de seguridad, control de accesos, organización de tandas durante todo el día y asistencia en paddock para participantes y acompañantes.";
+    }
+
     private List<EventSeed> pastEventSeeds() {
         return List.of(
-                new EventSeed(TRACKEVENTS_LEGAL_NAME, JARAMA_TRACK_NAME, PAST_JARAMA_EVENT_DATE, price("180.00"), 55),
-                new EventSeed(RACINGPRO_LEGAL_NAME, CALAFAT_TRACK_NAME, PAST_CALAFAT_EVENT_DATE, price("145.00"), 35),
-                new EventSeed(IBERIAN_MOTORSPORT_LEGAL_NAME, RICARDO_TORMO_TRACK_NAME, PAST_RICARDO_TORMO_EVENT_DATE, price("210.00"), 70),
-                new EventSeed(TRACKEVENTS_LEGAL_NAME, ALGARVE_TRACK_NAME, PAST_ALGARVE_EVENT_DATE, price("260.00"), 45),
-                new EventSeed(APEX_IBERIA_LEGAL_NAME, BARCELONA_TRACK_NAME, PAST_BARCELONA_EVENT_DATE, price("245.00"), 68),
-                new EventSeed(TRACKLIMITS_IBERIA_LEGAL_NAME, JEREZ_TRACK_NAME, PAST_JEREZ_EVENT_DATE, price("195.00"), 50),
-                new EventSeed(LUSITANIA_RACING_LEGAL_NAME, ESTORIL_TRACK_NAME, PAST_ESTORIL_EVENT_DATE, price("215.00"), 48),
-                new EventSeed(MEDITERRANEAN_MOTORSPORT_LEGAL_NAME, MOTORLAND_TRACK_NAME, PAST_MOTORLAND_EVENT_DATE, PRICE_225_00, 60)
+                new EventSeed(
+                        TRACKEVENTS_LEGAL_NAME,
+                        JARAMA_TRACK_NAME,
+                        PAST_JARAMA_EVENT_DATE,
+                        price("180.00"),
+                        55,
+                        eventDescription(
+                                TRACKEVENTS_LEGAL_NAME,
+                                JARAMA_TRACK_NAME,
+                                "Track day enfocado a turismos deportivos con tandas estables, ambiente de club y ritmo progresivo para rodar con seguridad en un trazado técnico."
+                        )
+                ),
+                new EventSeed(
+                        RACINGPRO_LEGAL_NAME,
+                        CALAFAT_TRACK_NAME,
+                        PAST_CALAFAT_EVENT_DATE,
+                        price("145.00"),
+                        35,
+                        eventDescription(
+                                RACINGPRO_LEGAL_NAME,
+                                CALAFAT_TRACK_NAME,
+                                "Programa orientado a coches ligeros y compactos deportivos, con sesiones fluidas y especial atención a la convivencia en pista junto al mar."
+                        )
+                ),
+                new EventSeed(
+                        IBERIAN_MOTORSPORT_LEGAL_NAME,
+                        RICARDO_TORMO_TRACK_NAME,
+                        PAST_RICARDO_TORMO_EVENT_DATE,
+                        price("210.00"),
+                        70,
+                        eventDescription(
+                                IBERIAN_MOTORSPORT_LEGAL_NAME,
+                                RICARDO_TORMO_TRACK_NAME,
+                                "Evento de aforo amplio pensado para rodar por niveles, aprovechar la amplitud del trazado y combinar ritmo alto con una operativa muy ordenada."
+                        )
+                ),
+                new EventSeed(
+                        TRACKEVENTS_LEGAL_NAME,
+                        ALGARVE_TRACK_NAME,
+                        PAST_ALGARVE_EVENT_DATE,
+                        price("260.00"),
+                        45,
+                        eventDescription(
+                                TRACKEVENTS_LEGAL_NAME,
+                                ALGARVE_TRACK_NAME,
+                                "Jornada premium para coches de calle muy prestacionales y deportivos preparados, con grupos reducidos y mucho tiempo real de pista en un circuito internacional."
+                        )
+                ),
+                new EventSeed(
+                        APEX_IBERIA_LEGAL_NAME,
+                        BARCELONA_TRACK_NAME,
+                        PAST_BARCELONA_EVENT_DATE,
+                        price("245.00"),
+                        68,
+                        eventDescription(
+                                APEX_IBERIA_LEGAL_NAME,
+                                BARCELONA_TRACK_NAME,
+                                "Encuentro de corte premium con tandas largas, boxes activos y un formato ideal para quien busca una experiencia de gran premio sin perder el enfoque amateur."
+                        )
+                ),
+                new EventSeed(
+                        TRACKLIMITS_IBERIA_LEGAL_NAME,
+                        JEREZ_TRACK_NAME,
+                        PAST_JEREZ_EVENT_DATE,
+                        price("195.00"),
+                        50,
+                        eventDescription(
+                                TRACKLIMITS_IBERIA_LEGAL_NAME,
+                                JEREZ_TRACK_NAME,
+                                "Track day equilibrado para aficionados habituales y debutantes con referencias claras, ambiente andaluz de paddock y una configuración muy agradecida para aprender."
+                        )
+                ),
+                new EventSeed(
+                        LUSITANIA_RACING_LEGAL_NAME,
+                        ESTORIL_TRACK_NAME,
+                        PAST_ESTORIL_EVENT_DATE,
+                        price("215.00"),
+                        48,
+                        eventDescription(
+                                LUSITANIA_RACING_LEGAL_NAME,
+                                ESTORIL_TRACK_NAME,
+                                "Cita ibérica pensada para GT y deportivos modernos, con especial énfasis en la regularidad, la trazada limpia y el aprovechamiento de una pista muy técnica."
+                        )
+                ),
+                new EventSeed(
+                        MEDITERRANEAN_MOTORSPORT_LEGAL_NAME,
+                        MOTORLAND_TRACK_NAME,
+                        PAST_MOTORLAND_EVENT_DATE,
+                        PRICE_225_00,
+                        60,
+                        eventDescription(
+                                MEDITERRANEAN_MOTORSPORT_LEGAL_NAME,
+                                MOTORLAND_TRACK_NAME,
+                                "Evento de ritmo medio-alto concebido para sesiones consistentes, escapatorias amplias y una jornada completa en uno de los circuitos más versátiles del calendario."
+                        )
+                )
         );
     }
 
     private List<EventSeed> futureEventSeeds() {
         return List.of(
-                new EventSeed(TRACKEVENTS_LEGAL_NAME, JARAMA_TRACK_NAME, FUTURE_JARAMA_EVENT_DATE, price("205.00"), 60),
-                new EventSeed(RACINGPRO_LEGAL_NAME, CALAFAT_TRACK_NAME, FUTURE_CALAFAT_EVENT_DATE, price("160.00"), 38),
-                new EventSeed(LUSITANIA_RACING_LEGAL_NAME, ESTORIL_TRACK_NAME, FUTURE_ESTORIL_EVENT_DATE, price("220.00"), 48),
-                new EventSeed(RACINGPRO_LEGAL_NAME, GUADIX_TRACK_NAME, FUTURE_GUADIX_EVENT_DATE, price("150.00"), 6),
-                new EventSeed(TRACKLIMITS_IBERIA_LEGAL_NAME, JEREZ_TRACK_NAME, FUTURE_JEREZ_EVENT_DATE, price("198.00"), 52),
-                new EventSeed(APEX_IBERIA_LEGAL_NAME, LE_MANS_BUGATTI_TRACK_NAME, FUTURE_BUGATTI_EVENT_DATE, price("275.00"), 8),
-                new EventSeed(TRACKLIMITS_IBERIA_LEGAL_NAME, MONTEBLANCO_TRACK_NAME, FUTURE_MONTEBLANCO_EVENT_DATE, price("178.00"), 14),
-                new EventSeed(APEX_IBERIA_LEGAL_NAME, BARCELONA_TRACK_NAME, FUTURE_BARCELONA_EVENT_DATE, price("255.00"), 70),
-                new EventSeed(LUSITANIA_RACING_LEGAL_NAME, BRAGA_TRACK_NAME, FUTURE_BRAGA_EVENT_DATE, price("155.00"), 12),
-                new EventSeed(TRACKEVENTS_LEGAL_NAME, ALGARVE_TRACK_NAME, FUTURE_ALGARVE_EVENT_DATE, price("285.00"), 50),
-                new EventSeed(LUSITANIA_RACING_LEGAL_NAME, VILA_REAL_TRACK_NAME, FUTURE_VILA_REAL_EVENT_DATE, price("190.00"), 6),
-                new EventSeed(IBERIAN_MOTORSPORT_LEGAL_NAME, NURBURGRING_TRACK_NAME, FUTURE_NURBURGRING_EVENT_DATE, price("340.00"), 12),
-                new EventSeed(IBERIAN_MOTORSPORT_LEGAL_NAME, RICARDO_TORMO_TRACK_NAME, FUTURE_RICARDO_TORMO_EVENT_DATE, PRICE_225_00, 72),
-                new EventSeed(TRACKEVENTS_LEGAL_NAME, LE_MANS_SARTHE_TRACK_NAME, FUTURE_SARTHE_EVENT_DATE, price("295.00"), 16),
-                new EventSeed(RACINGPRO_LEGAL_NAME, NAVARRA_TRACK_NAME, FUTURE_NAVARRA_EVENT_DATE, price("185.00"), 44),
-                new EventSeed(IBERIAN_MOTORSPORT_LEGAL_NAME, NURBURGRING_GP_TRACK_NAME, FUTURE_NURBURGRING_GP_EVENT_DATE, price("255.00"), 7),
-                new EventSeed(MEDITERRANEAN_MOTORSPORT_LEGAL_NAME, MOTORLAND_TRACK_NAME, FUTURE_MOTORLAND_EVENT_DATE, price("235.00"), 62),
-                new EventSeed(MEDITERRANEAN_MOTORSPORT_LEGAL_NAME, PAUL_RICARD_TRACK_NAME, FUTURE_PAUL_RICARD_EVENT_DATE, price("265.00"), 15),
-                new EventSeed(TRACKLIMITS_IBERIA_LEGAL_NAME, CARTAGENA_TRACK_NAME, FUTURE_CARTAGENA_EVENT_DATE, price("175.00"), 40),
-                new EventSeed(LUSITANIA_RACING_LEGAL_NAME, BOAVISTA_TRACK_NAME, FUTURE_BOAVISTA_EVENT_DATE, price("168.00"), 6),
-                new EventSeed(APEX_IBERIA_LEGAL_NAME, ALBACETE_TRACK_NAME, FUTURE_ALBACETE_EVENT_DATE, price("165.00"), 36),
-                new EventSeed(IBERIAN_MOTORSPORT_LEGAL_NAME, SPA_TRACK_NAME, FUTURE_SPA_EVENT_DATE, price("325.00"), 58),
-                new EventSeed(LUSITANIA_RACING_LEGAL_NAME, MUGELLO_TRACK_NAME, FUTURE_MUGELLO_EVENT_DATE, price("310.00"), 56)
+                new EventSeed(
+                        TRACKEVENTS_LEGAL_NAME,
+                        JARAMA_TRACK_NAME,
+                        FUTURE_JARAMA_EVENT_DATE,
+                        price("205.00"),
+                        60,
+                        eventDescription(
+                                TRACKEVENTS_LEGAL_NAME,
+                                JARAMA_TRACK_NAME,
+                                "Próxima cita del calendario pensada para turismos y deportivos de calle con grupos por ritmo, buen tiempo real de pista y una operativa ágil desde primera hora."
+                        )
+                ),
+                new EventSeed(
+                        RACINGPRO_LEGAL_NAME,
+                        CALAFAT_TRACK_NAME,
+                        FUTURE_CALAFAT_EVENT_DATE,
+                        price("160.00"),
+                        38,
+                        eventDescription(
+                                RACINGPRO_LEGAL_NAME,
+                                CALAFAT_TRACK_NAME,
+                                "Formato desenfadado para coches ligeros y tandas fluidas, ideal para quien busca mar, técnica y una jornada muy aprovechable sin excesiva saturación."
+                        )
+                ),
+                new EventSeed(
+                        LUSITANIA_RACING_LEGAL_NAME,
+                        ESTORIL_TRACK_NAME,
+                        FUTURE_ESTORIL_EVENT_DATE,
+                        price("220.00"),
+                        48,
+                        eventDescription(
+                                LUSITANIA_RACING_LEGAL_NAME,
+                                ESTORIL_TRACK_NAME,
+                                "Edición orientada a deportivos modernos y GT de uso ocasional en circuito, con un ritmo creciente durante el día y mucho trabajo de referencias."
+                        )
+                ),
+                new EventSeed(
+                        RACINGPRO_LEGAL_NAME,
+                        GUADIX_TRACK_NAME,
+                        FUTURE_GUADIX_EVENT_DATE,
+                        price("150.00"),
+                        6,
+                        eventDescription(
+                                RACINGPRO_LEGAL_NAME,
+                                GUADIX_TRACK_NAME,
+                                "Evento pequeño y muy enfocado a pilotos que quieren rodar con espacio, aprender el trazado con calma y aprovechar un aforo reducido hasta el último minuto."
+                        )
+                ),
+                new EventSeed(
+                        TRACKLIMITS_IBERIA_LEGAL_NAME,
+                        JEREZ_TRACK_NAME,
+                        FUTURE_JEREZ_EVENT_DATE,
+                        price("198.00"),
+                        52,
+                        eventDescription(
+                                TRACKLIMITS_IBERIA_LEGAL_NAME,
+                                JEREZ_TRACK_NAME,
+                                "Track day de corte mixto con sitio para rodadores habituales y participantes que pisan circuito por primera vez, aprovechando un trazado rápido y muy legible."
+                        )
+                ),
+                new EventSeed(
+                        APEX_IBERIA_LEGAL_NAME,
+                        LE_MANS_BUGATTI_TRACK_NAME,
+                        FUTURE_BUGATTI_EVENT_DATE,
+                        price("275.00"),
+                        8,
+                        eventDescription(
+                                APEX_IBERIA_LEGAL_NAME,
+                                LE_MANS_BUGATTI_TRACK_NAME,
+                                "Sesión especial para deportivos con aspiración a ritmo alto, aforo muy corto y una operativa pensada para maximizar cada salida en uno de los nombres icónicos del calendario."
+                        )
+                ),
+                new EventSeed(
+                        TRACKLIMITS_IBERIA_LEGAL_NAME,
+                        MONTEBLANCO_TRACK_NAME,
+                        FUTURE_MONTEBLANCO_EVENT_DATE,
+                        price("178.00"),
+                        14,
+                        eventDescription(
+                                TRACKLIMITS_IBERIA_LEGAL_NAME,
+                                MONTEBLANCO_TRACK_NAME,
+                                "Jornada centrada en tandas ordenadas, pista amable para mejorar técnica y boxes activos durante todo el día con un ambiente muy de escuela avanzada."
+                        )
+                ),
+                new EventSeed(
+                        APEX_IBERIA_LEGAL_NAME,
+                        BARCELONA_TRACK_NAME,
+                        FUTURE_BARCELONA_EVENT_DATE,
+                        price("255.00"),
+                        70,
+                        eventDescription(
+                                APEX_IBERIA_LEGAL_NAME,
+                                BARCELONA_TRACK_NAME,
+                                "Evento de gran formato para quien busca una experiencia premium, tiempo real de pista y la sensación de rodar en un trazado de referencia internacional."
+                        )
+                ),
+                new EventSeed(
+                        LUSITANIA_RACING_LEGAL_NAME,
+                        BRAGA_TRACK_NAME,
+                        FUTURE_BRAGA_EVENT_DATE,
+                        price("155.00"),
+                        12,
+                        eventDescription(
+                                LUSITANIA_RACING_LEGAL_NAME,
+                                BRAGA_TRACK_NAME,
+                                "Programa compacto para coches ligeros y deportivos de potencia media, ideal para enlazar muchas vueltas en una pista corta, técnica y muy divertida."
+                        )
+                ),
+                new EventSeed(
+                        TRACKEVENTS_LEGAL_NAME,
+                        ALGARVE_TRACK_NAME,
+                        FUTURE_ALGARVE_EVENT_DATE,
+                        price("285.00"),
+                        50,
+                        eventDescription(
+                                TRACKEVENTS_LEGAL_NAME,
+                                ALGARVE_TRACK_NAME,
+                                "Cita premium del sur de Portugal para coches muy prestacionales, con grupos controlados y margen para trabajar cambios de rasante y frenadas largas."
+                        )
+                ),
+                new EventSeed(
+                        LUSITANIA_RACING_LEGAL_NAME,
+                        VILA_REAL_TRACK_NAME,
+                        FUTURE_VILA_REAL_EVENT_DATE,
+                        price("190.00"),
+                        6,
+                        eventDescription(
+                                LUSITANIA_RACING_LEGAL_NAME,
+                                VILA_REAL_TRACK_NAME,
+                                "Evento singular de aforo muy reducido pensado para aficionados experimentados que buscan una jornada especial en un trazado urbano con carácter propio."
+                        )
+                ),
+                new EventSeed(
+                        IBERIAN_MOTORSPORT_LEGAL_NAME,
+                        NURBURGRING_TRACK_NAME,
+                        FUTURE_NURBURGRING_EVENT_DATE,
+                        price("340.00"),
+                        12,
+                        eventDescription(
+                                IBERIAN_MOTORSPORT_LEGAL_NAME,
+                                NURBURGRING_TRACK_NAME,
+                                "Jornada de resistencia y regularidad para pilotos con experiencia previa, centrada en acumular vueltas limpias y gestionar un circuito tan largo como exigente."
+                        )
+                ),
+                new EventSeed(
+                        IBERIAN_MOTORSPORT_LEGAL_NAME,
+                        RICARDO_TORMO_TRACK_NAME,
+                        FUTURE_RICARDO_TORMO_EVENT_DATE,
+                        PRICE_225_00,
+                        72,
+                        eventDescription(
+                                IBERIAN_MOTORSPORT_LEGAL_NAME,
+                                RICARDO_TORMO_TRACK_NAME,
+                                "Track day amplio y bien escalonado, ideal para compartir pista entre distintos niveles sin perder ritmo y con un paddock muy cómodo para pasar el día."
+                        )
+                ),
+                new EventSeed(
+                        TRACKEVENTS_LEGAL_NAME,
+                        LE_MANS_SARTHE_TRACK_NAME,
+                        FUTURE_SARTHE_EVENT_DATE,
+                        price("295.00"),
+                        16,
+                        eventDescription(
+                                TRACKEVENTS_LEGAL_NAME,
+                                LE_MANS_SARTHE_TRACK_NAME,
+                                "Encuentro muy especial de espíritu endurance, pensado para disfrutar un trazado histórico con respeto por los procedimientos, los relevos y la gestión del ritmo."
+                        )
+                ),
+                new EventSeed(
+                        RACINGPRO_LEGAL_NAME,
+                        NAVARRA_TRACK_NAME,
+                        FUTURE_NAVARRA_EVENT_DATE,
+                        price("185.00"),
+                        44,
+                        eventDescription(
+                                RACINGPRO_LEGAL_NAME,
+                                NAVARRA_TRACK_NAME,
+                                "Formato muy equilibrado para rodar por grupos, trabajar técnica de frenada y sacar partido a un circuito noble y agradecido para coches de calle."
+                        )
+                ),
+                new EventSeed(
+                        IBERIAN_MOTORSPORT_LEGAL_NAME,
+                        NURBURGRING_GP_TRACK_NAME,
+                        FUTURE_NURBURGRING_GP_EVENT_DATE,
+                        price("255.00"),
+                        7,
+                        eventDescription(
+                                IBERIAN_MOTORSPORT_LEGAL_NAME,
+                                NURBURGRING_GP_TRACK_NAME,
+                                "Edición de aforo muy corto para rodadores que quieren pista libre, referencias claras y un día centrado en exprimir cada tanda con margen."
+                        )
+                ),
+                new EventSeed(
+                        MEDITERRANEAN_MOTORSPORT_LEGAL_NAME,
+                        MOTORLAND_TRACK_NAME,
+                        FUTURE_MOTORLAND_EVENT_DATE,
+                        price("235.00"),
+                        62,
+                        eventDescription(
+                                MEDITERRANEAN_MOTORSPORT_LEGAL_NAME,
+                                MOTORLAND_TRACK_NAME,
+                                "Evento de carácter técnico para enlazar sectores muy distintos, ideal para quien quiere pulir trazadas y mantener un ritmo constante durante toda la jornada."
+                        )
+                ),
+                new EventSeed(
+                        MEDITERRANEAN_MOTORSPORT_LEGAL_NAME,
+                        PAUL_RICARD_TRACK_NAME,
+                        FUTURE_PAUL_RICARD_EVENT_DATE,
+                        price("265.00"),
+                        15,
+                        eventDescription(
+                                MEDITERRANEAN_MOTORSPORT_LEGAL_NAME,
+                                PAUL_RICARD_TRACK_NAME,
+                                "Jornada premium con plazas limitadas, ideal para deportivos potentes y pilotos que buscan un circuito seguro, rápido y perfecto para entrenar referencias."
+                        )
+                ),
+                new EventSeed(
+                        TRACKLIMITS_IBERIA_LEGAL_NAME,
+                        CARTAGENA_TRACK_NAME,
+                        FUTURE_CARTAGENA_EVENT_DATE,
+                        price("175.00"),
+                        40,
+                        eventDescription(
+                                TRACKLIMITS_IBERIA_LEGAL_NAME,
+                                CARTAGENA_TRACK_NAME,
+                                "Track day mediterráneo con ambiente cercano, mucho tiempo de pista y una configuración ideal para coches compactos, roadsters y tandas muy vivas."
+                        )
+                ),
+                new EventSeed(
+                        LUSITANIA_RACING_LEGAL_NAME,
+                        BOAVISTA_TRACK_NAME,
+                        FUTURE_BOAVISTA_EVENT_DATE,
+                        price("168.00"),
+                        6,
+                        eventDescription(
+                                LUSITANIA_RACING_LEGAL_NAME,
+                                BOAVISTA_TRACK_NAME,
+                                "Sesión urbana de aforo mínimo para una experiencia muy exclusiva, pensada para participantes con experiencia y ganas de rodar con enorme espacio en pista."
+                        )
+                ),
+                new EventSeed(
+                        APEX_IBERIA_LEGAL_NAME,
+                        ALBACETE_TRACK_NAME,
+                        FUTURE_ALBACETE_EVENT_DATE,
+                        price("165.00"),
+                        36,
+                        eventDescription(
+                                APEX_IBERIA_LEGAL_NAME,
+                                ALBACETE_TRACK_NAME,
+                                "Programa muy aprovechable para aficionados que buscan continuidad, buena visibilidad y un trazado perfecto para repetir vueltas y mejorar confianza."
+                        )
+                ),
+                new EventSeed(
+                        IBERIAN_MOTORSPORT_LEGAL_NAME,
+                        SPA_TRACK_NAME,
+                        FUTURE_SPA_EVENT_DATE,
+                        price("325.00"),
+                        58,
+                        eventDescription(
+                                IBERIAN_MOTORSPORT_LEGAL_NAME,
+                                SPA_TRACK_NAME,
+                                "Cita de gran formato para coches muy prestacionales y pilotos acostumbrados a circuitos rápidos, con el atractivo de una de las pistas más icónicas del mundo."
+                        )
+                ),
+                new EventSeed(
+                        LUSITANIA_RACING_LEGAL_NAME,
+                        MUGELLO_TRACK_NAME,
+                        FUTURE_MUGELLO_EVENT_DATE,
+                        price("310.00"),
+                        56,
+                        eventDescription(
+                                LUSITANIA_RACING_LEGAL_NAME,
+                                MUGELLO_TRACK_NAME,
+                                "Evento de estilo premium y vocación internacional, pensado para disfrutar enlazadas rápidas, desnivel y una experiencia muy completa de track day europeo."
+                        )
+                )
         );
     }
 
@@ -1295,54 +1662,140 @@ public class DemoDataSeeder implements CommandLineRunner {
                 new LapTimeSeed(FERNANDO_ALONSO_DISPLAY_NAME, JARAMA_TRACK_NAME, LocalDate.of(2026, 3, 8), 107215L, "Alpine A110 R"),
                 new LapTimeSeed(JUANJE_DISPLAY_NAME, JARAMA_TRACK_NAME, LocalDate.of(2026, 3, 8), 111842L, "BMW M2"),
                 new LapTimeSeed(LATEBRAKER_88_DISPLAY_NAME, JARAMA_TRACK_NAME, LocalDate.of(2026, 3, 8), 114960L, "Toyota GR86"),
+                new LapTimeSeed(FLATOUT_MARTA_DISPLAY_NAME, JARAMA_TRACK_NAME, LocalDate.of(2026, 3, 8), 113920L, "Audi RS3"),
+                new LapTimeSeed(KERB_RIDER_DISPLAY_NAME, JARAMA_TRACK_NAME, LocalDate.of(2026, 3, 8), 116540L, "Hyundai i30 N"),
+
                 new LapTimeSeed(ALEX_PALAU_DISPLAY_NAME, RICARDO_TORMO_TRACK_NAME, LocalDate.of(2026, 3, 12), 102480L, "Porsche 911 GT3"),
                 new LapTimeSeed(CARLOS_DISPLAY_NAME, RICARDO_TORMO_TRACK_NAME, LocalDate.of(2026, 3, 12), 111965L, "MINI John Cooper Works"),
                 new LapTimeSeed(BOXBOX_RAUL_DISPLAY_NAME, RICARDO_TORMO_TRACK_NAME, LocalDate.of(2026, 3, 12), 115410L, "Renault Megane RS"),
+                new LapTimeSeed(HEELTOE_DANI_DISPLAY_NAME, RICARDO_TORMO_TRACK_NAME, LocalDate.of(2026, 3, 12), 113240L, "Toyota GR Yaris"),
+                new LapTimeSeed(OVERSTEER_MIGUEL_DISPLAY_NAME, RICARDO_TORMO_TRACK_NAME, LocalDate.of(2026, 3, 12), 117030L, "Alpine A110"),
+
                 new LapTimeSeed(MARIA_DISPLAY_NAME, CALAFAT_TRACK_NAME, LocalDate.of(2026, 3, 15), 95620L, "Hyundai i30 N"),
                 new LapTimeSeed(JUANJE_DISPLAY_NAME, CALAFAT_TRACK_NAME, LocalDate.of(2026, 3, 15), 98640L, "Mazda MX-5 NA 1.8"),
                 new LapTimeSeed(REDFLAG_INES_DISPLAY_NAME, CALAFAT_TRACK_NAME, LocalDate.of(2026, 3, 15), 100280L, "Volkswagen Golf GTI Clubsport"),
+                new LapTimeSeed(CHICANE_CHASER_DISPLAY_NAME, CALAFAT_TRACK_NAME, LocalDate.of(2026, 3, 15), 101940L, "Suzuki Swift Sport"),
+                new LapTimeSeed(APEXHUNTER_DISPLAY_NAME, CALAFAT_TRACK_NAME, LocalDate.of(2026, 3, 15), 97890L, "Lotus Exige S"),
+
                 new LapTimeSeed(FERNANDO_ALONSO_DISPLAY_NAME, GUADIX_TRACK_NAME, LocalDate.of(2026, 3, 18), 101870L, "Alpine A110 R"),
                 new LapTimeSeed(ALEX_PALAU_DISPLAY_NAME, GUADIX_TRACK_NAME, LocalDate.of(2026, 3, 18), 104450L, "CUPRA Leon VZ"),
                 new LapTimeSeed(APEXHUNTER_DISPLAY_NAME, GUADIX_TRACK_NAME, LocalDate.of(2026, 3, 18), 109260L, "Honda Civic Type R"),
+                new LapTimeSeed(BOXBOX_RAUL_DISPLAY_NAME, GUADIX_TRACK_NAME, LocalDate.of(2026, 3, 18), 106980L, "Toyota GR Yaris"),
+                new LapTimeSeed(FULLTHROTTLE_EVA_DISPLAY_NAME, GUADIX_TRACK_NAME, LocalDate.of(2026, 3, 18), 108440L, "BMW M135i"),
+
                 new LapTimeSeed(JUANJE_DISPLAY_NAME, ALGARVE_TRACK_NAME, LocalDate.of(2026, 3, 20), 121930L, "Porsche Cayman S"),
                 new LapTimeSeed(FERNANDO_ALONSO_DISPLAY_NAME, ALGARVE_TRACK_NAME, LocalDate.of(2026, 3, 20), 117640L, "Aston Martin Vantage"),
                 new LapTimeSeed(APEX_LUSO_DISPLAY_NAME, ALGARVE_TRACK_NAME, LocalDate.of(2026, 3, 20), 124850L, "BMW M240i"),
+                new LapTimeSeed(OVERSTEER_MIGUEL_DISPLAY_NAME, ALGARVE_TRACK_NAME, LocalDate.of(2026, 3, 20), 123420L, "Porsche 911 Carrera T"),
+                new LapTimeSeed(PADDOCK_PAULA_DISPLAY_NAME, ALGARVE_TRACK_NAME, LocalDate.of(2026, 3, 20), 126780L, "Alpine A110 S"),
+
+                new LapTimeSeed(FERNANDO_ALONSO_DISPLAY_NAME, LE_MANS_SARTHE_TRACK_NAME, LocalDate.of(2026, 4, 11), 221340L, "Aston Martin Vantage GT8"),
+                new LapTimeSeed(ALEX_PALAU_DISPLAY_NAME, LE_MANS_SARTHE_TRACK_NAME, LocalDate.of(2026, 4, 11), 228760L, "Porsche 911 GT3 RS"),
+                new LapTimeSeed(APEX_LUSO_DISPLAY_NAME, LE_MANS_SARTHE_TRACK_NAME, LocalDate.of(2026, 4, 11), 236420L, "BMW M4 CSL"),
+                new LapTimeSeed(CURB_ATTACK_DISPLAY_NAME, LE_MANS_SARTHE_TRACK_NAME, LocalDate.of(2026, 4, 11), 244110L, "Chevrolet Corvette C8"),
+                new LapTimeSeed(HEELTOE_DANI_DISPLAY_NAME, LE_MANS_SARTHE_TRACK_NAME, LocalDate.of(2026, 4, 11), 248950L, "Toyota Supra GR"),
+
+                new LapTimeSeed(PADDOCK_PAULA_DISPLAY_NAME, LE_MANS_BUGATTI_TRACK_NAME, LocalDate.of(2026, 4, 12), 111860L, "Alpine A110 S"),
+                new LapTimeSeed(LATEBRAKER_88_DISPLAY_NAME, LE_MANS_BUGATTI_TRACK_NAME, LocalDate.of(2026, 4, 12), 114430L, "Toyota GR86"),
+                new LapTimeSeed(GRIDWALKER_DISPLAY_NAME, LE_MANS_BUGATTI_TRACK_NAME, LocalDate.of(2026, 4, 12), 116980L, "Hyundai i30 N"),
+                new LapTimeSeed(PITLANE_JUNKIE_DISPLAY_NAME, LE_MANS_BUGATTI_TRACK_NAME, LocalDate.of(2026, 4, 12), 118220L, "BMW M2"),
+                new LapTimeSeed(FLATOUT_MARTA_DISPLAY_NAME, LE_MANS_BUGATTI_TRACK_NAME, LocalDate.of(2026, 4, 12), 119640L, "Mazda MX-5 ND"),
+
+                new LapTimeSeed(ALEX_PALAU_DISPLAY_NAME, NURBURGRING_GP_TRACK_NAME, LocalDate.of(2026, 4, 13), 116240L, "Porsche 911 GT3"),
+                new LapTimeSeed(FERNANDO_ALONSO_DISPLAY_NAME, NURBURGRING_GP_TRACK_NAME, LocalDate.of(2026, 4, 13), 114920L, "Aston Martin Vantage"),
+                new LapTimeSeed(APEXHUNTER_DISPLAY_NAME, NURBURGRING_GP_TRACK_NAME, LocalDate.of(2026, 4, 13), 121830L, "BMW M4 Competition"),
+                new LapTimeSeed(BOXBOX_RAUL_DISPLAY_NAME, NURBURGRING_GP_TRACK_NAME, LocalDate.of(2026, 4, 13), 123970L, "Honda Civic Type R"),
+                new LapTimeSeed(CURVA_PERALTADA_DISPLAY_NAME, NURBURGRING_GP_TRACK_NAME, LocalDate.of(2026, 4, 13), 126540L, "Toyota GR Yaris"),
+
                 new LapTimeSeed(ALEX_PALAU_DISPLAY_NAME, BARCELONA_TRACK_NAME, LocalDate.of(2026, 3, 22), 109930L, "Porsche 718 Cayman GT4"),
                 new LapTimeSeed(CURVA_PERALTADA_DISPLAY_NAME, BARCELONA_TRACK_NAME, LocalDate.of(2026, 3, 22), 118770L, "BMW M3 E46"),
                 new LapTimeSeed(GRIDWALKER_DISPLAY_NAME, BARCELONA_TRACK_NAME, LocalDate.of(2026, 3, 22), 121580L, "SEAT Leon Cupra"),
+                new LapTimeSeed(APEXHUNTER_DISPLAY_NAME, BARCELONA_TRACK_NAME, LocalDate.of(2026, 3, 22), 116240L, "Porsche 911 Carrera S"),
+                new LapTimeSeed(LATEBRAKER_88_DISPLAY_NAME, BARCELONA_TRACK_NAME, LocalDate.of(2026, 3, 22), 119640L, "Renault Megane RS Trophy"),
+
                 new LapTimeSeed(FULLTHROTTLE_EVA_DISPLAY_NAME, JEREZ_TRACK_NAME, LocalDate.of(2026, 3, 24), 119460L, "Audi TTS"),
                 new LapTimeSeed(PITLANE_JUNKIE_DISPLAY_NAME, JEREZ_TRACK_NAME, LocalDate.of(2026, 3, 24), 123820L, "Toyota GR Yaris"),
                 new LapTimeSeed(BRAKEPOINT_NORA_DISPLAY_NAME, JEREZ_TRACK_NAME, LocalDate.of(2026, 3, 24), 126910L, "Mazda MX-5 ND"),
+                new LapTimeSeed(HEELTOE_DANI_DISPLAY_NAME, JEREZ_TRACK_NAME, LocalDate.of(2026, 3, 24), 125220L, "Hyundai i30 N"),
+                new LapTimeSeed(TRACKRAT_77_DISPLAY_NAME, JEREZ_TRACK_NAME, LocalDate.of(2026, 3, 24), 127480L, "BMW 128ti"),
+
                 new LapTimeSeed(CURB_ATTACK_DISPLAY_NAME, MOTORLAND_TRACK_NAME, LocalDate.of(2026, 3, 26), 132210L, "BMW M2 Competition"),
                 new LapTimeSeed(STINTMASTER_DISPLAY_NAME, MOTORLAND_TRACK_NAME, LocalDate.of(2026, 3, 26), 129740L, "Alpine A110 S"),
                 new LapTimeSeed(MARIA_DISPLAY_NAME, MOTORLAND_TRACK_NAME, LocalDate.of(2026, 3, 26), 137380L, "Subaru BRZ"),
+                new LapTimeSeed(BOXBOX_RAUL_DISPLAY_NAME, MOTORLAND_TRACK_NAME, LocalDate.of(2026, 3, 26), 134860L, "Honda Civic Type R"),
+                new LapTimeSeed(APEX_LUSO_DISPLAY_NAME, MOTORLAND_TRACK_NAME, LocalDate.of(2026, 3, 26), 131980L, "Alpine A110 R"),
+
                 new LapTimeSeed(CHICANE_CHASER_DISPLAY_NAME, NAVARRA_TRACK_NAME, LocalDate.of(2026, 3, 28), 111320L, "Renault Clio RS"),
                 new LapTimeSeed(KERB_RIDER_DISPLAY_NAME, NAVARRA_TRACK_NAME, LocalDate.of(2026, 3, 28), 114470L, "Ford Fiesta ST"),
                 new LapTimeSeed(CURVA_PERALTADA_DISPLAY_NAME, NAVARRA_TRACK_NAME, LocalDate.of(2026, 3, 28), 116880L, "Toyota GT86"),
+                new LapTimeSeed(GRIDWALKER_DISPLAY_NAME, NAVARRA_TRACK_NAME, LocalDate.of(2026, 3, 28), 115630L, "MINI John Cooper Works"),
+                new LapTimeSeed(FULLTHROTTLE_EVA_DISPLAY_NAME, NAVARRA_TRACK_NAME, LocalDate.of(2026, 3, 28), 113980L, "Porsche 718 Cayman"),
+
                 new LapTimeSeed(BOXBOX_RAUL_DISPLAY_NAME, ALBACETE_TRACK_NAME, LocalDate.of(2026, 3, 29), 104530L, "Honda S2000"),
                 new LapTimeSeed(LATEBRAKER_88_DISPLAY_NAME, ALBACETE_TRACK_NAME, LocalDate.of(2026, 3, 29), 106920L, "Audi RS3"),
                 new LapTimeSeed(PITLANE_JUNKIE_DISPLAY_NAME, ALBACETE_TRACK_NAME, LocalDate.of(2026, 3, 29), 109870L, "Renault Clio Cup"),
+                new LapTimeSeed(REDFLAG_INES_DISPLAY_NAME, ALBACETE_TRACK_NAME, LocalDate.of(2026, 3, 29), 108440L, "Mazda MX-5 RF"),
+                new LapTimeSeed(CHICANE_CHASER_DISPLAY_NAME, ALBACETE_TRACK_NAME, LocalDate.of(2026, 3, 29), 110920L, "Toyota GR86"),
+
+                new LapTimeSeed(FULLTHROTTLE_EVA_DISPLAY_NAME, MONTEBLANCO_TRACK_NAME, LocalDate.of(2026, 4, 14), 112860L, "Audi TTS"),
+                new LapTimeSeed(BRAKEPOINT_NORA_DISPLAY_NAME, MONTEBLANCO_TRACK_NAME, LocalDate.of(2026, 4, 14), 115420L, "Mazda MX-5 ND"),
+                new LapTimeSeed(KERB_RIDER_DISPLAY_NAME, MONTEBLANCO_TRACK_NAME, LocalDate.of(2026, 4, 14), 117350L, "Hyundai i20 N"),
+                new LapTimeSeed(HEELTOE_DANI_DISPLAY_NAME, MONTEBLANCO_TRACK_NAME, LocalDate.of(2026, 4, 14), 116180L, "Alpine A110"),
+                new LapTimeSeed(TRACKRAT_77_DISPLAY_NAME, MONTEBLANCO_TRACK_NAME, LocalDate.of(2026, 4, 14), 118990L, "BMW 330i"),
+
                 new LapTimeSeed(TRACKRAT_77_DISPLAY_NAME, CARTAGENA_TRACK_NAME, LocalDate.of(2026, 3, 30), 103240L, "Lotus Elise S"),
                 new LapTimeSeed(FLATOUT_MARTA_DISPLAY_NAME, CARTAGENA_TRACK_NAME, LocalDate.of(2026, 3, 30), 105910L, "Mini Cooper S"),
                 new LapTimeSeed(TYRESMOKE_LUCIA_DISPLAY_NAME, CARTAGENA_TRACK_NAME, LocalDate.of(2026, 3, 30), 108330L, "Toyota GR86"),
+                new LapTimeSeed(APEXHUNTER_DISPLAY_NAME, CARTAGENA_TRACK_NAME, LocalDate.of(2026, 3, 30), 102650L, "Porsche Cayman GTS"),
+                new LapTimeSeed(BOXBOX_RAUL_DISPLAY_NAME, CARTAGENA_TRACK_NAME, LocalDate.of(2026, 3, 30), 107420L, "BMW Z4 M40i"),
+
                 new LapTimeSeed(OVERSTEER_MIGUEL_DISPLAY_NAME, ESTORIL_TRACK_NAME, LocalDate.of(2026, 4, 1), 115760L, "Porsche 911 Carrera S"),
                 new LapTimeSeed(APEX_LUSO_DISPLAY_NAME, ESTORIL_TRACK_NAME, LocalDate.of(2026, 4, 1), 118140L, "BMW M4"),
                 new LapTimeSeed(KERB_RIDER_DISPLAY_NAME, ESTORIL_TRACK_NAME, LocalDate.of(2026, 4, 1), 121020L, "Hyundai Elantra N"),
+                new LapTimeSeed(JUANJE_DISPLAY_NAME, ESTORIL_TRACK_NAME, LocalDate.of(2026, 4, 1), 119860L, "Toyota GR86"),
+                new LapTimeSeed(PADDOCK_PAULA_DISPLAY_NAME, ESTORIL_TRACK_NAME, LocalDate.of(2026, 4, 1), 122740L, "Mini John Cooper Works GP"),
+
                 new LapTimeSeed(REDFLAG_INES_DISPLAY_NAME, BRAGA_TRACK_NAME, LocalDate.of(2026, 4, 2), 94980L, "Abarth 595"),
                 new LapTimeSeed(FULLTHROTTLE_EVA_DISPLAY_NAME, BRAGA_TRACK_NAME, LocalDate.of(2026, 4, 2), 92840L, "Caterham Seven 420R"),
                 new LapTimeSeed(CHICANE_CHASER_DISPLAY_NAME, BRAGA_TRACK_NAME, LocalDate.of(2026, 4, 2), 97350L, "Suzuki Swift Sport"),
+                new LapTimeSeed(APEX_LUSO_DISPLAY_NAME, BRAGA_TRACK_NAME, LocalDate.of(2026, 4, 2), 94120L, "Toyota GR Yaris"),
+                new LapTimeSeed(TRACKRAT_77_DISPLAY_NAME, BRAGA_TRACK_NAME, LocalDate.of(2026, 4, 2), 96510L, "Renault Clio RS"),
+
+                new LapTimeSeed(OVERSTEER_MIGUEL_DISPLAY_NAME, VILA_REAL_TRACK_NAME, LocalDate.of(2026, 4, 15), 126980L, "Porsche Cayman GTS"),
+                new LapTimeSeed(APEX_LUSO_DISPLAY_NAME, VILA_REAL_TRACK_NAME, LocalDate.of(2026, 4, 15), 128340L, "BMW M2"),
+                new LapTimeSeed(PADDOCK_PAULA_DISPLAY_NAME, VILA_REAL_TRACK_NAME, LocalDate.of(2026, 4, 15), 131120L, "Alpine A110 R"),
+                new LapTimeSeed(BOXBOX_RAUL_DISPLAY_NAME, VILA_REAL_TRACK_NAME, LocalDate.of(2026, 4, 15), 130440L, "Honda Civic Type R"),
+                new LapTimeSeed(REDFLAG_INES_DISPLAY_NAME, VILA_REAL_TRACK_NAME, LocalDate.of(2026, 4, 15), 134760L, "Toyota GR86"),
+
+                new LapTimeSeed(CURB_ATTACK_DISPLAY_NAME, BOAVISTA_TRACK_NAME, LocalDate.of(2026, 4, 16), 108360L, "Lotus Elise Cup 250"),
+                new LapTimeSeed(GRIDWALKER_DISPLAY_NAME, BOAVISTA_TRACK_NAME, LocalDate.of(2026, 4, 16), 109730L, "MINI John Cooper Works"),
+                new LapTimeSeed(APEXHUNTER_DISPLAY_NAME, BOAVISTA_TRACK_NAME, LocalDate.of(2026, 4, 16), 110940L, "BMW M240i"),
+                new LapTimeSeed(FLATOUT_MARTA_DISPLAY_NAME, BOAVISTA_TRACK_NAME, LocalDate.of(2026, 4, 16), 111420L, "Mazda MX-5 RF"),
+                new LapTimeSeed(LATEBRAKER_88_DISPLAY_NAME, BOAVISTA_TRACK_NAME, LocalDate.of(2026, 4, 16), 112890L, "Hyundai i30 N"),
+
                 new LapTimeSeed(CURB_ATTACK_DISPLAY_NAME, SPA_TRACK_NAME, LocalDate.of(2026, 4, 4), 160520L, "BMW M4 CSL"),
                 new LapTimeSeed(ALEX_PALAU_DISPLAY_NAME, SPA_TRACK_NAME, LocalDate.of(2026, 4, 4), 151880L, "Porsche 911 GT3"),
                 new LapTimeSeed(FERNANDO_ALONSO_DISPLAY_NAME, SPA_TRACK_NAME, LocalDate.of(2026, 4, 4), 149330L, "Aston Martin Vantage GT8"),
+                new LapTimeSeed(OVERSTEER_MIGUEL_DISPLAY_NAME, SPA_TRACK_NAME, LocalDate.of(2026, 4, 4), 154920L, "BMW M3 Competition"),
+                new LapTimeSeed(APEXHUNTER_DISPLAY_NAME, SPA_TRACK_NAME, LocalDate.of(2026, 4, 4), 157310L, "Porsche Cayman GT4 RS"),
+
                 new LapTimeSeed(APEX_LUSO_DISPLAY_NAME, MUGELLO_TRACK_NAME, LocalDate.of(2026, 4, 6), 128910L, "Ferrari 488 GTB"),
                 new LapTimeSeed(OVERSTEER_MIGUEL_DISPLAY_NAME, MUGELLO_TRACK_NAME, LocalDate.of(2026, 4, 6), 133420L, "BMW M3 Touring"),
                 new LapTimeSeed(FULLTHROTTLE_EVA_DISPLAY_NAME, MUGELLO_TRACK_NAME, LocalDate.of(2026, 4, 6), 135110L, "Porsche Cayman GTS"),
+                new LapTimeSeed(REDFLAG_INES_DISPLAY_NAME, MUGELLO_TRACK_NAME, LocalDate.of(2026, 4, 6), 136540L, "Alpine A110"),
+                new LapTimeSeed(PADDOCK_PAULA_DISPLAY_NAME, MUGELLO_TRACK_NAME, LocalDate.of(2026, 4, 6), 138220L, "Porsche 718 Cayman"),
+
                 new LapTimeSeed(ALEX_PALAU_DISPLAY_NAME, NURBURGRING_TRACK_NAME, LocalDate.of(2026, 4, 8), 456210L, "Porsche 911 GT3 RS"),
                 new LapTimeSeed(FERNANDO_ALONSO_DISPLAY_NAME, NURBURGRING_TRACK_NAME, LocalDate.of(2026, 4, 8), 448960L, "Aston Martin Vantage AMR"),
                 new LapTimeSeed(STINTMASTER_DISPLAY_NAME, NURBURGRING_TRACK_NAME, LocalDate.of(2026, 4, 8), 487340L, "Honda Civic Type R"),
+                new LapTimeSeed(APEXHUNTER_DISPLAY_NAME, NURBURGRING_TRACK_NAME, LocalDate.of(2026, 4, 8), 472650L, "Porsche Cayman GT4"),
+                new LapTimeSeed(CURVA_PERALTADA_DISPLAY_NAME, NURBURGRING_TRACK_NAME, LocalDate.of(2026, 4, 8), 501220L, "Toyota GR Yaris"),
+
                 new LapTimeSeed(PADDOCK_PAULA_DISPLAY_NAME, PAUL_RICARD_TRACK_NAME, LocalDate.of(2026, 4, 10), 134570L, "Alpine A110 S"),
                 new LapTimeSeed(CARLOS_DISPLAY_NAME, PAUL_RICARD_TRACK_NAME, LocalDate.of(2026, 4, 10), 131240L, "BMW M2"),
-                new LapTimeSeed(APEXHUNTER_DISPLAY_NAME, PAUL_RICARD_TRACK_NAME, LocalDate.of(2026, 4, 10), 129880L, "Porsche 718 Cayman GT4")
+                new LapTimeSeed(APEXHUNTER_DISPLAY_NAME, PAUL_RICARD_TRACK_NAME, LocalDate.of(2026, 4, 10), 129880L, "Porsche 718 Cayman GT4"),
+                new LapTimeSeed(ALEX_PALAU_DISPLAY_NAME, PAUL_RICARD_TRACK_NAME, LocalDate.of(2026, 4, 10), 128940L, "Porsche 911 GT3 Touring"),
+                new LapTimeSeed(BOXBOX_RAUL_DISPLAY_NAME, PAUL_RICARD_TRACK_NAME, LocalDate.of(2026, 4, 10), 133510L, "Alpine A110 GT")
         );
     }
 
@@ -1395,11 +1848,18 @@ public class DemoDataSeeder implements CommandLineRunner {
                                       String trackName,
                                       LocalDate eventDate,
                                       BigDecimal basePrice,
-                                      Integer maxParticipants) {
+                                      Integer maxParticipants,
+                                      String description) {
         Organizer organizer = findOrganizerByLegalNameOrThrow(organizerLegalName);
         Track track = findTrackByNameOrThrow(trackName);
 
-        if (eventRepository.findByTrackIdAndEventDate(track.getId(), eventDate).isPresent()) {
+        Event existingEvent = eventRepository.findByTrackIdAndEventDate(track.getId(), eventDate).orElse(null);
+
+        if (existingEvent != null) {
+            if (!Objects.equals(existingEvent.getDescription(), description)) {
+                existingEvent.setDescription(description);
+                eventRepository.save(existingEvent);
+            }
             return;
         }
 
@@ -1409,6 +1869,7 @@ public class DemoDataSeeder implements CommandLineRunner {
         event.setEventDate(eventDate);
         event.setBasePrice(basePrice);
         event.setMaxParticipants(maxParticipants);
+        event.setDescription(description);
         eventRepository.save(event);
     }
 
@@ -1683,7 +2144,8 @@ public class DemoDataSeeder implements CommandLineRunner {
                              String trackName,
                              LocalDate eventDate,
                              BigDecimal basePrice,
-                             int maxParticipants) {
+                             int maxParticipants,
+                             String description) {
     }
 
     private record EventAttendanceSeed(String trackName, LocalDate eventDate, List<String> attendees) {

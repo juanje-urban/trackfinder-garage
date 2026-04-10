@@ -109,6 +109,7 @@ class EventServiceTest {
         assertSame(track, existing.getTrack());
         assertEquals(updateRequest.getEventDate(), existing.getEventDate());
         assertEquals(updateRequest.getBasePrice(), existing.getBasePrice());
+        assertEquals(updateRequest.getDescription(), existing.getDescription());
         verify(eventPersistencePort).save(existing);
     }
 
@@ -213,6 +214,14 @@ class EventServiceTest {
     void createEventThrowsWhenMaxParticipantsIsNotPositive() {
         Event event = eventWithIds(1L, 2L, LocalDate.now().plusDays(10), new BigDecimal("30.00"));
         event.setMaxParticipants(0);
+
+        assertThrows(IllegalArgumentException.class, () -> eventService.createEvent(event));
+    }
+
+    @Test
+    void createEventThrowsWhenDescriptionIsMissing() {
+        Event event = eventWithIds(1L, 2L, LocalDate.now().plusDays(10), new BigDecimal("30.00"));
+        event.setDescription("   ");
 
         assertThrows(IllegalArgumentException.class, () -> eventService.createEvent(event));
     }
@@ -358,6 +367,7 @@ class EventServiceTest {
         event.setEventDate(date);
         event.setBasePrice(basePrice);
         event.setMaxParticipants(20);
+        event.setDescription("Descripcion de prueba para el evento.");
         return event;
     }
 

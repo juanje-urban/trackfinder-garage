@@ -6,9 +6,12 @@ import com.trackfindergarage.backend.domain.model.EventBooking;
 import com.trackfindergarage.backend.domain.model.Organizer;
 import com.trackfindergarage.backend.domain.model.Track;
 import com.trackfindergarage.backend.domain.model.User;
+import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.CheckoutEventBookingRequest;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.CreateEventBookingRequest;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.mapper.EventBookingWebMapper;
 import org.junit.jupiter.api.Test;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -42,6 +45,20 @@ class EventBookingControllerTest {
     }
 
     @Test
+    void checkoutEventBookingDelegatesToUseCaseAndReturnsMappedResponse() {
+        CheckoutEventBookingRequest request = new CheckoutEventBookingRequest();
+        request.setEventId(2L);
+        request.setEventServiceIds(List.of(9L, 10L));
+        Authentication authentication = new UsernamePasswordAuthenticationToken("user@example.com", "secret");
+        EventBooking eventBooking = eventBookingWithId(10L, 1L, 2L);
+
+        when(eventBookingUseCase.checkoutEventBooking("user@example.com", 2L, List.of(9L, 10L)))
+                .thenReturn(eventBooking);
+
+        assertEquals(10L, eventBookingController.checkoutEventBooking(request, authentication).getId());
+    }
+
+    @Test
     void queryEndpointsMapUseCaseResult() {
         EventBooking eventBooking = eventBookingWithId(10L, 1L, 2L);
 
@@ -58,9 +75,11 @@ class EventBookingControllerTest {
 
     @Test
     void deleteEventBookingDelegatesToUseCase() {
-        eventBookingController.deleteEventBooking(10L);
+        Authentication authentication = new UsernamePasswordAuthenticationToken("user@example.com", "secret");
 
-        verify(eventBookingUseCase).deleteEventBooking(10L);
+        eventBookingController.deleteEventBooking(10L, authentication);
+
+        verify(eventBookingUseCase).deleteOwnEventBooking("user@example.com", 10L);
     }
 
     private EventBooking eventBookingWithId(Long id, Long userId, Long eventId) {

@@ -7,6 +7,7 @@ import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.EventBook
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.mapper.EventBookingServiceWebMapper;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -64,6 +65,17 @@ public class EventBookingServiceController {
     public List<EventBookingServiceResponse> getEventBookingServicesByEventId(@PathVariable Long eventId) {
         return eventBookingServiceUseCase.getEventBookingServicesByEventId(eventId)
                 .stream()
+                .map(eventBookingServiceWebMapper::toResponse)
+                .toList();
+    }
+
+    @GetMapping("/event/{eventId}/me")
+    public List<EventBookingServiceResponse> getCurrentUserEventBookingServicesByEventId(@PathVariable Long eventId,
+                                                                                         Authentication authentication) {
+        return eventBookingServiceUseCase.getEventBookingServicesByEventIdAndAuthenticatedEmail(
+                        eventId,
+                        authentication != null ? authentication.getName() : null
+                ).stream()
                 .map(eventBookingServiceWebMapper::toResponse)
                 .toList();
     }

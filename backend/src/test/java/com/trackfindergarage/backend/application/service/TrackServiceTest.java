@@ -62,6 +62,15 @@ class TrackServiceTest {
     }
 
     @Test
+    void createTrackThrowsWhenDescriptionIsMissing() {
+        Track track = trackWithId(1L, "Montmelo");
+        track.setLocation("Barcelona");
+        track.setDescription("   ");
+
+        assertThrows(IllegalArgumentException.class, () -> trackService.createTrack(track));
+    }
+
+    @Test
     void deleteTrackRemovesExistingTrack() {
         Track existingTrack = trackWithId(7L, "Jarama");
 
@@ -92,6 +101,8 @@ class TrackServiceTest {
         Track track = new Track();
         track.setId(id);
         track.setName(name);
+        track.setLocation("Location");
+        track.setDescription("Description");
         return track;
     }
 }

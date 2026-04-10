@@ -18,6 +18,8 @@ public interface EventBookingServiceUseCase {
 
     List<EventBookingService> getEventBookingServicesByEventId(Long eventId);
 
+    List<EventBookingService> getEventBookingServicesByEventIdAndAuthenticatedEmail(Long eventId, String authenticatedEmail);
+
     List<EventBookingService> getEventBookingServicesByUserId(Long userId);
 
     List<EventBookingService> getEventBookingServicesByEventIdAndUserId(Long eventId, Long userId);

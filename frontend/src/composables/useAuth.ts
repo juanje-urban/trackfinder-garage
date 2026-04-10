@@ -1,4 +1,5 @@
 import { computed, reactive } from 'vue'
+import { getCurrentSession } from '@/services/authService'
 import type { AuthSession } from '@/types/auth'
 
 const STORAGE_KEY = 'trackfinder-garage.auth'
@@ -22,6 +23,7 @@ export function useAuth() {
     closeAuthDialog,
     setSession,
     clearSession,
+    refreshSession,
   }
 }
 
@@ -45,6 +47,19 @@ function setSession(session: AuthSession) {
 function clearSession() {
   state.session = null
   removeStoredSession()
+}
+
+async function refreshSession() {
+  if (!state.session) {
+    return
+  }
+
+  try {
+    const nextSession = await getCurrentSession()
+    setSession(nextSession)
+  } catch {
+    clearSession()
+  }
 }
 
 function loadStoredSession(): AuthSession | null {

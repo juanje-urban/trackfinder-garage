@@ -4,7 +4,7 @@ withDefaults(
     eyebrow: string
     title: string
     subtitle?: string
-    tone?: 'default' | 'accent' | 'success'
+    tone?: 'default' | 'accent' | 'success' | 'urgent' | 'limited' | 'open'
   }>(),
   {
     subtitle: '',
@@ -29,11 +29,54 @@ withDefaults(
   margin-top: 6px;
 }
 
-.detail-info-card--success {
+.detail-info-card--success,
+.detail-info-card--open {
   border-color: var(--success-border);
 }
 
-.detail-info-card--success .detail-info-card__eyebrow {
+.detail-info-card--limited {
+  border-color: rgba(255, 205, 92, 0.42);
+  background:
+    linear-gradient(180deg, rgba(255, 191, 60, 0.12) 0%, rgba(255, 191, 60, 0.04) 100%),
+    var(--surface-panel-gradient);
+}
+
+.detail-info-card--urgent {
+  border-color: rgba(255, 128, 118, 0.44);
+  background:
+    linear-gradient(180deg, rgba(255, 45, 32, 0.14) 0%, rgba(255, 45, 32, 0.05) 100%),
+    var(--surface-panel-gradient);
+}
+
+.detail-info-card--success {
+  background:
+    linear-gradient(180deg, rgba(58, 215, 134, 0.12) 0%, rgba(58, 215, 134, 0.04) 100%),
+    var(--surface-panel-gradient);
+}
+
+.detail-info-card--success .ui-eyebrow,
+.detail-info-card--open .ui-eyebrow {
   color: var(--success-text);
+}
+
+.detail-info-card--limited .ui-eyebrow {
+  color: var(--racing-amber);
+}
+
+.detail-info-card--urgent .ui-eyebrow {
+  color: #ffb0a9;
+}
+
+.detail-info-card--success .ui-title-detail,
+.detail-info-card--open .ui-title-detail {
+  color: var(--success-text);
+}
+
+.detail-info-card--limited .ui-title-detail {
+  color: #ffe5a5;
+}
+
+.detail-info-card--urgent .ui-title-detail {
+  color: #fff0ed;
 }
 </style>

@@ -11,16 +11,16 @@ public class TrackWebMapper {
 
     public Track toDomain(CreateTrackRequest request) {
         Track track = new Track();
-        track.setName(request.getName());
-        track.setLocation(request.getLocation());
-        track.setDescription(request.getDescription());
+        track.setName(normalize(request.getName()));
+        track.setLocation(normalize(request.getLocation()));
+        track.setDescription(normalize(request.getDescription()));
         return track;
     }
 
     public void updateDomain(Track track, UpdateTrackRequest request) {
-        track.setName(request.getName());
-        track.setLocation(request.getLocation());
-        track.setDescription(request.getDescription());
+        track.setName(normalize(request.getName()));
+        track.setLocation(normalize(request.getLocation()));
+        track.setDescription(normalize(request.getDescription()));
     }
 
     public TrackResponse toResponse(Track track) {
@@ -30,5 +30,9 @@ public class TrackWebMapper {
                 .location(track.getLocation())
                 .description(track.getDescription())
                 .build();
+    }
+
+    private String normalize(String value) {
+        return value == null ? null : value.trim();
     }
 }

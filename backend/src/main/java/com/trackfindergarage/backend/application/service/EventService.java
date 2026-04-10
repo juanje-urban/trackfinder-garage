@@ -33,6 +33,7 @@ public class EventService implements EventUseCase {
     private static final String BASE_PRICE_MUST_BE_GREATER_THAN_ZERO = "Base price must be greater than 0";
     private static final String MAX_PARTICIPANTS_REQUIRED = "Max participants is required";
     private static final String MAX_PARTICIPANTS_MUST_BE_GREATER_THAN_ZERO = "Max participants must be greater than 0";
+    private static final String DESCRIPTION_REQUIRED = "Description is required";
     private static final String MAX_PARTICIPANTS_CANNOT_BE_LESS_THAN_CURRENT_BOOKINGS =
             "Max participants cannot be less than current bookings (%d)";
     private static final String START_DATE_REQUIRED = "Start date is required";
@@ -71,6 +72,7 @@ public class EventService implements EventUseCase {
 
         event.setOrganizer(organizer);
         event.setTrack(track);
+        event.setDescription(event.getDescription().trim());
 
         return eventPersistencePort.save(event);
     }
@@ -101,6 +103,7 @@ public class EventService implements EventUseCase {
         existingEvent.setEventDate(event.getEventDate());
         existingEvent.setBasePrice(event.getBasePrice());
         existingEvent.setMaxParticipants(event.getMaxParticipants());
+        existingEvent.setDescription(event.getDescription().trim());
 
         return eventPersistencePort.save(existingEvent);
     }
@@ -188,6 +191,9 @@ public class EventService implements EventUseCase {
         }
         if (event.getMaxParticipants() <= 0) {
             throw new IllegalArgumentException(MAX_PARTICIPANTS_MUST_BE_GREATER_THAN_ZERO);
+        }
+        if (event.getDescription() == null || event.getDescription().trim().isEmpty()) {
+            throw new IllegalArgumentException(DESCRIPTION_REQUIRED);
         }
     }
 

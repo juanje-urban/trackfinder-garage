@@ -9,6 +9,8 @@ import com.trackfindergarage.backend.domain.model.User;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.CreateEventBookingServiceRequest;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.mapper.EventBookingServiceWebMapper;
 import org.junit.jupiter.api.Test;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -42,11 +44,14 @@ class EventBookingServiceControllerTest {
     @Test
     void queryEndpointsMapUseCaseResult() {
         EventBookingService eventBookingService = eventBookingServiceWithId(10L, 1L, 7L, 3L, 2L);
+        Authentication authentication = new UsernamePasswordAuthenticationToken("driver@example.com", "secret");
 
         when(eventBookingServiceUseCase.getAllEventBookingServices()).thenReturn(List.of(eventBookingService));
         when(eventBookingServiceUseCase.getEventBookingServiceById(10L)).thenReturn(eventBookingService);
         when(eventBookingServiceUseCase.getEventBookingServicesByEventBookingId(1L)).thenReturn(List.of(eventBookingService));
         when(eventBookingServiceUseCase.getEventBookingServicesByEventId(3L)).thenReturn(List.of(eventBookingService));
+        when(eventBookingServiceUseCase.getEventBookingServicesByEventIdAndAuthenticatedEmail(3L, "driver@example.com"))
+                .thenReturn(List.of(eventBookingService));
         when(eventBookingServiceUseCase.getEventBookingServicesByUserId(7L)).thenReturn(List.of(eventBookingService));
         when(eventBookingServiceUseCase.getEventBookingServicesByEventIdAndUserId(3L, 7L)).thenReturn(List.of(eventBookingService));
 
@@ -54,6 +59,7 @@ class EventBookingServiceControllerTest {
         assertEquals(10L, eventBookingServiceController.getEventBookingServiceById(10L).getId());
         assertEquals(1, eventBookingServiceController.getEventBookingServicesByEventBookingId(1L).size());
         assertEquals(1, eventBookingServiceController.getEventBookingServicesByEventId(3L).size());
+        assertEquals(1, eventBookingServiceController.getCurrentUserEventBookingServicesByEventId(3L, authentication).size());
         assertEquals(1, eventBookingServiceController.getEventBookingServicesByUserId(7L).size());
         assertEquals(1, eventBookingServiceController.getEventBookingServicesByEventIdAndUserId(3L, 7L).size());
     }

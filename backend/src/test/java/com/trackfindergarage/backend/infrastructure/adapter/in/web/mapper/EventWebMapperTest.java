@@ -25,6 +25,7 @@ class EventWebMapperTest {
         request.setEventDate(LocalDate.of(2026, 4, 1));
         request.setBasePrice(new BigDecimal("30.00"));
         request.setMaxParticipants(20);
+        request.setDescription(" Jornada completa con tandas libres y briefing inicial. ");
 
         Event event = eventWebMapper.toDomain(request);
 
@@ -33,6 +34,7 @@ class EventWebMapperTest {
         assertEquals(LocalDate.of(2026, 4, 1), event.getEventDate());
         assertEquals(new BigDecimal("30.00"), event.getBasePrice());
         assertEquals(20, event.getMaxParticipants());
+        assertEquals("Jornada completa con tandas libres y briefing inicial.", event.getDescription());
     }
 
     @Test
@@ -44,6 +46,7 @@ class EventWebMapperTest {
         request.setEventDate(LocalDate.of(2026, 5, 1));
         request.setBasePrice(new BigDecimal("40.00"));
         request.setMaxParticipants(25);
+        request.setDescription(" Sesion abierta con grupos por ritmo. ");
 
         eventWebMapper.updateDomain(event, request);
 
@@ -52,6 +55,7 @@ class EventWebMapperTest {
         assertEquals(LocalDate.of(2026, 5, 1), event.getEventDate());
         assertEquals(new BigDecimal("40.00"), event.getBasePrice());
         assertEquals(25, event.getMaxParticipants());
+        assertEquals("Sesion abierta con grupos por ritmo.", event.getDescription());
     }
 
     @Test
@@ -70,6 +74,7 @@ class EventWebMapperTest {
         event.setEventDate(LocalDate.of(2026, 6, 1));
         event.setBasePrice(new BigDecimal("50.00"));
         event.setMaxParticipants(30);
+        event.setDescription("Jornada premium con acceso a paddock y cronometraje opcional.");
 
         EventResponse response = eventWebMapper.toResponse(event, 12);
 
@@ -80,5 +85,6 @@ class EventWebMapperTest {
         assertEquals("Jarama", response.getTrackName());
         assertEquals(30, response.getMaxParticipants());
         assertEquals(12, response.getRemainingCapacity());
+        assertEquals("Jornada premium con acceso a paddock y cronometraje opcional.", response.getDescription());
     }
 }

@@ -6,6 +6,8 @@ public interface AuthUseCase {
 
     AuthResponse login(String email, String rawPassword);
 
+    AuthResponse getCurrentSession(String authenticatedEmail, String authorizationHeader);
+
     AuthResponse register(String displayName,
                           String email,
                           String rawPassword,

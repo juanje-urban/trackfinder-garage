@@ -19,4 +19,5 @@ public class EventResponse {
     private BigDecimal basePrice;
     private int maxParticipants;
     private int remainingCapacity;
+    private String description;
 }

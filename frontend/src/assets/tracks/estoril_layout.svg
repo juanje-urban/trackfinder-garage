@@ -9,8 +9,8 @@
    xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="1407.9937"
-   height="614.0069"
+   width="1487.99"
+   height="694.007"
    id="svg5223"
    sodipodi:version="0.32"
    inkscape:version="0.46"
@@ -20,6 +20,7 @@
    inkscape:export-filename="D:\Images\Race Tracks\Estoril track map.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90">
+  <g transform="translate(40,40)">
   <defs
      id="defs5225">
     <clipPath
@@ -979,5 +980,7 @@
          inkscape:transform-center-y="8.088839"
          sodipodi:nodetypes="ccccc" />
     </g>
+  </g>
+
   </g>
 </svg>

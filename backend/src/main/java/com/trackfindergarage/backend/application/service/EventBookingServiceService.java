@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Locale;
 
 @org.springframework.stereotype.Service
 @Transactional
@@ -26,6 +27,7 @@ public class EventBookingServiceService implements EventBookingServiceUseCase {
     private static final String EVENT_SERVICE_NOT_FOUND_WITH_ID = "Event service not found with id: ";
     private static final String EVENT_NOT_FOUND_WITH_ID = "Event not found with id: ";
     private static final String USER_NOT_FOUND_WITH_ID = "User not found with id: ";
+    private static final String USER_NOT_FOUND_WITH_EMAIL = "User not found with email: ";
     private static final String EVENT_BOOKING_ID_REQUIRED = "Event booking id is required";
     private static final String EVENT_SERVICE_ID_REQUIRED = "Event service id is required";
     private static final String EVENT_BOOKING_SERVICE_ALREADY_EXISTS =
@@ -34,6 +36,7 @@ public class EventBookingServiceService implements EventBookingServiceUseCase {
             "Event service id %d does not belong to the same event as event booking id %d";
     private static final String EVENT_BOOKING_SERVICE_REQUIRES_FUTURE_EVENT =
             "Event booking service can only be created for future events";
+    private static final String AUTHENTICATED_EMAIL_REQUIRED = "Authenticated user email is required";
 
     private final EventBookingServicePersistencePort eventBookingServicePersistencePort;
     private final EventBookingPersistencePort eventBookingPersistencePort;
@@ -122,6 +125,25 @@ public class EventBookingServiceService implements EventBookingServiceUseCase {
                 .orElseThrow(() -> new ResourceNotFoundException(EVENT_NOT_FOUND_WITH_ID + eventId));
 
         return eventBookingServicePersistencePort.findByEventBookingEventId(eventId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<EventBookingService> getEventBookingServicesByEventIdAndAuthenticatedEmail(Long eventId,
+                                                                                            String authenticatedEmail) {
+        if (authenticatedEmail == null || authenticatedEmail.isBlank()) {
+            throw new IllegalArgumentException(AUTHENTICATED_EMAIL_REQUIRED);
+        }
+
+        eventPersistencePort.findById(eventId)
+                .orElseThrow(() -> new ResourceNotFoundException(EVENT_NOT_FOUND_WITH_ID + eventId));
+
+        String normalizedEmail = authenticatedEmail.trim().toLowerCase(Locale.ROOT);
+        Long userId = userPersistencePort.findByEmail(normalizedEmail)
+                .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND_WITH_EMAIL + normalizedEmail))
+                .getId();
+
+        return eventBookingServicePersistencePort.findByEventBookingEventIdAndEventBookingUserId(eventId, userId);
     }
 
     @Override

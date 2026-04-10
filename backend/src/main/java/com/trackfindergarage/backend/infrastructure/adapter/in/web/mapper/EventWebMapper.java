@@ -24,6 +24,7 @@ public class EventWebMapper {
         event.setEventDate(request.getEventDate());
         event.setBasePrice(request.getBasePrice());
         event.setMaxParticipants(request.getMaxParticipants());
+        event.setDescription(normalizeDescription(request.getDescription()));
 
         return event;
     }
@@ -40,6 +41,7 @@ public class EventWebMapper {
         event.setEventDate(request.getEventDate());
         event.setBasePrice(request.getBasePrice());
         event.setMaxParticipants(request.getMaxParticipants());
+        event.setDescription(normalizeDescription(request.getDescription()));
     }
 
     public EventResponse toResponse(Event event, int remainingCapacity) {
@@ -53,6 +55,11 @@ public class EventWebMapper {
                 .basePrice(event.getBasePrice())
                 .maxParticipants(event.getMaxParticipants())
                 .remainingCapacity(remainingCapacity)
+                .description(event.getDescription())
                 .build();
+    }
+
+    private String normalizeDescription(String description) {
+        return description == null ? null : description.trim();
     }
 }

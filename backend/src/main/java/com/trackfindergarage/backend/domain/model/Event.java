@@ -44,4 +44,8 @@ public class Event {
 
     @Column(name = "max_participants", nullable = false)
     private Integer maxParticipants;
+
+    @Lob
+    @Column(name = "description", nullable = false, columnDefinition = "TEXT")
+    private String description;
 }

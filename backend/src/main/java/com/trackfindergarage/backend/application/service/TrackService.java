@@ -14,6 +14,9 @@ import java.util.List;
 public class TrackService implements TrackUseCase {
 
     private static final String TRACK_NOT_FOUND_WITH_ID = "Track not found with id: ";
+    private static final String NAME_REQUIRED = "Name is required";
+    private static final String LOCATION_REQUIRED = "Location is required";
+    private static final String DESCRIPTION_REQUIRED = "Description is required";
 
     private final TrackPersistencePort trackPersistencePort;
 
@@ -23,16 +26,21 @@ public class TrackService implements TrackUseCase {
 
     @Override
     public Track createTrack(Track track) {
+        validateTrack(track);
+        track.setName(track.getName().trim());
+        track.setLocation(track.getLocation().trim());
+        track.setDescription(track.getDescription().trim());
         return trackPersistencePort.save(track);
     }
 
     @Override
     public Track updateTrack(Long id, Track track) {
+        validateTrack(track);
         Track existingTrack = findTrackOrThrow(id);
 
-        existingTrack.setName(track.getName());
-        existingTrack.setLocation(track.getLocation());
-        existingTrack.setDescription(track.getDescription());
+        existingTrack.setName(track.getName().trim());
+        existingTrack.setLocation(track.getLocation().trim());
+        existingTrack.setDescription(track.getDescription().trim());
 
         return trackPersistencePort.save(existingTrack);
     }
@@ -60,6 +68,18 @@ public class TrackService implements TrackUseCase {
     private Track findTrackOrThrow(Long id) {
         return trackPersistencePort.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(TRACK_NOT_FOUND_WITH_ID + id));
+    }
+
+    private void validateTrack(Track track) {
+        if (track.getName() == null || track.getName().trim().isEmpty()) {
+            throw new IllegalArgumentException(NAME_REQUIRED);
+        }
+        if (track.getLocation() == null || track.getLocation().trim().isEmpty()) {
+            throw new IllegalArgumentException(LOCATION_REQUIRED);
+        }
+        if (track.getDescription() == null || track.getDescription().trim().isEmpty()) {
+            throw new IllegalArgumentException(DESCRIPTION_REQUIRED);
+        }
     }
 
 }

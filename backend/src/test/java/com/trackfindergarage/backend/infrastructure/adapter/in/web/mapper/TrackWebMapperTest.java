@@ -15,9 +15,9 @@ class TrackWebMapperTest {
     @Test
     void toDomainMapsCreateRequestToTrack() {
         CreateTrackRequest request = new CreateTrackRequest();
-        request.setName("Jarama");
-        request.setLocation("Madrid");
-        request.setDescription("Fast track");
+        request.setName(" Jarama ");
+        request.setLocation(" Madrid ");
+        request.setDescription(" Fast track ");
 
         Track track = trackWebMapper.toDomain(request);
 
@@ -30,9 +30,9 @@ class TrackWebMapperTest {
     void updateDomainMapsUpdateRequestToExistingTrack() {
         Track track = new Track();
         UpdateTrackRequest request = new UpdateTrackRequest();
-        request.setName("Montmelo");
-        request.setLocation("Barcelona");
-        request.setDescription("Updated");
+        request.setName(" Montmelo ");
+        request.setLocation(" Barcelona ");
+        request.setDescription(" Updated ");
 
         trackWebMapper.updateDomain(track, request);
 

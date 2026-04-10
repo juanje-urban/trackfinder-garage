@@ -6,6 +6,8 @@ import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.AuthRegis
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.AuthResponse;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.CreateOrganizerRequest;
 import org.junit.jupiter.api.Test;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
@@ -31,6 +33,18 @@ class AuthControllerTest {
         assertEquals(expected.getUserId(), response.getUserId());
         assertEquals(expected.getDisplayName(), response.getDisplayName());
         verify(authUseCase).login("driver@example.com", "secret");
+    }
+
+    @Test
+    void getCurrentSessionDelegatesToUseCase() {
+        Authentication authentication = new UsernamePasswordAuthenticationToken("driver@example.com", "secret");
+        AuthResponse expected = response(3L, "driver", "driver@example.com");
+        when(authUseCase.getCurrentSession("driver@example.com", "Basic token")).thenReturn(expected);
+
+        AuthResponse response = authController.getCurrentSession(authentication, "Basic token");
+
+        assertEquals(expected.getUserId(), response.getUserId());
+        verify(authUseCase).getCurrentSession("driver@example.com", "Basic token");
     }
 
     @Test

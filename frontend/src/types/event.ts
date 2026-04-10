@@ -8,4 +8,5 @@ export interface Event {
   basePrice: number
   maxParticipants: number
   remainingCapacity: number
+  description: string
 }

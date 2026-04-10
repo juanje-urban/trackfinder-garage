@@ -1,19 +1,56 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
+import { getTrackRanking } from '@/services/trackService'
 import type { TrackRecord } from '@/types/trackRecord'
 import { formatDisplayDate, formatLapTime } from '@/utils/format'
 
-const props = defineProps<{
-  trackName: string
-  eventDate: string
-  ranking: TrackRecord[]
-}>()
+const props = withDefaults(
+  defineProps<{
+    trackId: number
+    trackName: string
+    limit?: number
+    eyebrow?: string
+  }>(),
+  {
+    limit: 3,
+    eyebrow: '',
+  },
+)
 
-const bestLap = computed(() => props.ranking[0])
+const loading = ref(true)
+const error = ref('')
+const ranking = ref<TrackRecord[]>([])
+
+const bestLap = computed(() => ranking.value[0] ?? null)
+
+async function loadRanking() {
+  loading.value = true
+  error.value = ''
+
+  try {
+    ranking.value = await getTrackRanking(props.trackId, props.limit)
+  } catch {
+    ranking.value = []
+    error.value = 'No se pudieron cargar los records de vuelta.'
+  } finally {
+    loading.value = false
+  }
+}
 
 function positionLabel(index: number): string {
   return `P${index + 1}`
 }
+
+onMounted(() => {
+  void loadRanking()
+})
+
+watch(
+  () => [props.trackId, props.limit] as const,
+  () => {
+    void loadRanking()
+  },
+)
 </script>
 
 <template>
@@ -22,6 +59,7 @@ function positionLabel(index: number): string {
 
     <div class="track-record-board__header">
       <div class="panel-stack-sm">
+        <p v-if="eyebrow" class="ui-eyebrow">{{ eyebrow }}</p>
         <h3 class="ui-title-card">{{ trackName }}</h3>
       </div>
 
@@ -34,7 +72,17 @@ function positionLabel(index: number): string {
       </div>
     </div>
 
-    <div class="track-record-board__list">
+    <p v-if="loading" class="track-record-board__status">
+      Cargando records de vuelta...
+    </p>
+    <p v-else-if="error" class="track-record-board__status track-record-board__status--error">
+      {{ error }}
+    </p>
+    <p v-else-if="ranking.length === 0" class="track-record-board__status">
+      Todavia no hay tiempos publicados para este circuito.
+    </p>
+
+    <div v-else class="track-record-board__list">
       <div
         v-for="(record, index) in ranking"
         :key="`${record.trackId}-${record.userDisplayName}-${record.lapTimeMs}-${index}`"
@@ -114,6 +162,16 @@ function positionLabel(index: number): string {
   margin: 0;
   color: var(--text-on-media-soft);
   font-size: var(--fs-meta);
+}
+
+.track-record-board__status {
+  margin: 0;
+  padding: var(--space-xl) var(--space-2xl);
+  color: var(--text-muted);
+}
+
+.track-record-board__status--error {
+  color: var(--danger-text);
 }
 
 .track-record-board__list {

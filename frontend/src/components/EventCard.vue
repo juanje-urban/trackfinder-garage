@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
+import EventAvailabilityBadge from '@/components/EventAvailabilityBadge.vue'
 import type { Event } from '@/types/event'
+import { getEventAvailabilityState } from '@/utils/eventAvailability'
 import { formatCurrency, formatDisplayDate } from '@/utils/format'
 import { getTrackMedia } from '@/utils/trackMedia'
 import { createVisualStyle, eventVisualPalettes } from '@/utils/visualPalettes'
-
-type AvailabilityState = 'urgent' | 'limited' | 'open'
 
 const props = defineProps<{
   event: Event
@@ -33,29 +33,9 @@ const mediaStyle = computed(() => {
 const formattedDate = computed(() => formatDisplayDate(props.event.eventDate))
 const formattedPrice = computed(() => formatCurrency(props.event.basePrice))
 
-const availabilityState = computed<AvailabilityState>(() => {
-  const remaining = props.event.remainingCapacity
-
-  if (remaining <= 3) {
-    return 'urgent'
-  }
-  if (remaining <= 10) {
-    return 'limited'
-  }
-
-  return 'open'
-})
-
-const availabilityLabel = computed(() => {
-  if (availabilityState.value === 'urgent') {
-    return 'Ultimas plazas'
-  }
-  if (availabilityState.value === 'limited') {
-    return 'Plazas limitadas'
-  }
-
-  return 'Reservas abiertas'
-})
+const availabilityState = computed(() =>
+  getEventAvailabilityState(props.event.remainingCapacity),
+)
 
 const capacityFill = computed(() => {
   const booked = props.event.maxParticipants - props.event.remainingCapacity
@@ -71,7 +51,7 @@ const remainingText = computed(() => {
   <article class="event-card media-card panel" :class="`event-card--${availabilityState}`">
     <div class="event-card__media" :style="mediaStyle">
       <div class="media-card__badges">
-        <span class="badge event-card__badge">{{ availabilityLabel }}</span>
+        <EventAvailabilityBadge :remaining-capacity="event.remainingCapacity" />
       </div>
     </div>
 
@@ -192,14 +172,6 @@ const remainingText = computed(() => {
       transparent 24px
     );
   mix-blend-mode: screen;
-}
-
-.event-card__badge {
-  background: var(--event-state-surface);
-  color: var(--event-state-text);
-  border: 1px solid var(--event-state-border);
-  box-shadow: 0 12px 22px var(--event-state-glow);
-  backdrop-filter: blur(8px);
 }
 
 .event-card__date {

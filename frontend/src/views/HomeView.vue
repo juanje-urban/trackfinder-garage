@@ -8,24 +8,16 @@ import MetricCard from '@/components/MetricCard.vue'
 import PageHero from '@/components/PageHero.vue'
 import TrackRecordBoard from '@/components/TrackRecordBoard.vue'
 import { getFutureEvents } from '@/services/eventService'
-import { getTrackRanking, getTracks } from '@/services/trackService'
+import { getTracks } from '@/services/trackService'
 import type { Event } from '@/types/event'
 import type { Track } from '@/types/track'
-import type { TrackRecord } from '@/types/trackRecord'
 import { formatCurrency, formatDisplayDate } from '@/utils/format'
 import heroImage from '@/assets/home/hero_page_jarama.jpg'
 
-type HomeTrackRanking = {
-  event: Event
-  ranking: TrackRecord[]
-}
-
 const events = ref<Event[]>([])
 const tracks = ref<Track[]>([])
-const lapRecordBoards = ref<HomeTrackRanking[]>([])
 const loading = ref(true)
 const eventsError = ref('')
-const lapRecordsError = ref('')
 
 const sortedEvents = computed(() =>
   [...events.value].sort((left, right) => left.eventDate.localeCompare(right.eventDate)),
@@ -33,6 +25,7 @@ const sortedEvents = computed(() =>
 
 const featuredEvent = computed(() => sortedEvents.value[0])
 const homeEvents = computed(() => sortedEvents.value.slice(0, 3))
+const recordTrackEvents = computed(() => selectUpcomingUniqueTrackEvents(sortedEvents.value, 3))
 
 const openSpots = computed(() =>
   sortedEvents.value.reduce((sum, event) => sum + event.remainingCapacity, 0),
@@ -71,29 +64,6 @@ onMounted(async () => {
     tracks.value = tracksResult.value
   }
 
-  if (eventsResult.status === 'fulfilled') {
-    const rankingCandidates = selectUpcomingUniqueTrackEvents(
-      [...eventsResult.value].sort((left, right) => left.eventDate.localeCompare(right.eventDate)),
-      3,
-    )
-
-    const rankingResults = await Promise.allSettled(
-      rankingCandidates.map(async (event) => ({
-        event,
-        ranking: await getTrackRanking(event.trackId, 3),
-      })),
-    )
-
-    lapRecordBoards.value = rankingResults
-      .filter((result): result is PromiseFulfilledResult<HomeTrackRanking> => result.status === 'fulfilled')
-      .map((result) => result.value)
-      .filter((entry) => entry.ranking.length > 0)
-
-    if (rankingCandidates.length > 0 && lapRecordBoards.value.length === 0) {
-      lapRecordsError.value = 'No se pudieron cargar los récords de vuelta.'
-    }
-  }
-
   loading.value = false
 })
 </script>
@@ -101,15 +71,15 @@ onMounted(async () => {
 <template>
   <main class="page-shell section-stack">
     <PageHero
-      eyebrow="Proximo evento"
+      eyebrow="Próximo evento"
       title="Jarama a Fondo"
-      description="Preparate para una jornada brutal de tandas libres en el Circuito del Jarama. Saca todo el potencial de tu coche, rueda al limite en un entorno seguro y vive el autentico ambiente racing con plazas limitadas."
+      description="Prepárate para una jornada brutal de tandas libres en el Circuito del Jarama. Saca todo el potencial de tu coche, rueda al límite en un entorno seguro y vive el auténtico ambiente racing con plazas limitadas."
       :image-url="heroImage"
       image-alt="Circuito del Jarama"
     >
       <template v-if="featuredEvent" #aside>
         <HeroInfoPanel
-          label="Semaforo en verde"
+          label="Semáforo en verde"
           :caption="`${formatDisplayDate(featuredEvent.eventDate)} - ${formatCurrency(featuredEvent.basePrice)} - ${featuredEvent.organizerLegalName}`"
         >
           <strong>{{ featuredEvent.trackName }}</strong>
@@ -148,13 +118,16 @@ onMounted(async () => {
         <p class="section-heading__eyebrow">Gas a fondo</p>
         <h2 class="ui-title-section">Encuentra tu siguiente trackday</h2>
         <p class="launch-strip__hint ui-copy-muted">
-          Descubre eventos en los mejores circuitos, compara fechas y servicios, y preparate para vivir una jornada de motor pensada para disfrutar al maximo dentro y fuera de pista.
+          Descubre eventos en los mejores circuitos, compara fechas y servicios, y prepárate para
+          vivir una jornada de motor pensada para disfrutar al máximo dentro y fuera de pista.
         </p>
       </div>
 
       <div class="action-row">
         <RouterLink class="action-button" to="/events">Buscar eventos</RouterLink>
-        <RouterLink class="action-button action-button--ghost" to="/tracks">Explorar circuitos</RouterLink>
+        <RouterLink class="action-button action-button--ghost" to="/tracks">
+          Explorar circuitos
+        </RouterLink>
       </div>
     </section>
 
@@ -164,23 +137,16 @@ onMounted(async () => {
       </div>
 
       <p v-if="loading" class="status-message">Cargando récords de vuelta...</p>
-      <p
-        v-else-if="lapRecordBoards.length === 0 && lapRecordsError"
-        class="status-message status-message--error"
-      >
-        {{ lapRecordsError }}
-      </p>
-      <p v-else-if="lapRecordBoards.length === 0" class="status-message">
+      <p v-else-if="recordTrackEvents.length === 0" class="status-message">
         Todavía no hay récords de vuelta publicados para la home.
       </p>
 
       <div v-else class="records-grid">
         <TrackRecordBoard
-          v-for="board in lapRecordBoards"
-          :key="board.event.trackId"
-          :track-name="board.event.trackName"
-          :event-date="board.event.eventDate"
-          :ranking="board.ranking"
+          v-for="event in recordTrackEvents"
+          :key="event.trackId"
+          :track-id="event.trackId"
+          :track-name="event.trackName"
         />
       </div>
     </section>

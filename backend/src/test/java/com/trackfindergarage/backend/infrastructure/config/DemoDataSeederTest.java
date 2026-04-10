@@ -145,6 +145,8 @@ class DemoDataSeederTest {
         assertTrue(countEventsFrom(state, FUTURE_EVENTS_THRESHOLD) >= 23);
         assertEquals(state.tracksByName.size(), countTracksWithFutureEvents(state, FUTURE_EVENTS_THRESHOLD));
         assertEquals(countEventsFrom(state, FUTURE_EVENTS_THRESHOLD), countFutureEventsWithBookings(state, FUTURE_EVENTS_THRESHOLD));
+        assertTrue(state.eventsByTrackAndDate.values().stream()
+                .allMatch(event -> event.getDescription() != null && !event.getDescription().isBlank()));
         assertTrue(state.eventBookings.size() >= 71);
         assertTrue(state.eventBookings.stream()
                 .allMatch(eventBooking -> USER_ROLE_NAME.equals(eventBooking.getUser().getRole().getRoleName())));
@@ -157,6 +159,8 @@ class DemoDataSeederTest {
         assertTrue(state.lapTimes.size() >= 50);
         assertTrue(state.lapTimes.stream()
                 .anyMatch(lapTime -> "Mazda MX-5 NA 1.8".equals(lapTime.getVehicle())));
+        assertTrue(allTracksHaveLapTimesBetween(state, 5, 20));
+        assertTrue(allRepeatedUserTrackLapTimesUseDifferentVehicles(state));
         assertTrue(state.messages.size() >= 1);
         assertUnreadMessageWasSeeded(state.messages.stream()
                 .filter(message -> "Consulta sobre tandas en Jarama".equals(message.getSubject()))
@@ -242,6 +246,35 @@ class DemoDataSeederTest {
                 .map(Event::getId)
                 .distinct()
                 .count());
+    }
+
+    private boolean allTracksHaveLapTimesBetween(SeedState state, int minimum, int maximum) {
+        for (Track track : state.tracksByName.values()) {
+            long lapTimesForTrack = state.lapTimes.stream()
+                    .filter(lapTime -> lapTime.getTrack().getId().equals(track.getId()))
+                    .count();
+
+            if (lapTimesForTrack < minimum || lapTimesForTrack > maximum) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private boolean allRepeatedUserTrackLapTimesUseDifferentVehicles(SeedState state) {
+        for (List<LapTime> lapTimesByUserAndTrack : state.lapTimesByPair.values()) {
+            long distinctVehicles = lapTimesByUserAndTrack.stream()
+                    .map(LapTime::getVehicle)
+                    .distinct()
+                    .count();
+
+            if (distinctVehicles != lapTimesByUserAndTrack.size()) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private void clearAllSaveInvocations() {
