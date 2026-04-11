@@ -8,6 +8,16 @@ public interface UserUseCase {
 
     User createUser(User user, String rawPassword);
 
+    User getCurrentUser(String authenticatedEmail);
+
+    User updateCurrentUserProfile(String authenticatedEmail,
+                                  String name,
+                                  String surname,
+                                  String email,
+                                  String address,
+                                  String phone,
+                                  String rawPassword);
+
     User updateUser(Long id, User user);
 
     void deleteUser(Long id);

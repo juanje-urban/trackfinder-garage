@@ -8,7 +8,9 @@ public interface EventBookingUseCase {
 
     EventBooking createEventBooking(EventBooking eventBooking);
 
-    EventBooking checkoutEventBooking(String authenticatedEmail, Long eventId, List<Long> eventServiceIds);
+    EventBooking checkoutEventBooking(String authenticatedEmail, Long eventId, List<Long> eventServiceIds, boolean isVisible);
+
+    EventBooking updateOwnEventBookingVisibility(String authenticatedEmail, Long id, boolean isVisible);
 
     void deleteOwnEventBooking(String authenticatedEmail, Long id);
 

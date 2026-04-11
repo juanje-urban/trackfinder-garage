@@ -1,6 +1,7 @@
 package com.trackfindergarage.backend.infrastructure.adapter.in.web.dto;
 
 import jakarta.validation.constraints.NotNull;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,4 +16,8 @@ public class CheckoutEventBookingRequest {
     private Long eventId;
 
     private List<Long> eventServiceIds = new ArrayList<>();
+
+    @NotNull
+    @JsonProperty("isVisible")
+    private Boolean visible;
 }

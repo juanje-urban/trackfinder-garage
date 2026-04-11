@@ -1,6 +1,11 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
+import { useAuth } from '@/composables/useAuth'
 import logoUrl from '@/assets/tfg_logo.svg'
+
+const auth = useAuth()
+const isStandardUser = computed(() => auth.session.value?.roleName === 'USER')
 </script>
 
 <template>
@@ -17,6 +22,7 @@ import logoUrl from '@/assets/tfg_logo.svg'
         <RouterLink to="/">Home</RouterLink>
         <RouterLink to="/tracks">Circuitos</RouterLink>
         <RouterLink to="/events">Eventos</RouterLink>
+        <RouterLink v-if="isStandardUser" to="/profile">Mi perfil</RouterLink>
         <a href="#">Politica de privacidad</a>
         <a href="#">Soporte</a>
       </nav>

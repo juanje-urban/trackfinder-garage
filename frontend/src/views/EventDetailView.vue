@@ -3,6 +3,7 @@ import { isAxiosError } from 'axios'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import DetailInfoCard from '@/components/DetailInfoCard.vue'
+import EventAttendeeList from '@/components/EventAttendeeList.vue'
 import EventAvailabilityBadge from '@/components/EventAvailabilityBadge.vue'
 import EventBookingDialog from '@/components/EventBookingDialog.vue'
 import SectionCard from '@/components/SectionCard.vue'
@@ -59,6 +60,7 @@ const bookingDialogOpen = ref(false)
 const bookingDialogMode = ref<BookingDialogMode>('checkout')
 const bookingDialogError = ref('')
 const bookingSubmitting = ref(false)
+const bookingVisibleOnPublicProfile = ref(false)
 const event = ref<Event | null>(null)
 const track = ref<Track | null>(null)
 const eventServices = ref<EventServiceItem[]>([])
@@ -67,6 +69,13 @@ const selectedServiceIds = ref<number[]>([])
 const activeMediaDialog = ref<MediaDialog | null>(null)
 
 const eventId = computed(() => Number(route.params.id))
+const todayIso = computed(() => {
+  const date = new Date()
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+})
 
 const eventDetail = computed(() => {
   if (!event.value || !track.value) {
@@ -140,15 +149,25 @@ const totalPrice = computed(() =>
 )
 
 const hasConfirmedBooking = computed(() => existingBooking.value !== null)
+const isPastEvent = computed(() =>
+  eventDetail.value ? eventDetail.value.event.eventDate < todayIso.value : false,
+)
 
 const isUserSession = computed(() => auth.session.value?.roleName === 'USER')
 
 const isBookingActionDisabled = computed(
-  () => bookingSubmitting.value || (auth.isAuthenticated.value && !isUserSession.value),
+  () =>
+    isPastEvent.value ||
+    bookingSubmitting.value ||
+    (auth.isAuthenticated.value && !isUserSession.value),
 )
 
 const bookingButtonLabel = computed(() =>
-  hasConfirmedBooking.value ? 'Anular reserva' : 'Reservar plaza',
+  isPastEvent.value
+    ? 'Evento finalizado'
+    : hasConfirmedBooking.value
+      ? 'Anular reserva'
+      : 'Reservar plaza',
 )
 
 const bookingDialogServices = computed(() =>
@@ -160,6 +179,10 @@ const bookingDialogServices = computed(() =>
 )
 
 const bookingCaption = computed(() => {
+  if (isPastEvent.value) {
+    return 'Este evento ya se ha celebrado y la reserva queda bloqueada para cambios.'
+  }
+
   if (hasConfirmedBooking.value) {
     return 'Puedes anular tu reserva siempre que falten al menos 14 dias para el evento.'
   }
@@ -284,6 +307,7 @@ async function loadExistingBookingState(selectedEventId: number) {
   if (!session || session.roleName !== 'USER') {
     existingBooking.value = null
     selectedServiceIds.value = []
+    bookingVisibleOnPublicProfile.value = false
     return
   }
 
@@ -295,6 +319,7 @@ async function loadExistingBookingState(selectedEventId: number) {
   if (bookingsResult.status === 'fulfilled') {
     existingBooking.value =
       bookingsResult.value.find((booking) => booking.eventId === selectedEventId) ?? null
+    bookingVisibleOnPublicProfile.value = existingBooking.value?.isVisible ?? false
   }
 
   if (bookedServicesResult.status === 'fulfilled' && existingBooking.value) {
@@ -326,6 +351,10 @@ function handleBookingAction() {
     return
   }
 
+  if (isPastEvent.value) {
+    return
+  }
+
   bookingDialogMode.value = hasConfirmedBooking.value ? 'cancel' : 'checkout'
   openBookingDialog()
 }
@@ -353,9 +382,11 @@ async function confirmBookingCheckout() {
     const createdBooking = await checkoutEventBooking({
       eventId: eventDetail.value.event.id,
       eventServiceIds: selectedServiceIds.value,
+      isVisible: bookingVisibleOnPublicProfile.value,
     })
 
     existingBooking.value = createdBooking
+    bookingVisibleOnPublicProfile.value = createdBooking.isVisible
 
     if (event.value) {
       event.value = {
@@ -400,6 +431,7 @@ async function confirmBookingCancellation() {
     await cancelEventBooking(booking.id)
     existingBooking.value = null
     selectedServiceIds.value = []
+    bookingVisibleOnPublicProfile.value = false
 
     if (event.value) {
       event.value = {
@@ -626,6 +658,7 @@ function handleTrackMapDialogKeydown(event: KeyboardEvent) {
           </article>
 
           <SectionCard
+            v-if="!isPastEvent"
             eyebrow="Servicios"
             title="Configura tu reserva"
             description="Selecciona los servicios disponibles del circuito y del organizador para este evento."
@@ -711,12 +744,22 @@ function handleTrackMapDialogKeydown(event: KeyboardEvent) {
             eyebrow="Top 5"
           />
 
+          <EventAttendeeList
+            v-if="auth.isAuthenticated"
+            :event-id="eventDetail.event.id"
+            :track-id="eventDetail.event.trackId"
+          />
+
           <article class="event-detail__booking-card panel panel-pad-lg panel-stack-lg">
             <div class="panel-copy">
               <p class="ui-eyebrow">Reserva</p>
               <h2 class="ui-title-price">{{ formatCurrency(totalPrice) }}</h2>
               <p class="ui-copy-meta">Total estimado con la seleccion actual</p>
             </div>
+
+            <p v-if="isPastEvent" class="event-detail__booking-status">
+              Evento finalizado
+            </p>
 
             <div class="event-detail__booking-lines">
               <div class="event-detail__booking-line">
@@ -791,6 +834,8 @@ function handleTrackMapDialogKeydown(event: KeyboardEvent) {
         :selected-services="bookingDialogServices"
         :is-submitting="bookingSubmitting"
         :error-message="bookingDialogError"
+        :is-visible-on-public-profile="bookingVisibleOnPublicProfile"
+        @update:is-visible-on-public-profile="bookingVisibleOnPublicProfile = $event"
         @close="closeBookingDialog"
         @confirm="confirmBookingDialogAction"
       />
@@ -949,6 +994,20 @@ function handleTrackMapDialogKeydown(event: KeyboardEvent) {
 .event-detail__main {
   display: grid;
   gap: var(--space-xl);
+}
+
+.event-detail__booking-status {
+  margin: 0;
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid rgba(255, 160, 72, 0.24);
+  border-radius: var(--radius-pill);
+  background: rgba(255, 160, 72, 0.12);
+  color: var(--racing-amber);
+  font-size: var(--fs-caption);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  width: fit-content;
 }
 
 .event-detail__circuit-overview {

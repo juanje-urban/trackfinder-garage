@@ -8,12 +8,14 @@ import com.trackfindergarage.backend.common.exception.ResourceNotFoundException;
 import com.trackfindergarage.backend.domain.model.LapTime;
 import com.trackfindergarage.backend.domain.model.Track;
 import com.trackfindergarage.backend.domain.model.User;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 
 @Service
 @Transactional
@@ -23,11 +25,14 @@ public class LapTimeService implements LapTimeUseCase {
     private static final String TRACK_NOT_FOUND_WITH_ID = "Track not found with id: ";
     private static final String LAP_TIME_NOT_FOUND_WITH_ID = "Lap time not found with id: ";
     private static final String USER_ID_REQUIRED = "User id is required";
+    private static final String AUTHENTICATED_EMAIL_REQUIRED = "Authenticated user email is required";
+    private static final String USER_NOT_FOUND_WITH_EMAIL = "User not found with email: ";
     private static final String TRACK_ID_REQUIRED = "Track id is required";
     private static final String LAP_DATE_REQUIRED = "Lap date is required";
     private static final String NO_LAP_TIMES_FOUND_FOR_TRACK_ID = "No lap times found for track id: ";
     private static final String NO_LAP_TIMES_FOUND_FOR_USER_AND_TRACK =
             "No lap times found for user id %d and track id %d";
+    private static final String ONLY_LAP_TIME_OWNER_CAN_DELETE = "Only the owner of the lap time can delete it";
 
     private final LapTimePersistencePort lapTimePersistencePort;
     private final UserPersistencePort userPersistencePort;
@@ -58,6 +63,27 @@ public class LapTimeService implements LapTimeUseCase {
     }
 
     @Override
+    public LapTime createLapTimeForAuthenticatedUser(String authenticatedEmail,
+                                                     Long trackId,
+                                                     LocalDate lapDate,
+                                                     Long lapTimeMs,
+                                                     String vehicle) {
+        User user = findUserByAuthenticatedEmail(authenticatedEmail);
+
+        LapTime lapTime = new LapTime();
+        lapTime.setUser(user);
+
+        Track track = new Track();
+        track.setId(trackId);
+        lapTime.setTrack(track);
+        lapTime.setLapDate(lapDate);
+        lapTime.setLapTimeMs(lapTimeMs);
+        lapTime.setVehicle(vehicle);
+
+        return createLapTime(lapTime);
+    }
+
+    @Override
     public LapTime updateLapTime(Long id, LapTime lapTime) {
         validateLapTime(lapTime);
 
@@ -79,6 +105,18 @@ public class LapTimeService implements LapTimeUseCase {
     }
 
     @Override
+    public void deleteOwnLapTime(String authenticatedEmail, Long id) {
+        User user = findUserByAuthenticatedEmail(authenticatedEmail);
+        LapTime lapTime = findLapTimeOrThrow(id);
+
+        if (lapTime.getUser() == null || !user.getId().equals(lapTime.getUser().getId())) {
+            throw new AccessDeniedException(ONLY_LAP_TIME_OWNER_CAN_DELETE);
+        }
+
+        lapTimePersistencePort.delete(lapTime);
+    }
+
+    @Override
     public void deleteLapTime(Long id) {
         LapTime lapTime = findLapTimeOrThrow(id);
         lapTimePersistencePort.delete(lapTime);
@@ -95,6 +133,13 @@ public class LapTimeService implements LapTimeUseCase {
     public LapTime getLapTimeById(Long id) {
         return lapTimePersistencePort.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(LAP_TIME_NOT_FOUND_WITH_ID + id));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<LapTime> getLapTimesByAuthenticatedEmail(String authenticatedEmail) {
+        User user = findUserByAuthenticatedEmail(authenticatedEmail);
+        return lapTimePersistencePort.findByUserId(user.getId());
     }
 
     @Override
@@ -190,5 +235,15 @@ public class LapTimeService implements LapTimeUseCase {
     private LapTime findLapTimeOrThrow(Long id) {
         return lapTimePersistencePort.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(LAP_TIME_NOT_FOUND_WITH_ID + id));
+    }
+
+    private User findUserByAuthenticatedEmail(String authenticatedEmail) {
+        if (authenticatedEmail == null || authenticatedEmail.isBlank()) {
+            throw new IllegalArgumentException(AUTHENTICATED_EMAIL_REQUIRED);
+        }
+
+        String normalizedEmail = authenticatedEmail.trim().toLowerCase(Locale.ROOT);
+        return userPersistencePort.findByEmail(normalizedEmail)
+                .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND_WITH_EMAIL + normalizedEmail));
     }
 }

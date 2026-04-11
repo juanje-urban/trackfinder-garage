@@ -150,6 +150,8 @@ class DemoDataSeederTest {
         assertTrue(state.eventBookings.size() >= 71);
         assertTrue(state.eventBookings.stream()
                 .allMatch(eventBooking -> USER_ROLE_NAME.equals(eventBooking.getUser().getRole().getRoleName())));
+        assertTrue(allPastBookingsAreVisible(state, FUTURE_EVENTS_THRESHOLD));
+        assertTrue(futureBookingVisibilityRatio(state, FUTURE_EVENTS_THRESHOLD) >= 0.75d);
         assertTrue(state.eventServices.stream()
                 .allMatch(eventService -> eventService.getPrice().compareTo(BigDecimal.ZERO) > 0));
         assertTrue(state.eventBookingServices.stream()
@@ -260,6 +262,28 @@ class DemoDataSeederTest {
         }
 
         return true;
+    }
+
+    private boolean allPastBookingsAreVisible(SeedState state, LocalDate threshold) {
+        return state.eventBookings.stream()
+                .filter(eventBooking -> eventBooking.getEvent().getEventDate().isBefore(threshold))
+                .allMatch(EventBooking::isVisible);
+    }
+
+    private double futureBookingVisibilityRatio(SeedState state, LocalDate threshold) {
+        List<EventBooking> futureBookings = state.eventBookings.stream()
+                .filter(eventBooking -> !eventBooking.getEvent().getEventDate().isBefore(threshold))
+                .toList();
+
+        if (futureBookings.isEmpty()) {
+            return 1d;
+        }
+
+        long visibleFutureBookings = futureBookings.stream()
+                .filter(EventBooking::isVisible)
+                .count();
+
+        return (double) visibleFutureBookings / futureBookings.size();
     }
 
     private boolean allRepeatedUserTrackLapTimesUseDifferentVehicles(SeedState state) {

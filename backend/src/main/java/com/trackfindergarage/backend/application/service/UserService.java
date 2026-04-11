@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Locale;
 
 @Service
 @Transactional
@@ -25,6 +26,8 @@ public class UserService implements UserUseCase {
     private static final String USER_PHONE_ALREADY_EXISTS = "User with phone '%s' already exists";
     private static final String ORGANIZER_USERS_MANAGED_THROUGH_ORGANIZER_SERVICE =
             "Organizer users must be managed through OrganizerService";
+    private static final String AUTHENTICATED_EMAIL_REQUIRED = "Authenticated user email is required";
+    private static final String USER_NOT_FOUND_WITH_EMAIL = "User not found with email: ";
 
     private final UserPersistencePort userPersistencePort;
     private final RolePersistencePort rolePersistencePort;
@@ -55,6 +58,48 @@ public class UserService implements UserUseCase {
         user.setEnabled(true);
 
         return userPersistencePort.save(user);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public User getCurrentUser(String authenticatedEmail) {
+        return findUserByAuthenticatedEmail(authenticatedEmail);
+    }
+
+    @Override
+    public User updateCurrentUserProfile(String authenticatedEmail,
+                                         String name,
+                                         String surname,
+                                         String email,
+                                         String address,
+                                         String phone,
+                                         String rawPassword) {
+        User existingUser = findUserByAuthenticatedEmail(authenticatedEmail);
+
+        if (isOrganizerUser(existingUser)) {
+            throw new IllegalArgumentException(ORGANIZER_USERS_MANAGED_THROUGH_ORGANIZER_SERVICE);
+        }
+
+        String normalizedName = normalizeText(name);
+        String normalizedSurname = normalizeText(surname);
+        String normalizedEmail = normalizeEmail(email);
+        String normalizedAddress = normalizeText(address);
+        String normalizedPhone = normalizeText(phone);
+
+        validateEmailForUpdate(existingUser.getId(), normalizedEmail);
+        validatePhoneForUpdate(existingUser.getId(), normalizedPhone);
+
+        existingUser.setName(normalizedName);
+        existingUser.setSurname(normalizedSurname);
+        existingUser.setEmail(normalizedEmail);
+        existingUser.setAddress(normalizedAddress);
+        existingUser.setPhone(normalizedPhone);
+
+        if (rawPassword != null && !rawPassword.isBlank()) {
+            existingUser.setPasswordHash(passwordEncoder.encode(rawPassword.trim()));
+        }
+
+        return userPersistencePort.save(existingUser);
     }
 
     @Override
@@ -186,5 +231,23 @@ public class UserService implements UserUseCase {
     private User findUserOrThrow(Long id) {
         return userPersistencePort.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND_WITH_ID + id));
+    }
+
+    private User findUserByAuthenticatedEmail(String authenticatedEmail) {
+        if (authenticatedEmail == null || authenticatedEmail.isBlank()) {
+            throw new IllegalArgumentException(AUTHENTICATED_EMAIL_REQUIRED);
+        }
+
+        String normalizedEmail = normalizeEmail(authenticatedEmail);
+        return userPersistencePort.findByEmail(normalizedEmail)
+                .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND_WITH_EMAIL + normalizedEmail));
+    }
+
+    private String normalizeEmail(String email) {
+        return email.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private String normalizeText(String value) {
+        return value.trim();
     }
 }

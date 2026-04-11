@@ -1,5 +1,6 @@
 package com.trackfindergarage.backend.infrastructure.adapter.in.web.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -20,4 +21,7 @@ public class EventBookingResponse {
     private String trackName;
     private LocalDateTime bookedAt;
     private BigDecimal basePriceAtPurchase;
+
+    @JsonProperty("isVisible")
+    private boolean visible;
 }

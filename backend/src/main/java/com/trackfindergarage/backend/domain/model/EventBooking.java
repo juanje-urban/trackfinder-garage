@@ -41,4 +41,7 @@ public class EventBooking {
 
     @Column(name = "base_price_at_purchase", nullable = false, precision = 10, scale = 2)
     private BigDecimal basePriceAtPurchase;
+
+    @Column(name = "is_visible", nullable = false)
+    private boolean isVisible;
 }

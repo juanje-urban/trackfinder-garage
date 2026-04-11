@@ -128,10 +128,11 @@ class EventBookingServiceTest {
         when(eventBookingPersistencePort.save(any(EventBooking.class))).thenReturn(persistedBooking);
         when(eventServicePersistencePort.findById(9L)).thenReturn(Optional.of(eventService));
 
-        EventBooking createdBooking = eventBookingService.checkoutEventBooking("user@example.com", 2L, List.of(9L));
+        EventBooking createdBooking = eventBookingService.checkoutEventBooking("user@example.com", 2L, List.of(9L), true);
 
         assertSame(persistedBooking, createdBooking);
         verify(eventBookingPersistencePort).save(any(EventBooking.class));
+        verify(eventBookingPersistencePort).save(argThat(savedBooking -> savedBooking.isVisible()));
         verify(eventBookingServicePersistencePort).save(argThat(savedService ->
                 savedService.getEventBooking() == persistedBooking
                         && savedService.getEventService() == eventService
@@ -143,12 +144,13 @@ class EventBookingServiceTest {
     void checkoutEventBookingThrowsWhenAuthenticatedUserIsNotStandardUser() {
         User organizerUser = userWithId(1L);
         organizerUser.setRole(roleWithName("ORGANIZER"));
+        List<Long> selectedServiceIds = List.of(9L);
 
         when(userPersistencePort.findByEmail("user@example.com")).thenReturn(Optional.of(organizerUser));
 
         assertThrows(
                 AccessDeniedException.class,
-                () -> eventBookingService.checkoutEventBooking("user@example.com", 2L, List.of(9L))
+                () -> eventBookingService.checkoutEventBooking("user@example.com", 2L, selectedServiceIds, true)
         );
     }
 
@@ -159,6 +161,7 @@ class EventBookingServiceTest {
         Event otherEvent = eventWithId(3L, LocalDate.now().plusDays(20));
         EventService eventService = eventServiceWithId(9L, otherEvent);
         EventBooking persistedBooking = eventBookingWithIds(1L, 2L);
+        List<Long> selectedServiceIds = List.of(9L);
         persistedBooking.setId(15L);
         persistedBooking.setUser(user);
         persistedBooking.setEvent(requestedEvent);
@@ -173,8 +176,24 @@ class EventBookingServiceTest {
 
         assertThrows(
                 IllegalArgumentException.class,
-                () -> eventBookingService.checkoutEventBooking("user@example.com", 2L, List.of(9L))
+                () -> eventBookingService.checkoutEventBooking("user@example.com", 2L, selectedServiceIds, false)
         );
+    }
+
+    @Test
+    void updateOwnEventBookingVisibilityPersistsNewVisibilityWhenBookingBelongsToAuthenticatedUser() {
+        EventBooking eventBooking = eventBookingWithIds(1L, 2L);
+        eventBooking.setId(9L);
+        eventBooking.getUser().setEmail("user@example.com");
+
+        when(eventBookingPersistencePort.findById(9L)).thenReturn(Optional.of(eventBooking));
+        when(eventBookingPersistencePort.save(eventBooking)).thenReturn(eventBooking);
+
+        EventBooking updatedBooking = eventBookingService.updateOwnEventBookingVisibility("user@example.com", 9L, false);
+
+        assertSame(eventBooking, updatedBooking);
+        assertEquals(false, updatedBooking.isVisible());
+        verify(eventBookingPersistencePort).save(eventBooking);
     }
 
     @Test
@@ -222,13 +241,17 @@ class EventBookingServiceTest {
     }
 
     @Test
-    void getEventBookingsByUserIdReturnsPersistenceResult() {
-        List<EventBooking> eventBookings = List.of(eventBookingWithIds(1L, 2L));
+    void getEventBookingsByUserIdReturnsOnlyVisibleBookings() {
+        EventBooking visibleBooking = eventBookingWithIds(1L, 2L);
+        visibleBooking.setVisible(true);
+        EventBooking hiddenBooking = eventBookingWithIds(1L, 3L);
+        hiddenBooking.setVisible(false);
+        List<EventBooking> eventBookings = List.of(visibleBooking, hiddenBooking);
 
         when(userPersistencePort.findById(1L)).thenReturn(Optional.of(userWithId(1L)));
         when(eventBookingPersistencePort.findByUserId(1L)).thenReturn(eventBookings);
 
-        assertEquals(eventBookings, eventBookingService.getEventBookingsByUserId(1L));
+        assertEquals(List.of(visibleBooking), eventBookingService.getEventBookingsByUserId(1L));
     }
 
     @Test

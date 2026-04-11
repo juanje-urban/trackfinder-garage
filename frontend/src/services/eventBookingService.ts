@@ -3,6 +3,7 @@ import type {
   EventBookedService,
   EventBooking,
   EventBookingCheckoutPayload,
+  UpdateEventBookingVisibilityPayload,
 } from '@/types/eventBooking'
 
 export async function checkoutEventBooking(
@@ -14,6 +15,11 @@ export async function checkoutEventBooking(
 
 export async function getEventBookingsByUserId(userId: number): Promise<EventBooking[]> {
   const response = await api.get<EventBooking[]>(`/event-bookings/user/${userId}`)
+  return response.data
+}
+
+export async function getVisibleEventBookingsByEventId(eventId: number): Promise<EventBooking[]> {
+  const response = await api.get<EventBooking[]>(`/event-bookings/event/${eventId}/visible`)
   return response.data
 }
 
@@ -43,4 +49,12 @@ export async function getCurrentUserBookedServicesByEventId(
 
 export async function cancelEventBooking(bookingId: number): Promise<void> {
   await api.delete(`/event-bookings/${bookingId}`)
+}
+
+export async function updateOwnEventBookingVisibility(
+  bookingId: number,
+  payload: UpdateEventBookingVisibilityPayload,
+): Promise<EventBooking> {
+  const response = await api.patch<EventBooking>(`/event-bookings/${bookingId}/visibility`, payload)
+  return response.data
 }

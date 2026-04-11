@@ -8,21 +8,7 @@ public interface AuthUseCase {
 
     AuthResponse getCurrentSession(String authenticatedEmail, String authorizationHeader);
 
-    AuthResponse register(String displayName,
-                          String email,
-                          String rawPassword,
-                          String name,
-                          String surname,
-                          String address,
-                          String phone);
+    AuthResponse register(AuthRegistrationCommand command);
 
-    AuthResponse registerOrganizer(String displayName,
-                                   String email,
-                                   String rawPassword,
-                                   String name,
-                                   String surname,
-                                   String address,
-                                   String phone,
-                                   String legalName,
-                                   String cif);
+    AuthResponse registerOrganizer(OrganizerRegistrationCommand command);
 }

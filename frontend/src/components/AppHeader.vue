@@ -12,6 +12,8 @@ const profileMonogram = computed(() =>
   getDisplayNameMonogram(auth.session.value?.displayName ?? ''),
 )
 
+const isStandardUser = computed(() => auth.session.value?.roleName === 'USER')
+
 const roleLabel = computed(() => {
   const roleName = auth.session.value?.roleName?.toUpperCase() ?? ''
 
@@ -41,6 +43,7 @@ const roleLabel = computed(() => {
         <RouterLink class="nav-link" to="/">Home</RouterLink>
         <RouterLink class="nav-link" to="/tracks">Circuitos</RouterLink>
         <RouterLink class="nav-link" to="/events">Eventos</RouterLink>
+        <RouterLink v-if="isStandardUser" class="nav-link" to="/profile">Mi perfil</RouterLink>
       </nav>
 
       <div class="header-actions">

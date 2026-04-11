@@ -8,12 +8,14 @@ import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.UpdateOrg
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.mapper.OrganizerWebMapper;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/organizers")
+@PreAuthorize("hasRole('ADMIN')")
 public class OrganizerController {
 
     private final OrganizerUseCase organizerUseCase;

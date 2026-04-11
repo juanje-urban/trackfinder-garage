@@ -12,6 +12,7 @@ import com.trackfindergarage.backend.infrastructure.adapter.in.web.mapper.TrackR
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.mapper.TrackWebMapper;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -37,12 +38,14 @@ public class TrackController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasRole('ADMIN')")
     public TrackResponse createTrack(@Valid @RequestBody CreateTrackRequest request) {
         Track createdTrack = trackUseCase.createTrack(trackWebMapper.toDomain(request));
         return trackWebMapper.toResponse(createdTrack);
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public TrackResponse updateTrack(@PathVariable Long id,
                                      @Valid @RequestBody UpdateTrackRequest request) {
         Track trackToUpdate = new Track();
@@ -54,6 +57,7 @@ public class TrackController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasRole('ADMIN')")
     public void deleteTrack(@PathVariable Long id) {
         trackUseCase.deleteTrack(id);
     }

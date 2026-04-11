@@ -1,6 +1,7 @@
 package com.trackfindergarage.backend.infrastructure.adapter.in.web;
 
 import com.trackfindergarage.backend.application.port.in.LapTimeUseCase;
+import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.CreateOwnLapTimeRequest;
 import com.trackfindergarage.backend.domain.model.LapTime;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.CreateLapTimeRequest;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.LapTimeResponse;
@@ -8,6 +9,7 @@ import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.UpdateLap
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.mapper.LapTimeWebMapper;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -31,6 +33,20 @@ public class LapTimeController {
         return lapTimeWebMapper.toResponse(createdLapTime);
     }
 
+    @PostMapping("/me")
+    @ResponseStatus(HttpStatus.CREATED)
+    public LapTimeResponse createCurrentUserLapTime(@Valid @RequestBody CreateOwnLapTimeRequest request,
+                                                    Authentication authentication) {
+        LapTime createdLapTime = lapTimeUseCase.createLapTimeForAuthenticatedUser(
+                authentication != null ? authentication.getName() : null,
+                request.getTrackId(),
+                request.getLapDate(),
+                request.getLapTimeMs(),
+                request.getVehicle()
+        );
+        return lapTimeWebMapper.toResponse(createdLapTime);
+    }
+
     @PutMapping("/{id}")
     public LapTimeResponse updateLapTime(@PathVariable Long id,
                                          @Valid @RequestBody UpdateLapTimeRequest request) {
@@ -47,6 +63,12 @@ public class LapTimeController {
         lapTimeUseCase.deleteLapTime(id);
     }
 
+    @DeleteMapping("/me/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteCurrentUserLapTime(@PathVariable Long id, Authentication authentication) {
+        lapTimeUseCase.deleteOwnLapTime(authentication != null ? authentication.getName() : null, id);
+    }
+
     @GetMapping
     public List<LapTimeResponse> getAllLapTimes() {
         return lapTimeUseCase.getAllLapTimes()
@@ -58,6 +80,14 @@ public class LapTimeController {
     @GetMapping("/{id}")
     public LapTimeResponse getLapTimeById(@PathVariable Long id) {
         return lapTimeWebMapper.toResponse(lapTimeUseCase.getLapTimeById(id));
+    }
+
+    @GetMapping("/me")
+    public List<LapTimeResponse> getCurrentUserLapTimes(Authentication authentication) {
+        return lapTimeUseCase.getLapTimesByAuthenticatedEmail(authentication != null ? authentication.getName() : null)
+                .stream()
+                .map(lapTimeWebMapper::toResponse)
+                .toList();
     }
 
     @GetMapping("/user/{userId}")

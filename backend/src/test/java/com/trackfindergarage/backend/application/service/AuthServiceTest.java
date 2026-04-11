@@ -1,5 +1,7 @@
 package com.trackfindergarage.backend.application.service;
 
+import com.trackfindergarage.backend.application.port.in.AuthRegistrationCommand;
+import com.trackfindergarage.backend.application.port.in.OrganizerRegistrationCommand;
 import com.trackfindergarage.backend.application.port.in.UserUseCase;
 import com.trackfindergarage.backend.application.port.in.OrganizerUseCase;
 import com.trackfindergarage.backend.application.port.out.UserPersistencePort;
@@ -83,7 +85,7 @@ class AuthServiceTest {
             return createdUser;
         });
 
-        AuthResponse response = authService.register(
+        AuthResponse response = authService.register(new AuthRegistrationCommand(
                 "latebraker_88",
                 "latebraker@example.com",
                 "secret",
@@ -91,7 +93,7 @@ class AuthServiceTest {
                 "Sanz",
                 "Calle Box 27",
                 "666555444"
-        );
+        ));
 
         assertEquals(11L, response.getUserId());
         assertEquals("latebraker_88", response.getDisplayName());
@@ -112,7 +114,7 @@ class AuthServiceTest {
                     return createdUser;
                 });
 
-        AuthResponse response = authService.register(
+        AuthResponse response = authService.register(new AuthRegistrationCommand(
                 "  latebraker_88  ",
                 "latebraker@example.com",
                 "secret",
@@ -120,7 +122,7 @@ class AuthServiceTest {
                 "  Sanz  ",
                 "  Calle Box 27  ",
                 " 666555444 "
-        );
+        ));
 
         assertEquals("latebraker_88", response.getDisplayName());
     }
@@ -149,17 +151,19 @@ class AuthServiceTest {
             return createdOrganizer;
         });
 
-        AuthResponse response = authService.registerOrganizer(
-                "tracklimits",
-                "tracklimits@example.com",
-                "secret",
-                "Laura",
-                "Sanz",
-                "Calle Box 27",
-                "666555444",
+        AuthResponse response = authService.registerOrganizer(new OrganizerRegistrationCommand(
+                new AuthRegistrationCommand(
+                        "tracklimits",
+                        "tracklimits@example.com",
+                        "secret",
+                        "Laura",
+                        "Sanz",
+                        "Calle Box 27",
+                        "666555444"
+                ),
                 "Track Limits Iberia S.L.",
                 "B12345678"
-        );
+        ));
 
         assertEquals(20L, response.getUserId());
         assertEquals("tracklimits", response.getDisplayName());

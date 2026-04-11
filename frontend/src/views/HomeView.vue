@@ -78,13 +78,15 @@ onMounted(async () => {
       image-alt="Circuito del Jarama"
     >
       <template v-if="featuredEvent" #aside>
-        <HeroInfoPanel
-          label="Semáforo en verde"
-          :caption="`${formatDisplayDate(featuredEvent.eventDate)} - ${formatCurrency(featuredEvent.basePrice)} - ${featuredEvent.organizerLegalName}`"
-        >
-          <strong>{{ featuredEvent.trackName }}</strong>
-          <span>{{ featuredEvent.remainingCapacity }} plazas disponibles</span>
-        </HeroInfoPanel>
+        <RouterLink class="home-hero-link" :to="`/events/${featuredEvent.id}`">
+          <HeroInfoPanel
+            label="Semáforo en verde"
+            :caption="`${formatDisplayDate(featuredEvent.eventDate)} - ${formatCurrency(featuredEvent.basePrice)} - ${featuredEvent.organizerLegalName}`"
+          >
+            <strong>{{ featuredEvent.trackName }}</strong>
+            <span>{{ featuredEvent.remainingCapacity }} plazas disponibles</span>
+          </HeroInfoPanel>
+        </RouterLink>
       </template>
     </PageHero>
 
@@ -191,6 +193,12 @@ onMounted(async () => {
   display: grid;
   gap: var(--space-xl);
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+
+.home-hero-link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
 }
 
 .home-records__header {

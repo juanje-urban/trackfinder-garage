@@ -8,6 +8,7 @@ import com.trackfindergarage.backend.domain.model.Track;
 import com.trackfindergarage.backend.domain.model.User;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.CheckoutEventBookingRequest;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.CreateEventBookingRequest;
+import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.UpdateEventBookingVisibilityRequest;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.mapper.EventBookingWebMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -36,6 +37,7 @@ class EventBookingControllerTest {
         CreateEventBookingRequest request = new CreateEventBookingRequest();
         request.setUserId(1L);
         request.setEventId(2L);
+        request.setVisible(true);
 
         EventBooking eventBooking = eventBookingWithId(10L, 1L, 2L);
 
@@ -49,13 +51,28 @@ class EventBookingControllerTest {
         CheckoutEventBookingRequest request = new CheckoutEventBookingRequest();
         request.setEventId(2L);
         request.setEventServiceIds(List.of(9L, 10L));
+        request.setVisible(true);
         Authentication authentication = new UsernamePasswordAuthenticationToken("user@example.com", "secret");
         EventBooking eventBooking = eventBookingWithId(10L, 1L, 2L);
 
-        when(eventBookingUseCase.checkoutEventBooking("user@example.com", 2L, List.of(9L, 10L)))
+        when(eventBookingUseCase.checkoutEventBooking("user@example.com", 2L, List.of(9L, 10L), true))
                 .thenReturn(eventBooking);
 
         assertEquals(10L, eventBookingController.checkoutEventBooking(request, authentication).getId());
+    }
+
+    @Test
+    void updateOwnEventBookingVisibilityDelegatesToUseCaseAndReturnsMappedResponse() {
+        UpdateEventBookingVisibilityRequest request = new UpdateEventBookingVisibilityRequest();
+        request.setVisible(false);
+        Authentication authentication = new UsernamePasswordAuthenticationToken("user@example.com", "secret");
+        EventBooking eventBooking = eventBookingWithId(10L, 1L, 2L);
+        eventBooking.setVisible(false);
+
+        when(eventBookingUseCase.updateOwnEventBookingVisibility("user@example.com", 10L, false))
+                .thenReturn(eventBooking);
+
+        assertEquals(false, eventBookingController.updateOwnEventBookingVisibility(10L, request, authentication).isVisible());
     }
 
     @Test
@@ -108,6 +125,7 @@ class EventBookingControllerTest {
         eventBooking.setEvent(event);
         eventBooking.setBookedAt(LocalDateTime.of(2026, 3, 23, 10, 0));
         eventBooking.setBasePriceAtPurchase(new BigDecimal("30.00"));
+        eventBooking.setVisible(true);
         return eventBooking;
     }
 }

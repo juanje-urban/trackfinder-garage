@@ -4,6 +4,7 @@ import { RouterView } from 'vue-router'
 import AuthDialog from '@/components/AuthDialog.vue'
 import AppFooter from '@/components/AppFooter.vue'
 import AppHeader from '@/components/AppHeader.vue'
+import AppToast from '@/components/AppToast.vue'
 import { useAuth } from '@/composables/useAuth'
 
 const auth = useAuth()
@@ -17,6 +18,7 @@ onMounted(() => {
   <div class="app-shell">
     <AppHeader />
     <AuthDialog />
+    <AppToast />
     <div class="app-shell__body">
       <RouterView />
     </div>

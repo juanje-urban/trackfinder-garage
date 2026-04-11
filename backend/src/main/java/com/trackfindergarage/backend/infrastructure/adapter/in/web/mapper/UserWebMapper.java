@@ -45,6 +45,7 @@ public class UserWebMapper {
                 .address(user.getAddress())
                 .phone(user.getPhone())
                 .roleId(user.getRole() != null ? user.getRole().getId() : null)
+                .roleName(user.getRole() != null ? user.getRole().getRoleName() : null)
                 .build();
     }
 }

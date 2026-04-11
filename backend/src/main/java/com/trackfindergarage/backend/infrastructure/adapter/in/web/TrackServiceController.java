@@ -7,12 +7,14 @@ import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.TrackServ
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.mapper.TrackServiceWebMapper;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/track-services")
+@PreAuthorize("hasRole('ADMIN')")
 public class TrackServiceController {
 
     private final TrackServiceUseCase trackServiceUseCase;

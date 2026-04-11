@@ -1,6 +1,8 @@
 package com.trackfindergarage.backend.infrastructure.adapter.in.web;
 
+import com.trackfindergarage.backend.application.port.in.AuthRegistrationCommand;
 import com.trackfindergarage.backend.application.port.in.AuthUseCase;
+import com.trackfindergarage.backend.application.port.in.OrganizerRegistrationCommand;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.AuthLoginRequest;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.AuthRegisterRequest;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.AuthResponse;
@@ -59,21 +61,7 @@ class AuthControllerTest {
         request.setPhone("666555444");
 
         AuthResponse expected = response(5L, "latebraker", "driver@example.com");
-        when(authUseCase.register(
-                "latebraker",
-                "driver@example.com",
-                "secret",
-                "Laura",
-                "Sanz",
-                "Calle Box 27",
-                "666555444"
-        )).thenReturn(expected);
-
-        AuthResponse response = authController.register(request);
-
-        assertEquals(expected.getUserId(), response.getUserId());
-        assertEquals(expected.getEmail(), response.getEmail());
-        verify(authUseCase).register(
+        AuthRegistrationCommand command = new AuthRegistrationCommand(
                 "latebraker",
                 "driver@example.com",
                 "secret",
@@ -82,6 +70,13 @@ class AuthControllerTest {
                 "Calle Box 27",
                 "666555444"
         );
+        when(authUseCase.register(command)).thenReturn(expected);
+
+        AuthResponse response = authController.register(request);
+
+        assertEquals(expected.getUserId(), response.getUserId());
+        assertEquals(expected.getEmail(), response.getEmail());
+        verify(authUseCase).register(command);
     }
 
     @Test
@@ -99,33 +94,26 @@ class AuthControllerTest {
 
         AuthResponse expected = response(8L, "tracklimits", "tracklimits@example.com");
         expected.setRoleName("ORGANIZER");
-        when(authUseCase.registerOrganizer(
-                "tracklimits",
-                "tracklimits@example.com",
-                "secret",
-                "Laura",
-                "Sanz",
-                "Calle Box 27",
-                "666555444",
+        OrganizerRegistrationCommand command = new OrganizerRegistrationCommand(
+                new AuthRegistrationCommand(
+                        "tracklimits",
+                        "tracklimits@example.com",
+                        "secret",
+                        "Laura",
+                        "Sanz",
+                        "Calle Box 27",
+                        "666555444"
+                ),
                 "Track Limits Iberia S.L.",
                 "B12345678"
-        )).thenReturn(expected);
+        );
+        when(authUseCase.registerOrganizer(command)).thenReturn(expected);
 
         AuthResponse response = authController.registerOrganizer(request);
 
         assertEquals(expected.getUserId(), response.getUserId());
         assertEquals(expected.getRoleName(), response.getRoleName());
-        verify(authUseCase).registerOrganizer(
-                "tracklimits",
-                "tracklimits@example.com",
-                "secret",
-                "Laura",
-                "Sanz",
-                "Calle Box 27",
-                "666555444",
-                "Track Limits Iberia S.L.",
-                "B12345678"
-        );
+        verify(authUseCase).registerOrganizer(command);
     }
 
     private AuthResponse response(Long id, String displayName, String email) {

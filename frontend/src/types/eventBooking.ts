@@ -8,11 +8,17 @@ export interface EventBooking {
   trackName: string
   bookedAt: string
   basePriceAtPurchase: number
+  isVisible: boolean
 }
 
 export interface EventBookingCheckoutPayload {
   eventId: number
   eventServiceIds: number[]
+  isVisible: boolean
+}
+
+export interface UpdateEventBookingVisibilityPayload {
+  isVisible: boolean
 }
 
 export interface EventBookedService {

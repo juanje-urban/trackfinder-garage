@@ -19,4 +19,5 @@ public class UserResponse {
     private String address;
     private String phone;
     private Long roleId;
+    private String roleName;
 }

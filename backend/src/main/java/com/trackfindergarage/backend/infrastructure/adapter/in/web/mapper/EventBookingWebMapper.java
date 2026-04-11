@@ -20,6 +20,7 @@ public class EventBookingWebMapper {
         EventBooking eventBooking = new EventBooking();
         eventBooking.setUser(user);
         eventBooking.setEvent(event);
+        eventBooking.setVisible(Boolean.TRUE.equals(request.getVisible()));
 
         return eventBooking;
     }
@@ -39,6 +40,7 @@ public class EventBookingWebMapper {
                         : null)
                 .bookedAt(eventBooking.getBookedAt())
                 .basePriceAtPurchase(eventBooking.getBasePriceAtPurchase())
+                .visible(eventBooking.isVisible())
                 .build();
     }
 }

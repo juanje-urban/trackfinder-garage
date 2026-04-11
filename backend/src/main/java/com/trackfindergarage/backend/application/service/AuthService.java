@@ -1,7 +1,9 @@
 package com.trackfindergarage.backend.application.service;
 
 import com.trackfindergarage.backend.application.port.in.AuthUseCase;
+import com.trackfindergarage.backend.application.port.in.AuthRegistrationCommand;
 import com.trackfindergarage.backend.application.port.in.OrganizerUseCase;
+import com.trackfindergarage.backend.application.port.in.OrganizerRegistrationCommand;
 import com.trackfindergarage.backend.application.port.in.UserUseCase;
 import com.trackfindergarage.backend.application.port.out.UserPersistencePort;
 import com.trackfindergarage.backend.common.exception.InvalidCredentialsException;
@@ -69,55 +71,42 @@ public class AuthService implements AuthUseCase {
     }
 
     @Override
-    public AuthResponse register(String displayName,
-                                 String email,
-                                 String rawPassword,
-                                 String name,
-                                 String surname,
-                                 String address,
-                                 String phone) {
-        String normalizedEmail = normalizeEmail(email);
-        String normalizedDisplayName = normalizeText(displayName);
+    public AuthResponse register(AuthRegistrationCommand command) {
+        String normalizedEmail = normalizeEmail(command.email());
+        String normalizedDisplayName = normalizeText(command.displayName());
 
         User user = new User();
         user.setDisplayName(normalizedDisplayName);
         user.setEmail(normalizedEmail);
-        user.setName(normalizeText(name));
-        user.setSurname(normalizeText(surname));
-        user.setAddress(normalizeText(address));
-        user.setPhone(normalizeText(phone));
+        user.setName(normalizeText(command.name()));
+        user.setSurname(normalizeText(command.surname()));
+        user.setAddress(normalizeText(command.address()));
+        user.setPhone(normalizeText(command.phone()));
 
-        User createdUser = userUseCase.createUser(user, rawPassword);
-        return buildAuthResponse(createdUser, normalizedEmail, rawPassword);
+        User createdUser = userUseCase.createUser(user, command.rawPassword());
+        return buildAuthResponse(createdUser, normalizedEmail, command.rawPassword());
     }
 
     @Override
-    public AuthResponse registerOrganizer(String displayName,
-                                          String email,
-                                          String rawPassword,
-                                          String name,
-                                          String surname,
-                                          String address,
-                                          String phone,
-                                          String legalName,
-                                          String cif) {
-        String normalizedEmail = normalizeEmail(email);
+    public AuthResponse registerOrganizer(OrganizerRegistrationCommand command) {
+        AuthRegistrationCommand authRegistration = command.authRegistration();
+        String normalizedEmail = normalizeEmail(authRegistration.email());
 
         User user = new User();
-        user.setDisplayName(normalizeText(displayName));
+        user.setDisplayName(normalizeText(authRegistration.displayName()));
         user.setEmail(normalizedEmail);
-        user.setName(normalizeText(name));
-        user.setSurname(normalizeText(surname));
-        user.setAddress(normalizeText(address));
-        user.setPhone(normalizeText(phone));
+        user.setName(normalizeText(authRegistration.name()));
+        user.setSurname(normalizeText(authRegistration.surname()));
+        user.setAddress(normalizeText(authRegistration.address()));
+        user.setPhone(normalizeText(authRegistration.phone()));
 
         Organizer organizer = new Organizer();
         organizer.setUser(user);
-        organizer.setLegalName(normalizeText(legalName));
-        organizer.setCif(normalizeText(cif));
+        organizer.setLegalName(normalizeText(command.legalName()));
+        organizer.setCif(normalizeText(command.cif()));
 
-        Organizer createdOrganizer = organizerUseCase.createOrganizer(organizer, rawPassword);
-        return buildAuthResponse(createdOrganizer.getUser(), normalizedEmail, rawPassword);
+        Organizer createdOrganizer = organizerUseCase.createOrganizer(organizer, authRegistration.rawPassword());
+        return buildAuthResponse(createdOrganizer.getUser(), normalizedEmail, authRegistration.rawPassword());
     }
 
     private AuthResponse buildAuthResponse(User user, String normalizedEmail, String rawPassword) {

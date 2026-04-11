@@ -107,7 +107,7 @@ public class EventBookingService implements EventBookingUseCase {
     }
 
     @Override
-    public EventBooking checkoutEventBooking(String authenticatedEmail, Long eventId, List<Long> eventServiceIds) {
+    public EventBooking checkoutEventBooking(String authenticatedEmail, Long eventId, List<Long> eventServiceIds, boolean isVisible) {
         if (authenticatedEmail == null || authenticatedEmail.isBlank()) {
             throw new IllegalArgumentException(AUTHENTICATED_EMAIL_REQUIRED);
         }
@@ -124,6 +124,7 @@ public class EventBookingService implements EventBookingUseCase {
 
         EventBooking eventBooking = new EventBooking();
         eventBooking.setUser(user);
+        eventBooking.setVisible(isVisible);
 
         Event event = new Event();
         event.setId(eventId);
@@ -147,6 +148,25 @@ public class EventBookingService implements EventBookingUseCase {
     @Override
     public void deleteEventBooking(Long id) {
         deleteEventBooking(findEventBookingOrThrow(id));
+    }
+
+    @Override
+    public EventBooking updateOwnEventBookingVisibility(String authenticatedEmail, Long id, boolean isVisible) {
+        if (authenticatedEmail == null || authenticatedEmail.isBlank()) {
+            throw new IllegalArgumentException(AUTHENTICATED_EMAIL_REQUIRED);
+        }
+
+        EventBooking eventBooking = findEventBookingOrThrow(id);
+        String normalizedEmail = authenticatedEmail.trim().toLowerCase(Locale.ROOT);
+
+        if (eventBooking.getUser() == null
+                || eventBooking.getUser().getEmail() == null
+                || !normalizedEmail.equals(eventBooking.getUser().getEmail().trim().toLowerCase(Locale.ROOT))) {
+            throw new AccessDeniedException(ONLY_BOOKING_OWNER_CAN_CANCEL_EVENT_BOOKING);
+        }
+
+        eventBooking.setVisible(isVisible);
+        return eventBookingPersistencePort.save(eventBooking);
     }
 
     @Override
@@ -211,7 +231,10 @@ public class EventBookingService implements EventBookingUseCase {
         userPersistencePort.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND_WITH_ID + userId));
 
-        return eventBookingPersistencePort.findByUserId(userId);
+        return eventBookingPersistencePort.findByUserId(userId)
+                .stream()
+                .filter(EventBooking::isVisible)
+                .toList();
     }
 
     @Override

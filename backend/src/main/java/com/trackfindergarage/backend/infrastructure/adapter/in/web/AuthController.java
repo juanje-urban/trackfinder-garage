@@ -1,6 +1,8 @@
 package com.trackfindergarage.backend.infrastructure.adapter.in.web;
 
 import com.trackfindergarage.backend.application.port.in.AuthUseCase;
+import com.trackfindergarage.backend.application.port.in.AuthRegistrationCommand;
+import com.trackfindergarage.backend.application.port.in.OrganizerRegistrationCommand;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.AuthLoginRequest;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.AuthRegisterRequest;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.AuthResponse;
@@ -43,7 +45,7 @@ public class AuthController {
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
     public AuthResponse register(@Valid @RequestBody AuthRegisterRequest request) {
-        return authUseCase.register(
+        return authUseCase.register(new AuthRegistrationCommand(
                 request.getDisplayName(),
                 request.getEmail(),
                 request.getPassword(),
@@ -51,22 +53,24 @@ public class AuthController {
                 request.getSurname(),
                 request.getAddress(),
                 request.getPhone()
-        );
+        ));
     }
 
     @PostMapping("/register/organizer")
     @ResponseStatus(HttpStatus.CREATED)
     public AuthResponse registerOrganizer(@Valid @RequestBody CreateOrganizerRequest request) {
-        return authUseCase.registerOrganizer(
-                request.getDisplayName(),
-                request.getEmail(),
-                request.getPassword(),
-                request.getName(),
-                request.getSurname(),
-                request.getAddress(),
-                request.getPhone(),
+        return authUseCase.registerOrganizer(new OrganizerRegistrationCommand(
+                new AuthRegistrationCommand(
+                        request.getDisplayName(),
+                        request.getEmail(),
+                        request.getPassword(),
+                        request.getName(),
+                        request.getSurname(),
+                        request.getAddress(),
+                        request.getPhone()
+                ),
                 request.getLegalName(),
                 request.getCif()
-        );
+        ));
     }
 }

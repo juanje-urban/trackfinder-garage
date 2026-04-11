@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
+import RankingPositionBadge from '@/components/RankingPositionBadge.vue'
+import UserProfileLink from '@/components/UserProfileLink.vue'
 import { getTrackRanking } from '@/services/trackService'
 import type { TrackRecord } from '@/types/trackRecord'
 import { formatDisplayDate, formatLapTime } from '@/utils/format'
@@ -36,11 +38,6 @@ async function loadRanking() {
     loading.value = false
   }
 }
-
-function positionLabel(index: number): string {
-  return `P${index + 1}`
-}
-
 onMounted(() => {
   void loadRanking()
 })
@@ -66,9 +63,12 @@ watch(
       <div v-if="bestLap" class="track-record-board__best">
         <p class="ui-stat-label">Best lap</p>
         <p class="track-record-board__best-time">{{ formatLapTime(bestLap.lapTimeMs) }}</p>
-        <p class="track-record-board__best-driver">
+        <UserProfileLink
+          :display-name="bestLap.userDisplayName"
+          class="track-record-board__best-driver"
+        >
           {{ bestLap.userDisplayName }}
-        </p>
+        </UserProfileLink>
       </div>
     </div>
 
@@ -88,15 +88,12 @@ watch(
         :key="`${record.trackId}-${record.userDisplayName}-${record.lapTimeMs}-${index}`"
         class="track-record-board__row"
       >
-        <span
-          class="track-record-board__position"
-          :class="`track-record-board__position--${index + 1}`"
-        >
-          {{ positionLabel(index) }}
-        </span>
+        <RankingPositionBadge :position="index + 1" />
 
         <div class="track-record-board__driver">
-          <strong>{{ record.userDisplayName }}</strong>
+          <UserProfileLink :display-name="record.userDisplayName" class="track-record-board__driver-link">
+            <strong>{{ record.userDisplayName }}</strong>
+          </UserProfileLink>
           <span>{{ record.vehicle }}</span>
         </div>
 
@@ -191,31 +188,6 @@ watch(
   border-bottom: 0;
 }
 
-.track-record-board__position {
-  min-width: 48px;
-  padding: var(--space-xs) var(--space-sm);
-  border-radius: var(--radius-pill);
-  text-align: center;
-  font-family: var(--font-heading);
-  font-weight: 900;
-  letter-spacing: 0.08em;
-}
-
-.track-record-board__position--1 {
-  background: var(--accent-emphasis);
-  color: var(--text-strong);
-}
-
-.track-record-board__position--2 {
-  background: var(--racing-amber-soft);
-  color: var(--racing-amber);
-}
-
-.track-record-board__position--3 {
-  background: var(--racing-blue-soft);
-  color: var(--racing-blue);
-}
-
 .track-record-board__driver,
 .track-record-board__time {
   display: grid;
@@ -225,6 +197,10 @@ watch(
 .track-record-board__driver strong,
 .track-record-board__time strong {
   color: var(--text-strong);
+}
+
+.track-record-board__driver-link {
+  width: fit-content;
 }
 
 .track-record-board__driver span,

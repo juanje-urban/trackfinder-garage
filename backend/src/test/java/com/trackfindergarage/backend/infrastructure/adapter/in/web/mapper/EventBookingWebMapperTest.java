@@ -24,11 +24,13 @@ class EventBookingWebMapperTest {
         CreateEventBookingRequest request = new CreateEventBookingRequest();
         request.setUserId(1L);
         request.setEventId(2L);
+        request.setVisible(true);
 
         EventBooking eventBooking = eventBookingWebMapper.toDomain(request);
 
         assertEquals(1L, eventBooking.getUser().getId());
         assertEquals(2L, eventBooking.getEvent().getId());
+        assertEquals(true, eventBooking.isVisible());
     }
 
     @Test
@@ -57,6 +59,7 @@ class EventBookingWebMapperTest {
         eventBooking.setEvent(event);
         eventBooking.setBookedAt(LocalDateTime.of(2026, 3, 23, 10, 0));
         eventBooking.setBasePriceAtPurchase(new BigDecimal("30.00"));
+        eventBooking.setVisible(false);
 
         EventBookingResponse response = eventBookingWebMapper.toResponse(eventBooking);
 
@@ -65,5 +68,6 @@ class EventBookingWebMapperTest {
         assertEquals(2L, response.getEventId());
         assertEquals("Organizer", response.getOrganizerLegalName());
         assertEquals("Track", response.getTrackName());
+        assertEquals(false, response.isVisible());
     }
 }

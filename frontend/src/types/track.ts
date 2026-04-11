@@ -4,3 +4,9 @@ export interface Track {
   location: string
   description: string
 }
+
+export interface TrackPayload {
+  name: string
+  location: string
+  description: string
+}

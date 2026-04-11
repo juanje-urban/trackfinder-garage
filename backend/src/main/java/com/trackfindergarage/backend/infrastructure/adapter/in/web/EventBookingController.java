@@ -5,6 +5,7 @@ import com.trackfindergarage.backend.domain.model.EventBooking;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.CheckoutEventBookingRequest;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.CreateEventBookingRequest;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.EventBookingResponse;
+import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.UpdateEventBookingVisibilityRequest;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.mapper.EventBookingWebMapper;
 import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
@@ -40,9 +41,23 @@ public class EventBookingController {
         EventBooking createdEventBooking = eventBookingUseCase.checkoutEventBooking(
                 authentication != null ? authentication.getName() : null,
                 request.getEventId(),
-                request.getEventServiceIds()
+                request.getEventServiceIds(),
+                Boolean.TRUE.equals(request.getVisible())
         );
         return eventBookingWebMapper.toResponse(createdEventBooking);
+    }
+
+    @PatchMapping("/{id}/visibility")
+    public EventBookingResponse updateOwnEventBookingVisibility(@PathVariable Long id,
+                                                               @Valid @RequestBody UpdateEventBookingVisibilityRequest request,
+                                                               Authentication authentication) {
+        return eventBookingWebMapper.toResponse(
+                eventBookingUseCase.updateOwnEventBookingVisibility(
+                        authentication != null ? authentication.getName() : null,
+                        id,
+                        Boolean.TRUE.equals(request.getVisible())
+                )
+        );
     }
 
     @DeleteMapping("/{id}")
@@ -80,6 +95,15 @@ public class EventBookingController {
     public List<EventBookingResponse> getEventBookingsByUserId(@PathVariable Long userId) {
         return eventBookingUseCase.getEventBookingsByUserId(userId)
                 .stream()
+                .map(eventBookingWebMapper::toResponse)
+                .toList();
+    }
+
+    @GetMapping("/event/{eventId}/visible")
+    public List<EventBookingResponse> getVisibleEventBookingsByEventId(@PathVariable Long eventId) {
+        return eventBookingUseCase.getEventBookingsByEventId(eventId)
+                .stream()
+                .filter(EventBooking::isVisible)
                 .map(eventBookingWebMapper::toResponse)
                 .toList();
     }

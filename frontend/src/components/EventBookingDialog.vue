@@ -13,11 +13,13 @@ const props = defineProps<{
   }>
   isSubmitting: boolean
   errorMessage: string
+  isVisibleOnPublicProfile: boolean
 }>()
 
 defineEmits<{
   close: []
   confirm: []
+  'update:isVisibleOnPublicProfile': [value: boolean]
 }>()
 </script>
 
@@ -73,6 +75,24 @@ defineEmits<{
         <span>{{ props.mode === 'cancel' ? 'Total contratado' : 'Total estimado' }}</span>
         <strong>{{ props.totalPriceLabel }}</strong>
       </div>
+
+      <label v-if="props.mode === 'checkout'" class="booking-dialog__visibility">
+        <input
+          class="booking-dialog__visibility-checkbox"
+          type="checkbox"
+          :checked="props.isVisibleOnPublicProfile"
+          @change="
+            $emit(
+              'update:isVisibleOnPublicProfile',
+              ($event.target as HTMLInputElement).checked,
+            )
+          "
+        />
+        <span class="booking-dialog__visibility-copy">
+          ¿Deseas que este evento aparezca en tu perfil
+          <strong class="booking-dialog__visibility-word">P&Uacute;BLICO</strong>?
+        </span>
+      </label>
 
       <p v-if="props.mode === 'cancel'" class="ui-copy-muted">
         Podras anular la reserva siempre que falten al menos 14 dias para el evento.
@@ -166,6 +186,30 @@ defineEmits<{
   border-color: var(--line-strong);
 }
 
+.booking-dialog__visibility {
+  display: flex;
+  align-items: start;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-control);
+  background: var(--surface-glass-subtle);
+}
+
+.booking-dialog__visibility-checkbox {
+  margin-top: 3px;
+  accent-color: var(--success-text);
+}
+
+.booking-dialog__visibility-copy {
+  color: var(--text-body);
+  line-height: 1.5;
+}
+
+.booking-dialog__visibility-word {
+  color: var(--success-text);
+}
+
 .booking-dialog__actions {
   display: flex;
   justify-content: end;
@@ -180,7 +224,8 @@ defineEmits<{
   .booking-dialog__header,
   .booking-dialog__actions,
   .booking-dialog__line,
-  .booking-dialog__total {
+  .booking-dialog__total,
+  .booking-dialog__visibility {
     flex-direction: column;
     align-items: start;
   }
