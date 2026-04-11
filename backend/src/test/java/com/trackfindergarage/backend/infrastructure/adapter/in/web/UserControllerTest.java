@@ -1,5 +1,6 @@
 package com.trackfindergarage.backend.infrastructure.adapter.in.web;
 
+import com.trackfindergarage.backend.application.port.in.PublicProfileUseCase;
 import com.trackfindergarage.backend.application.port.in.UserUseCase;
 import com.trackfindergarage.backend.domain.model.User;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.CreateUserRequest;
@@ -21,8 +22,13 @@ import static org.mockito.Mockito.when;
 class UserControllerTest {
 
     private final UserUseCase userUseCase = mock(UserUseCase.class);
+    private final PublicProfileUseCase publicProfileUseCase = mock(PublicProfileUseCase.class);
     private final UserWebMapper userWebMapper = new UserWebMapper();
-    private final UserController userController = new UserController(userUseCase, userWebMapper);
+    private final UserController userController = new UserController(
+            userUseCase,
+            publicProfileUseCase,
+            userWebMapper
+    );
 
     @Test
     void createUserDelegatesToUseCaseAndReturnsMappedResponse() {
