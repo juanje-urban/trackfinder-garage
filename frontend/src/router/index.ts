@@ -6,6 +6,7 @@ import FutureEventsView from '@/views/FutureEventsView.vue'
 import EventDetailView from '@/views/EventDetailView.vue'
 import UserProfileView from '@/views/UserProfileView.vue'
 import PublicUserProfileView from '@/views/PublicUserProfileView.vue'
+import AdminView from '@/views/AdminView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -15,6 +16,7 @@ const router = createRouter({
     { path: '/events/:id', name: 'event-detail', component: EventDetailView },
     { path: '/tracks', name: 'tracks', component: TracksView },
     { path: '/profile', name: 'profile', component: UserProfileView, meta: { requiresUser: true } },
+    { path: '/admin', name: 'admin', component: AdminView, meta: { requiresAdmin: true } },
     { path: '/profiles/:displayName', name: 'public-profile', component: PublicUserProfileView },
   ],
 })
@@ -31,6 +33,10 @@ router.beforeEach((to) => {
   }
 
   if (to.meta.requiresUser && auth.session.value?.roleName !== 'USER') {
+    return { name: 'home' }
+  }
+
+  if (to.meta.requiresAdmin && auth.session.value?.roleName !== 'ADMIN') {
     return { name: 'home' }
   }
 

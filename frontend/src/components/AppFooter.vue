@@ -6,6 +6,7 @@ import logoUrl from '@/assets/tfg_logo.svg'
 
 const auth = useAuth()
 const isStandardUser = computed(() => auth.session.value?.roleName === 'USER')
+const isAdmin = computed(() => auth.session.value?.roleName === 'ADMIN')
 </script>
 
 <template>
@@ -22,6 +23,7 @@ const isStandardUser = computed(() => auth.session.value?.roleName === 'USER')
         <RouterLink to="/">Home</RouterLink>
         <RouterLink to="/tracks">Circuitos</RouterLink>
         <RouterLink to="/events">Eventos</RouterLink>
+        <RouterLink v-if="isAdmin" to="/admin">Administraci&oacute;n</RouterLink>
         <RouterLink v-if="isStandardUser" to="/profile">Mi perfil</RouterLink>
         <a href="#">Politica de privacidad</a>
         <a href="#">Soporte</a>
