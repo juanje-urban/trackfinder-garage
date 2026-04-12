@@ -2,13 +2,24 @@
 import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import type { Track } from '@/types/track'
+import { getTrackMedia } from '@/utils/trackMedia'
 import { createVisualStyle, trackVisualPalettes } from '@/utils/visualPalettes'
 
 const props = defineProps<{
   track: Track
 }>()
 
+const trackMedia = computed(() => getTrackMedia(props.track.name))
+
 const visualStyle = computed(() => {
+  if (trackMedia.value.coverImage) {
+    return {
+      backgroundImage: `linear-gradient(180deg, rgba(10, 12, 16, 0.2) 0%, rgba(10, 12, 16, 0.78) 100%), url(${trackMedia.value.coverImage})`,
+      backgroundPosition: 'center',
+      backgroundSize: 'cover',
+    }
+  }
+
   return createVisualStyle(
     props.track.id,
     trackVisualPalettes,
@@ -29,8 +40,10 @@ const visualStyle = computed(() => {
       <p class="track-card__description ui-copy-body">{{ track.description }}</p>
 
       <div class="media-card__footer">
-        <span class="track-card__catalog ui-copy-caption">Public circuit catalog</span>
-        <RouterLink class="action-button action-button--ghost" to="/events">
+        <RouterLink
+          class="action-button action-button--ghost"
+          :to="{ path: '/events', query: { trackId: String(track.id) } }"
+        >
           Browse events
         </RouterLink>
       </div>

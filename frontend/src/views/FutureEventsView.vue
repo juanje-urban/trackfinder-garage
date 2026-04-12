@@ -1,11 +1,14 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import CatalogPage from '@/components/CatalogPage.vue'
 import EventSearchToolbar from '@/components/EventSearchToolbar.vue'
 import EventCard from '@/components/EventCard.vue'
 import { getFutureEvents } from '@/services/eventService'
 import type { Event } from '@/types/event'
 import { formatCurrency, formatDisplayDate } from '@/utils/format'
+
+const route = useRoute()
 
 const events = ref<Event[]>([])
 const loading = ref(true)
@@ -68,6 +71,8 @@ const emptyMessage = computed(() =>
 )
 
 onMounted(async () => {
+  applyTrackFilterFromRoute(route.query.trackId)
+
   try {
     events.value = await getFutureEvents()
   } catch {
@@ -76,6 +81,17 @@ onMounted(async () => {
     loading.value = false
   }
 })
+
+watch(
+  () => route.query.trackId,
+  (trackId) => {
+    applyTrackFilterFromRoute(trackId)
+  },
+)
+
+function applyTrackFilterFromRoute(trackId: unknown) {
+  selectedTrackId.value = typeof trackId === 'string' ? trackId : ''
+}
 
 function resetFilters() {
   selectedStartDate.value = ''

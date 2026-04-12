@@ -147,6 +147,7 @@ class DemoDataSeederTest {
         assertEquals(countEventsFrom(state, FUTURE_EVENTS_THRESHOLD), countFutureEventsWithBookings(state, FUTURE_EVENTS_THRESHOLD));
         assertTrue(state.eventsByTrackAndDate.values().stream()
                 .allMatch(event -> event.getDescription() != null && !event.getDescription().isBlank()));
+        assertTrue(state.organizersByLegalName.values().stream().anyMatch(organizer -> Boolean.FALSE.equals(organizer.getEnabled())));
         assertTrue(state.eventBookings.size() >= 71);
         assertTrue(state.eventBookings.stream()
                 .allMatch(eventBooking -> USER_ROLE_NAME.equals(eventBooking.getUser().getRole().getRoleName())));

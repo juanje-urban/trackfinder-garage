@@ -14,8 +14,6 @@ const locationCount = computed(
   () => new Set(tracks.value.map((track) => track.location)).size,
 )
 
-const featuredTrack = computed(() => tracks.value[0])
-
 onMounted(async () => {
   try {
     tracks.value = await getTracks()
@@ -32,14 +30,6 @@ onMounted(async () => {
     hero-eyebrow="Circuit registry"
     hero-title="Tracks with a paddock-grade look"
     hero-description="The circuit catalog now shares the same dark premium language as the public events feed, ready to grow into richer detail and booking flows."
-    info-label="Featured circuit"
-    info-caption="Public racing venues currently exposed by the backend"
-    :toolbar-chips="[
-      { label: 'Track catalog', accent: true },
-      { label: 'Public circuits' },
-      { label: 'Linked to events feed' },
-    ]"
-    :toolbar-note="`Exploring ${tracks.length} visible circuits`"
     section-eyebrow="Track management look"
     section-title="Circuit cards with shared styling"
     section-hint="Reusable surfaces, spacing and typography now match the event listing."
@@ -49,10 +39,6 @@ onMounted(async () => {
     :empty="tracks.length === 0"
     empty-message="No public circuits are available right now."
   >
-    <template #hero-value>
-      <strong v-if="featuredTrack">{{ featuredTrack.name }}</strong>
-      <span>Circuit catalog powered by the public API</span>
-    </template>
 
     <template #metrics>
       <MetricCard
@@ -65,12 +51,6 @@ onMounted(async () => {
         label="Locations"
         :value="String(locationCount)"
         hint="Cities or regions represented"
-      />
-      <MetricCard
-        label="Live connection"
-        value="Online"
-        hint="Catalog is being served by the backend"
-        tone="success"
       />
     </template>
 

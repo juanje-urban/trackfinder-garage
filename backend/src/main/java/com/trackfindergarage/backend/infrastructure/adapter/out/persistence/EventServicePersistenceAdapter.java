@@ -37,6 +37,11 @@ public class EventServicePersistenceAdapter implements EventServicePersistencePo
     }
 
     @Override
+    public List<EventService> findByOrganizerServiceId(Long organizerServiceId) {
+        return eventServiceRepository.findByOrganizerServiceId(organizerServiceId);
+    }
+
+    @Override
     public Optional<EventService> findByEventIdAndTrackServiceId(Long eventId, Long trackServiceId) {
         return eventServiceRepository.findByEventIdAndTrackServiceId(eventId, trackServiceId);
     }

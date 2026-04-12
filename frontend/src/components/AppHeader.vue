@@ -4,6 +4,7 @@ import { RouterLink } from 'vue-router'
 import { Bell, User } from 'lucide-vue-next'
 import { useAuth } from '@/composables/useAuth'
 import logoUrl from '@/assets/tfg_logo.svg'
+import { isAdminRole, isOrganizerRole, isUserRole, normalizeRoleName } from '@/utils/authRoles'
 import { getDisplayNameMonogram } from '@/utils/identity'
 
 const auth = useAuth()
@@ -12,17 +13,18 @@ const profileMonogram = computed(() =>
   getDisplayNameMonogram(auth.session.value?.displayName ?? ''),
 )
 
-const isStandardUser = computed(() => auth.session.value?.roleName === 'USER')
-const isAdmin = computed(() => auth.session.value?.roleName === 'ADMIN')
+const isStandardUser = computed(() => isUserRole(auth.session.value?.roleName))
+const isOrganizer = computed(() => isOrganizerRole(auth.session.value?.roleName))
+const isAdmin = computed(() => isAdminRole(auth.session.value?.roleName))
 
 const roleLabel = computed(() => {
-  const roleName = auth.session.value?.roleName?.toUpperCase() ?? ''
+  const roleName = normalizeRoleName(auth.session.value?.roleName)
 
-  if (roleName === 'ADMIN') {
+  if (isAdminRole(roleName)) {
     return 'Administrador'
   }
 
-  if (roleName === 'ORGANIZER') {
+  if (isOrganizerRole(roleName)) {
     return 'Organizador'
   }
 
@@ -44,6 +46,7 @@ const roleLabel = computed(() => {
         <RouterLink class="nav-link" to="/">Home</RouterLink>
         <RouterLink class="nav-link" to="/tracks">Circuitos</RouterLink>
         <RouterLink class="nav-link" to="/events">Eventos</RouterLink>
+        <RouterLink v-if="isOrganizer" class="nav-link" to="/organizer">Organizaci&oacute;n</RouterLink>
         <RouterLink v-if="isAdmin" class="nav-link" to="/admin">Administraci&oacute;n</RouterLink>
         <RouterLink v-if="isStandardUser" class="nav-link" to="/profile">Mi perfil</RouterLink>
       </nav>

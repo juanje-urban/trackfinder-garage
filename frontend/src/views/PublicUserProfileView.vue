@@ -11,6 +11,7 @@ import type { EventBooking } from '@/types/eventBooking'
 import type { LapTime } from '@/types/lapTime'
 import type { TrackRecord } from '@/types/trackRecord'
 import type { PublicUserProfile } from '@/types/user'
+import { toIsoDate } from '@/utils/date'
 import { formatDisplayDate, formatLapTime } from '@/utils/format'
 
 type PublicLapTimeRow = LapTime & {
@@ -39,11 +40,7 @@ const displayName = computed(() =>
 )
 
 const todayIso = computed(() => {
-  const date = new Date()
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
+  return toIsoDate(new Date())
 })
 
 const orderedBookings = computed(() =>
@@ -289,23 +286,6 @@ function resolveLapPosition(lapTime: LapTime): number | null {
 </template>
 
 <style scoped>
-.public-profile-tabs__nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-sm);
-}
-
-.public-profile-tabs__tab {
-  min-height: 44px;
-  padding: 0 18px;
-  border: 1px solid transparent;
-  border-radius: var(--radius-pill);
-  background: var(--accent-gradient-horizontal);
-  color: var(--text-strong);
-  font-weight: 700;
-  box-shadow: var(--accent-shadow);
-}
-
 .public-profile-grid {
   display: grid;
   gap: var(--space-lg);

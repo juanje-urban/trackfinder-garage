@@ -8,6 +8,14 @@ import java.util.Optional;
 
 public interface SpringDataUserRepository extends JpaRepository<User, Long> {
 
+    @Override
+    @EntityGraph(attributePaths = "role")
+    java.util.List<User> findAll();
+
+    @Override
+    @EntityGraph(attributePaths = "role")
+    Optional<User> findById(Long id);
+
     Optional<User> findByDisplayName(String displayName);
 
     @EntityGraph(attributePaths = "role")

@@ -54,6 +54,7 @@ public class DemoDataSeeder implements CommandLineRunner {
     private static final String APEX_IBERIA_LEGAL_NAME = "Apex Iberia Track Days S.L.";
     private static final String LUSITANIA_RACING_LEGAL_NAME = "Lusitania Racing Experience Lda.";
     private static final String MEDITERRANEAN_MOTORSPORT_LEGAL_NAME = "Mediterranean Motorsport Club S.L.";
+    private static final String NORDIC_APEX_LEGAL_NAME = "Nordic Apex Track Days S.L.";
     private static final String DEFAULT_STANDARD_USER_LOGIN = "user123";
     private static final String DEFAULT_ORGANIZER_LOGIN = "org123";
     private static final String USER_ROLE_NAME = "USER";
@@ -69,6 +70,7 @@ public class DemoDataSeeder implements CommandLineRunner {
     private static final String APEX_IBERIA_DISPLAY_NAME = "apex.iberia";
     private static final String LUSITANIA_RACING_DISPLAY_NAME = "lusitania.racing";
     private static final String MEDITERRANEAN_MOTORSPORT_DISPLAY_NAME = "mediterranean.motorsport";
+    private static final String NORDIC_APEX_DISPLAY_NAME = "nordic.apex";
 
     private static final String LATEBRAKER_88_DISPLAY_NAME = "latebraker88";
     private static final String CURVA_PERALTADA_DISPLAY_NAME = "curva_peraltada";
@@ -127,6 +129,11 @@ public class DemoDataSeeder implements CommandLineRunner {
     private static final String PORSCHE_911_GT3_VEHICLE = "Porsche 911 GT3";
     private static final String MINI_JOHN_COOPER_WORKS_VEHICLE = "MINI John Cooper Works";
     private static final String TOYOTA_GR_YARIS_VEHICLE = "Toyota GR Yaris";
+    private static final String ALPINE_A110_VEHICLE = "Alpine A110";
+    private static final String ALPINE_A110_S_VEHICLE = "Alpine A110 S";
+    private static final String HONDA_CIVIC_TYPE_R_VEHICLE = "Honda Civic Type R";
+    private static final String MAZDA_MX5_ND_VEHICLE = "Mazda MX-5 ND";
+    private static final String PORSCHE_CAYMAN_GTS_VEHICLE = "Porsche Cayman GTS";
 
     private static final String BOX_RENTAL_SERVICE_NAME = "Alquiler de box";
     private static final String COVERED_PADDOCK_SERVICE_NAME = "Reserva de paddock cubierto";
@@ -326,8 +333,14 @@ public class DemoDataSeeder implements CommandLineRunner {
                                  String surname,
                                  String legalName,
                                  String cif,
+                                 boolean enabled,
                                  Role organizerRole) {
-        if (organizerRepository.findByLegalName(legalName).isPresent()) {
+        Organizer existingOrganizer = organizerRepository.findByLegalName(legalName).orElse(null);
+        if (existingOrganizer != null) {
+            if (!Objects.equals(existingOrganizer.getEnabled(), enabled)) {
+                existingOrganizer.setEnabled(enabled);
+                organizerRepository.save(existingOrganizer);
+            }
             return;
         }
 
@@ -337,7 +350,7 @@ public class DemoDataSeeder implements CommandLineRunner {
         organizer.setUser(user);
         organizer.setLegalName(legalName);
         organizer.setCif(cif);
-        organizer.setEnabled(true);
+        organizer.setEnabled(enabled);
 
         organizerRepository.save(organizer);
     }
@@ -361,6 +374,7 @@ public class DemoDataSeeder implements CommandLineRunner {
                 organizerSeed.surname(),
                 organizerSeed.legalName(),
                 organizerSeed.cif(),
+                organizerSeed.enabled(),
                 organizerRole
         ));
     }
@@ -917,7 +931,8 @@ public class DemoDataSeeder implements CommandLineRunner {
                         "Trackevents",
                         "Demo",
                         TRACKEVENTS_LEGAL_NAME,
-                        "B00000001"
+                        "B00000001",
+                        true
                 ),
                 new OrganizerSeed(
                         RACINGPRO_DISPLAY_NAME,
@@ -925,7 +940,8 @@ public class DemoDataSeeder implements CommandLineRunner {
                         "Racingpro",
                         "Demo",
                         RACINGPRO_LEGAL_NAME,
-                        "B00000002"
+                        "B00000002",
+                        true
                 ),
                 new OrganizerSeed(
                         IBERIAN_MOTORSPORT_DISPLAY_NAME,
@@ -933,7 +949,8 @@ public class DemoDataSeeder implements CommandLineRunner {
                         "Iberian",
                         "Motorsport",
                         IBERIAN_MOTORSPORT_LEGAL_NAME,
-                        "B00000003"
+                        "B00000003",
+                        true
                 ),
                 new OrganizerSeed(
                         TRACKLIMITS_IBERIA_DISPLAY_NAME,
@@ -941,7 +958,8 @@ public class DemoDataSeeder implements CommandLineRunner {
                         "Tracklimits",
                         "Iberia",
                         TRACKLIMITS_IBERIA_LEGAL_NAME,
-                        "B00000004"
+                        "B00000004",
+                        true
                 ),
                 new OrganizerSeed(
                         APEX_IBERIA_DISPLAY_NAME,
@@ -949,7 +967,8 @@ public class DemoDataSeeder implements CommandLineRunner {
                         "Apex",
                         "Iberia",
                         APEX_IBERIA_LEGAL_NAME,
-                        "B00000005"
+                        "B00000005",
+                        true
                 ),
                 new OrganizerSeed(
                         LUSITANIA_RACING_DISPLAY_NAME,
@@ -957,7 +976,8 @@ public class DemoDataSeeder implements CommandLineRunner {
                         "Lusitania",
                         "Racing",
                         LUSITANIA_RACING_LEGAL_NAME,
-                        "PT500000001"
+                        "PT500000001",
+                        true
                 ),
                 new OrganizerSeed(
                         MEDITERRANEAN_MOTORSPORT_DISPLAY_NAME,
@@ -965,7 +985,17 @@ public class DemoDataSeeder implements CommandLineRunner {
                         "Mediterranean",
                         "Motorsport",
                         MEDITERRANEAN_MOTORSPORT_LEGAL_NAME,
-                        "B00000006"
+                        "B00000006",
+                        true
+                ),
+                new OrganizerSeed(
+                        NORDIC_APEX_DISPLAY_NAME,
+                        "nordic.apex@example.com",
+                        "Nordic",
+                        "Apex",
+                        NORDIC_APEX_LEGAL_NAME,
+                        "B00000007",
+                        false
                 )
         );
     }
@@ -1682,7 +1712,7 @@ public class DemoDataSeeder implements CommandLineRunner {
                 new LapTimeSeed(CARLOS_DISPLAY_NAME, RICARDO_TORMO_TRACK_NAME, LocalDate.of(2026, 3, 12), 111965L, MINI_JOHN_COOPER_WORKS_VEHICLE),
                 new LapTimeSeed(BOXBOX_RAUL_DISPLAY_NAME, RICARDO_TORMO_TRACK_NAME, LocalDate.of(2026, 3, 12), 115410L, "Renault Megane RS"),
                 new LapTimeSeed(HEELTOE_DANI_DISPLAY_NAME, RICARDO_TORMO_TRACK_NAME, LocalDate.of(2026, 3, 12), 113240L, TOYOTA_GR_YARIS_VEHICLE),
-                new LapTimeSeed(OVERSTEER_MIGUEL_DISPLAY_NAME, RICARDO_TORMO_TRACK_NAME, LocalDate.of(2026, 3, 12), 117030L, "Alpine A110"),
+                new LapTimeSeed(OVERSTEER_MIGUEL_DISPLAY_NAME, RICARDO_TORMO_TRACK_NAME, LocalDate.of(2026, 3, 12), 117030L, ALPINE_A110_VEHICLE),
 
                 new LapTimeSeed(MARIA_DISPLAY_NAME, CALAFAT_TRACK_NAME, LocalDate.of(2026, 3, 15), 95620L, HYUNDAI_I30_N_VEHICLE),
                 new LapTimeSeed(JUANJE_DISPLAY_NAME, CALAFAT_TRACK_NAME, LocalDate.of(2026, 3, 15), 98640L, "Mazda MX-5 NA 1.8"),
@@ -1692,7 +1722,7 @@ public class DemoDataSeeder implements CommandLineRunner {
 
                 new LapTimeSeed(FERNANDO_ALONSO_DISPLAY_NAME, GUADIX_TRACK_NAME, LocalDate.of(2026, 3, 18), 101870L, ALPINE_A110_R_VEHICLE),
                 new LapTimeSeed(ALEX_PALAU_DISPLAY_NAME, GUADIX_TRACK_NAME, LocalDate.of(2026, 3, 18), 104450L, "CUPRA Leon VZ"),
-                new LapTimeSeed(APEXHUNTER_DISPLAY_NAME, GUADIX_TRACK_NAME, LocalDate.of(2026, 3, 18), 109260L, "Honda Civic Type R"),
+                new LapTimeSeed(APEXHUNTER_DISPLAY_NAME, GUADIX_TRACK_NAME, LocalDate.of(2026, 3, 18), 109260L, HONDA_CIVIC_TYPE_R_VEHICLE),
                 new LapTimeSeed(BOXBOX_RAUL_DISPLAY_NAME, GUADIX_TRACK_NAME, LocalDate.of(2026, 3, 18), 106980L, TOYOTA_GR_YARIS_VEHICLE),
                 new LapTimeSeed(FULLTHROTTLE_EVA_DISPLAY_NAME, GUADIX_TRACK_NAME, LocalDate.of(2026, 3, 18), 108440L, "BMW M135i"),
 
@@ -1700,7 +1730,7 @@ public class DemoDataSeeder implements CommandLineRunner {
                 new LapTimeSeed(FERNANDO_ALONSO_DISPLAY_NAME, ALGARVE_TRACK_NAME, LocalDate.of(2026, 3, 20), 117640L, "Aston Martin Vantage"),
                 new LapTimeSeed(APEX_LUSO_DISPLAY_NAME, ALGARVE_TRACK_NAME, LocalDate.of(2026, 3, 20), 124850L, "BMW M240i"),
                 new LapTimeSeed(OVERSTEER_MIGUEL_DISPLAY_NAME, ALGARVE_TRACK_NAME, LocalDate.of(2026, 3, 20), 123420L, "Porsche 911 Carrera T"),
-                new LapTimeSeed(PADDOCK_PAULA_DISPLAY_NAME, ALGARVE_TRACK_NAME, LocalDate.of(2026, 3, 20), 126780L, "Alpine A110 S"),
+                new LapTimeSeed(PADDOCK_PAULA_DISPLAY_NAME, ALGARVE_TRACK_NAME, LocalDate.of(2026, 3, 20), 126780L, ALPINE_A110_S_VEHICLE),
 
                 new LapTimeSeed(FERNANDO_ALONSO_DISPLAY_NAME, LE_MANS_SARTHE_TRACK_NAME, LocalDate.of(2026, 4, 11), 221340L, "Aston Martin Vantage GT8"),
                 new LapTimeSeed(ALEX_PALAU_DISPLAY_NAME, LE_MANS_SARTHE_TRACK_NAME, LocalDate.of(2026, 4, 11), 228760L, "Porsche 911 GT3 RS"),
@@ -1708,16 +1738,16 @@ public class DemoDataSeeder implements CommandLineRunner {
                 new LapTimeSeed(CURB_ATTACK_DISPLAY_NAME, LE_MANS_SARTHE_TRACK_NAME, LocalDate.of(2026, 4, 11), 244110L, "Chevrolet Corvette C8"),
                 new LapTimeSeed(HEELTOE_DANI_DISPLAY_NAME, LE_MANS_SARTHE_TRACK_NAME, LocalDate.of(2026, 4, 11), 248950L, "Toyota Supra GR"),
 
-                new LapTimeSeed(PADDOCK_PAULA_DISPLAY_NAME, LE_MANS_BUGATTI_TRACK_NAME, LocalDate.of(2026, 4, 12), 111860L, "Alpine A110 S"),
+                new LapTimeSeed(PADDOCK_PAULA_DISPLAY_NAME, LE_MANS_BUGATTI_TRACK_NAME, LocalDate.of(2026, 4, 12), 111860L, ALPINE_A110_S_VEHICLE),
                 new LapTimeSeed(LATEBRAKER_88_DISPLAY_NAME, LE_MANS_BUGATTI_TRACK_NAME, LocalDate.of(2026, 4, 12), 114430L, TOYOTA_GR86_VEHICLE),
                 new LapTimeSeed(GRIDWALKER_DISPLAY_NAME, LE_MANS_BUGATTI_TRACK_NAME, LocalDate.of(2026, 4, 12), 116980L, HYUNDAI_I30_N_VEHICLE),
                 new LapTimeSeed(PITLANE_JUNKIE_DISPLAY_NAME, LE_MANS_BUGATTI_TRACK_NAME, LocalDate.of(2026, 4, 12), 118220L, BMW_M2_VEHICLE),
-                new LapTimeSeed(FLATOUT_MARTA_DISPLAY_NAME, LE_MANS_BUGATTI_TRACK_NAME, LocalDate.of(2026, 4, 12), 119640L, "Mazda MX-5 ND"),
+                new LapTimeSeed(FLATOUT_MARTA_DISPLAY_NAME, LE_MANS_BUGATTI_TRACK_NAME, LocalDate.of(2026, 4, 12), 119640L, MAZDA_MX5_ND_VEHICLE),
 
                 new LapTimeSeed(ALEX_PALAU_DISPLAY_NAME, NURBURGRING_GP_TRACK_NAME, LocalDate.of(2026, 4, 13), 116240L, PORSCHE_911_GT3_VEHICLE),
                 new LapTimeSeed(FERNANDO_ALONSO_DISPLAY_NAME, NURBURGRING_GP_TRACK_NAME, LocalDate.of(2026, 4, 13), 114920L, "Aston Martin Vantage"),
                 new LapTimeSeed(APEXHUNTER_DISPLAY_NAME, NURBURGRING_GP_TRACK_NAME, LocalDate.of(2026, 4, 13), 121830L, "BMW M4 Competition"),
-                new LapTimeSeed(BOXBOX_RAUL_DISPLAY_NAME, NURBURGRING_GP_TRACK_NAME, LocalDate.of(2026, 4, 13), 123970L, "Honda Civic Type R"),
+                new LapTimeSeed(BOXBOX_RAUL_DISPLAY_NAME, NURBURGRING_GP_TRACK_NAME, LocalDate.of(2026, 4, 13), 123970L, HONDA_CIVIC_TYPE_R_VEHICLE),
                 new LapTimeSeed(CURVA_PERALTADA_DISPLAY_NAME, NURBURGRING_GP_TRACK_NAME, LocalDate.of(2026, 4, 13), 126540L, TOYOTA_GR_YARIS_VEHICLE),
 
                 new LapTimeSeed(ALEX_PALAU_DISPLAY_NAME, BARCELONA_TRACK_NAME, LocalDate.of(2026, 3, 22), 109930L, "Porsche 718 Cayman GT4"),
@@ -1728,14 +1758,14 @@ public class DemoDataSeeder implements CommandLineRunner {
 
                 new LapTimeSeed(FULLTHROTTLE_EVA_DISPLAY_NAME, JEREZ_TRACK_NAME, LocalDate.of(2026, 3, 24), 119460L, "Audi TTS"),
                 new LapTimeSeed(PITLANE_JUNKIE_DISPLAY_NAME, JEREZ_TRACK_NAME, LocalDate.of(2026, 3, 24), 123820L, TOYOTA_GR_YARIS_VEHICLE),
-                new LapTimeSeed(BRAKEPOINT_NORA_DISPLAY_NAME, JEREZ_TRACK_NAME, LocalDate.of(2026, 3, 24), 126910L, "Mazda MX-5 ND"),
+                new LapTimeSeed(BRAKEPOINT_NORA_DISPLAY_NAME, JEREZ_TRACK_NAME, LocalDate.of(2026, 3, 24), 126910L, MAZDA_MX5_ND_VEHICLE),
                 new LapTimeSeed(HEELTOE_DANI_DISPLAY_NAME, JEREZ_TRACK_NAME, LocalDate.of(2026, 3, 24), 125220L, HYUNDAI_I30_N_VEHICLE),
                 new LapTimeSeed(TRACKRAT_77_DISPLAY_NAME, JEREZ_TRACK_NAME, LocalDate.of(2026, 3, 24), 127480L, "BMW 128ti"),
 
                 new LapTimeSeed(CURB_ATTACK_DISPLAY_NAME, MOTORLAND_TRACK_NAME, LocalDate.of(2026, 3, 26), 132210L, "BMW M2 Competition"),
-                new LapTimeSeed(STINTMASTER_DISPLAY_NAME, MOTORLAND_TRACK_NAME, LocalDate.of(2026, 3, 26), 129740L, "Alpine A110 S"),
+                new LapTimeSeed(STINTMASTER_DISPLAY_NAME, MOTORLAND_TRACK_NAME, LocalDate.of(2026, 3, 26), 129740L, ALPINE_A110_S_VEHICLE),
                 new LapTimeSeed(MARIA_DISPLAY_NAME, MOTORLAND_TRACK_NAME, LocalDate.of(2026, 3, 26), 137380L, "Subaru BRZ"),
-                new LapTimeSeed(BOXBOX_RAUL_DISPLAY_NAME, MOTORLAND_TRACK_NAME, LocalDate.of(2026, 3, 26), 134860L, "Honda Civic Type R"),
+                new LapTimeSeed(BOXBOX_RAUL_DISPLAY_NAME, MOTORLAND_TRACK_NAME, LocalDate.of(2026, 3, 26), 134860L, HONDA_CIVIC_TYPE_R_VEHICLE),
                 new LapTimeSeed(APEX_LUSO_DISPLAY_NAME, MOTORLAND_TRACK_NAME, LocalDate.of(2026, 3, 26), 131980L, ALPINE_A110_R_VEHICLE),
 
                 new LapTimeSeed(CHICANE_CHASER_DISPLAY_NAME, NAVARRA_TRACK_NAME, LocalDate.of(2026, 3, 28), 111320L, "Renault Clio RS"),
@@ -1751,15 +1781,15 @@ public class DemoDataSeeder implements CommandLineRunner {
                 new LapTimeSeed(CHICANE_CHASER_DISPLAY_NAME, ALBACETE_TRACK_NAME, LocalDate.of(2026, 3, 29), 110920L, TOYOTA_GR86_VEHICLE),
 
                 new LapTimeSeed(FULLTHROTTLE_EVA_DISPLAY_NAME, MONTEBLANCO_TRACK_NAME, LocalDate.of(2026, 4, 14), 112860L, "Audi TTS"),
-                new LapTimeSeed(BRAKEPOINT_NORA_DISPLAY_NAME, MONTEBLANCO_TRACK_NAME, LocalDate.of(2026, 4, 14), 115420L, "Mazda MX-5 ND"),
+                new LapTimeSeed(BRAKEPOINT_NORA_DISPLAY_NAME, MONTEBLANCO_TRACK_NAME, LocalDate.of(2026, 4, 14), 115420L, MAZDA_MX5_ND_VEHICLE),
                 new LapTimeSeed(KERB_RIDER_DISPLAY_NAME, MONTEBLANCO_TRACK_NAME, LocalDate.of(2026, 4, 14), 117350L, "Hyundai i20 N"),
-                new LapTimeSeed(HEELTOE_DANI_DISPLAY_NAME, MONTEBLANCO_TRACK_NAME, LocalDate.of(2026, 4, 14), 116180L, "Alpine A110"),
+                new LapTimeSeed(HEELTOE_DANI_DISPLAY_NAME, MONTEBLANCO_TRACK_NAME, LocalDate.of(2026, 4, 14), 116180L, ALPINE_A110_VEHICLE),
                 new LapTimeSeed(TRACKRAT_77_DISPLAY_NAME, MONTEBLANCO_TRACK_NAME, LocalDate.of(2026, 4, 14), 118990L, "BMW 330i"),
 
                 new LapTimeSeed(TRACKRAT_77_DISPLAY_NAME, CARTAGENA_TRACK_NAME, LocalDate.of(2026, 3, 30), 103240L, "Lotus Elise S"),
                 new LapTimeSeed(FLATOUT_MARTA_DISPLAY_NAME, CARTAGENA_TRACK_NAME, LocalDate.of(2026, 3, 30), 105910L, "Mini Cooper S"),
                 new LapTimeSeed(TYRESMOKE_LUCIA_DISPLAY_NAME, CARTAGENA_TRACK_NAME, LocalDate.of(2026, 3, 30), 108330L, TOYOTA_GR86_VEHICLE),
-                new LapTimeSeed(APEXHUNTER_DISPLAY_NAME, CARTAGENA_TRACK_NAME, LocalDate.of(2026, 3, 30), 102650L, "Porsche Cayman GTS"),
+                new LapTimeSeed(APEXHUNTER_DISPLAY_NAME, CARTAGENA_TRACK_NAME, LocalDate.of(2026, 3, 30), 102650L, PORSCHE_CAYMAN_GTS_VEHICLE),
                 new LapTimeSeed(BOXBOX_RAUL_DISPLAY_NAME, CARTAGENA_TRACK_NAME, LocalDate.of(2026, 3, 30), 107420L, "BMW Z4 M40i"),
 
                 new LapTimeSeed(OVERSTEER_MIGUEL_DISPLAY_NAME, ESTORIL_TRACK_NAME, LocalDate.of(2026, 4, 1), 115760L, "Porsche 911 Carrera S"),
@@ -1774,10 +1804,10 @@ public class DemoDataSeeder implements CommandLineRunner {
                 new LapTimeSeed(APEX_LUSO_DISPLAY_NAME, BRAGA_TRACK_NAME, LocalDate.of(2026, 4, 2), 94120L, TOYOTA_GR_YARIS_VEHICLE),
                 new LapTimeSeed(TRACKRAT_77_DISPLAY_NAME, BRAGA_TRACK_NAME, LocalDate.of(2026, 4, 2), 96510L, "Renault Clio RS"),
 
-                new LapTimeSeed(OVERSTEER_MIGUEL_DISPLAY_NAME, VILA_REAL_TRACK_NAME, LocalDate.of(2026, 4, 15), 126980L, "Porsche Cayman GTS"),
+                new LapTimeSeed(OVERSTEER_MIGUEL_DISPLAY_NAME, VILA_REAL_TRACK_NAME, LocalDate.of(2026, 4, 15), 126980L, PORSCHE_CAYMAN_GTS_VEHICLE),
                 new LapTimeSeed(APEX_LUSO_DISPLAY_NAME, VILA_REAL_TRACK_NAME, LocalDate.of(2026, 4, 15), 128340L, BMW_M2_VEHICLE),
                 new LapTimeSeed(PADDOCK_PAULA_DISPLAY_NAME, VILA_REAL_TRACK_NAME, LocalDate.of(2026, 4, 15), 131120L, ALPINE_A110_R_VEHICLE),
-                new LapTimeSeed(BOXBOX_RAUL_DISPLAY_NAME, VILA_REAL_TRACK_NAME, LocalDate.of(2026, 4, 15), 130440L, "Honda Civic Type R"),
+                new LapTimeSeed(BOXBOX_RAUL_DISPLAY_NAME, VILA_REAL_TRACK_NAME, LocalDate.of(2026, 4, 15), 130440L, HONDA_CIVIC_TYPE_R_VEHICLE),
                 new LapTimeSeed(REDFLAG_INES_DISPLAY_NAME, VILA_REAL_TRACK_NAME, LocalDate.of(2026, 4, 15), 134760L, TOYOTA_GR86_VEHICLE),
 
                 new LapTimeSeed(CURB_ATTACK_DISPLAY_NAME, BOAVISTA_TRACK_NAME, LocalDate.of(2026, 4, 16), 108360L, "Lotus Elise Cup 250"),
@@ -1794,17 +1824,17 @@ public class DemoDataSeeder implements CommandLineRunner {
 
                 new LapTimeSeed(APEX_LUSO_DISPLAY_NAME, MUGELLO_TRACK_NAME, LocalDate.of(2026, 4, 6), 128910L, "Ferrari 488 GTB"),
                 new LapTimeSeed(OVERSTEER_MIGUEL_DISPLAY_NAME, MUGELLO_TRACK_NAME, LocalDate.of(2026, 4, 6), 133420L, "BMW M3 Touring"),
-                new LapTimeSeed(FULLTHROTTLE_EVA_DISPLAY_NAME, MUGELLO_TRACK_NAME, LocalDate.of(2026, 4, 6), 135110L, "Porsche Cayman GTS"),
-                new LapTimeSeed(REDFLAG_INES_DISPLAY_NAME, MUGELLO_TRACK_NAME, LocalDate.of(2026, 4, 6), 136540L, "Alpine A110"),
+                new LapTimeSeed(FULLTHROTTLE_EVA_DISPLAY_NAME, MUGELLO_TRACK_NAME, LocalDate.of(2026, 4, 6), 135110L, PORSCHE_CAYMAN_GTS_VEHICLE),
+                new LapTimeSeed(REDFLAG_INES_DISPLAY_NAME, MUGELLO_TRACK_NAME, LocalDate.of(2026, 4, 6), 136540L, ALPINE_A110_VEHICLE),
                 new LapTimeSeed(PADDOCK_PAULA_DISPLAY_NAME, MUGELLO_TRACK_NAME, LocalDate.of(2026, 4, 6), 138220L, "Porsche 718 Cayman"),
 
                 new LapTimeSeed(ALEX_PALAU_DISPLAY_NAME, NURBURGRING_TRACK_NAME, LocalDate.of(2026, 4, 8), 456210L, "Porsche 911 GT3 RS"),
                 new LapTimeSeed(FERNANDO_ALONSO_DISPLAY_NAME, NURBURGRING_TRACK_NAME, LocalDate.of(2026, 4, 8), 448960L, "Aston Martin Vantage AMR"),
-                new LapTimeSeed(STINTMASTER_DISPLAY_NAME, NURBURGRING_TRACK_NAME, LocalDate.of(2026, 4, 8), 487340L, "Honda Civic Type R"),
+                new LapTimeSeed(STINTMASTER_DISPLAY_NAME, NURBURGRING_TRACK_NAME, LocalDate.of(2026, 4, 8), 487340L, HONDA_CIVIC_TYPE_R_VEHICLE),
                 new LapTimeSeed(APEXHUNTER_DISPLAY_NAME, NURBURGRING_TRACK_NAME, LocalDate.of(2026, 4, 8), 472650L, "Porsche Cayman GT4"),
                 new LapTimeSeed(CURVA_PERALTADA_DISPLAY_NAME, NURBURGRING_TRACK_NAME, LocalDate.of(2026, 4, 8), 501220L, TOYOTA_GR_YARIS_VEHICLE),
 
-                new LapTimeSeed(PADDOCK_PAULA_DISPLAY_NAME, PAUL_RICARD_TRACK_NAME, LocalDate.of(2026, 4, 10), 134570L, "Alpine A110 S"),
+                new LapTimeSeed(PADDOCK_PAULA_DISPLAY_NAME, PAUL_RICARD_TRACK_NAME, LocalDate.of(2026, 4, 10), 134570L, ALPINE_A110_S_VEHICLE),
                 new LapTimeSeed(CARLOS_DISPLAY_NAME, PAUL_RICARD_TRACK_NAME, LocalDate.of(2026, 4, 10), 131240L, BMW_M2_VEHICLE),
                 new LapTimeSeed(APEXHUNTER_DISPLAY_NAME, PAUL_RICARD_TRACK_NAME, LocalDate.of(2026, 4, 10), 129880L, "Porsche 718 Cayman GT4"),
                 new LapTimeSeed(ALEX_PALAU_DISPLAY_NAME, PAUL_RICARD_TRACK_NAME, LocalDate.of(2026, 4, 10), 128940L, "Porsche 911 GT3 Touring"),
@@ -2163,7 +2193,8 @@ public class DemoDataSeeder implements CommandLineRunner {
                                  String name,
                                  String surname,
                                  String legalName,
-                                 String cif) {
+                                 String cif,
+                                 boolean enabled) {
     }
 
     private record TrackSeed(String name, String location, String description) {

@@ -28,6 +28,9 @@ public class UserService implements UserUseCase {
             "Organizer users must be managed through OrganizerService";
     private static final String AUTHENTICATED_EMAIL_REQUIRED = "Authenticated user email is required";
     private static final String USER_NOT_FOUND_WITH_EMAIL = "User not found with email: ";
+    private static final String DEFAULT_ADMIN_EMAIL = "admin@example.com";
+    private static final String DEFAULT_ADMIN_ACCOUNT_CANNOT_BE_DISABLED =
+            "The default administrator account cannot be disabled";
 
     private final UserPersistencePort userPersistencePort;
     private final RolePersistencePort rolePersistencePort;
@@ -157,6 +160,11 @@ public class UserService implements UserUseCase {
     @Override
     public User disableUser(Long id) {
         User existingUser = findUserOrThrow(id);
+
+        if (isDefaultAdminUser(existingUser)) {
+            throw new IllegalArgumentException(DEFAULT_ADMIN_ACCOUNT_CANNOT_BE_DISABLED);
+        }
+
         existingUser.setEnabled(false);
 
         organizerPersistencePort.findById(id)
@@ -177,6 +185,15 @@ public class UserService implements UserUseCase {
         return user.getRole() != null
                 && user.getRole().getRoleName() != null
                 && "ORGANIZER".equalsIgnoreCase(user.getRole().getRoleName().trim());
+    }
+
+    private boolean isDefaultAdminUser(User user) {
+        if (user.getRole() == null || user.getRole().getRoleName() == null || user.getEmail() == null) {
+            return false;
+        }
+
+        return "ADMIN".equalsIgnoreCase(user.getRole().getRoleName().trim())
+                && DEFAULT_ADMIN_EMAIL.equals(normalizeEmail(user.getEmail()));
     }
 
     private void validateDisplayNameForCreate(String displayName) {

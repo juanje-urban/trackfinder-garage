@@ -194,6 +194,20 @@ class UserServiceTest {
     }
 
     @Test
+    void disableUserThrowsForDefaultAdminAccount() {
+        User existingUser = userWithId(1L, "admin");
+        existingUser.setEmail("admin@example.com");
+        existingUser.setRole(roleWithId(99L, "ADMIN"));
+        existingUser.setEnabled(true);
+
+        when(userPersistencePort.findById(1L)).thenReturn(Optional.of(existingUser));
+
+        assertThrows(IllegalArgumentException.class, () -> userService.disableUser(1L));
+        verify(userPersistencePort, never()).save(existingUser);
+        verify(organizerPersistencePort, never()).findById(1L);
+    }
+
+    @Test
     void getUserByIdThrowsWhenUserDoesNotExist() {
         when(userPersistencePort.findById(42L)).thenReturn(Optional.empty());
 

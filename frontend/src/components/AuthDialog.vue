@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, reactive, watch } from 'vue'
-import { AxiosError } from 'axios'
 import { Eye, EyeOff, Lock, Mail, User, X } from 'lucide-vue-next'
 import heroImage from '@/assets/tracks/ricardo_tormo_cover_1.jpg'
 import logoUrl from '@/assets/tfg_logo.svg'
 import { useAuth } from '@/composables/useAuth'
 import { login, register, registerOrganizer } from '@/services/authService'
 import type { AuthOrganizerRegisterPayload } from '@/types/auth'
+import { resolveApiErrorMessage } from '@/utils/apiErrors'
 import { getDisplayNameMonogram } from '@/utils/identity'
 
 type AuthMode = 'login' | 'register' | 'organizer-register'
@@ -216,68 +216,28 @@ function resetDialog() {
 }
 
 function getErrorMessage(error: unknown, currentMode: AuthMode): string {
-  if (error instanceof AxiosError) {
-    const status = error.response?.status
-
-    if (status === 401) {
-      return 'Correo o contrasena incorrectos.'
-    }
-
-    if (status === 409 && currentMode !== 'login') {
-      const conflictMessage = extractBackendErrorMessage(error.response?.data)
-
-      if (conflictMessage.includes('display name')) {
-        return 'Ese alias ya esta en uso.'
-      }
-
-      if (conflictMessage.includes('email')) {
-        return 'Ya existe una cuenta registrada con ese correo.'
-      }
-
-      if (conflictMessage.includes('phone')) {
-        return 'Ya existe una cuenta registrada con ese telefono.'
-      }
-
-      if (conflictMessage.includes('legal name')) {
-        return 'Ya existe un organizador con esa razon social.'
-      }
-
-      if (conflictMessage.includes('cif')) {
-        return 'Ya existe un organizador con ese CIF.'
-      }
-
-      return currentMode === 'organizer-register'
-        ? 'No se pudo crear la cuenta de organizador porque ya existe un dato duplicado.'
-        : 'No se pudo crear la cuenta porque ya existe un dato duplicado.'
-    }
-
-    const backendMessage = extractBackendErrorMessage(error.response?.data)
-    if (backendMessage) {
-      return backendMessage
-    }
-  }
-
-  return currentMode === 'login'
-    ? 'No se pudo iniciar sesion.'
-    : currentMode === 'organizer-register'
-      ? 'No se pudo crear la cuenta de organizador.'
-      : 'No se pudo crear la cuenta.'
-}
-
-function extractBackendErrorMessage(responseData: unknown): string {
-  if (!responseData || typeof responseData !== 'object') {
-    return ''
-  }
-
-  if ('error' in responseData && typeof responseData.error === 'string') {
-    return responseData.error
-  }
-
-  const firstFieldError = Object.values(responseData).find(
-    (value): value is string => typeof value === 'string',
-  )
-
-  return firstFieldError ?? ''
+  return resolveApiErrorMessage(error, {
+    fallback:
+      currentMode === 'login'
+        ? 'No se pudo iniciar sesion.'
+        : currentMode === 'organizer-register'
+          ? 'No se pudo crear la cuenta de organizador.'
+          : 'No se pudo crear la cuenta.',
+    statusMessages: {
+      401: 'Correo o contrasena incorrectos.',
+      409:
+        currentMode === 'organizer-register'
+          ? 'No se pudo crear la cuenta de organizador porque ya existe un dato duplicado.'
+          : 'No se pudo crear la cuenta porque ya existe un dato duplicado.',
+    },
+    matches: [
+      { includes: 'display name', message: 'Ese alias ya esta en uso.' },
+      { includes: 'email', message: 'Ya existe una cuenta registrada con ese correo.' },
+      { includes: 'phone', message: 'Ya existe una cuenta registrada con ese telefono.' },
+      { includes: 'legal name', message: 'Ya existe un organizador con esa razon social.' },
+      { includes: 'cif', message: 'Ya existe un organizador con ese CIF.' },
+    ],
+  })
 }
 
 function validateForm(currentMode: AuthMode): string {

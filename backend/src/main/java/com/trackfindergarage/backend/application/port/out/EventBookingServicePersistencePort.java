@@ -21,6 +21,8 @@ public interface EventBookingServicePersistencePort {
 
     List<EventBookingService> findByEventBookingEventIdAndEventBookingUserId(Long eventId, Long userId);
 
+    List<EventBookingService> findByEventServiceId(Long eventServiceId);
+
     Optional<EventBookingService> findByEventBookingIdAndEventServiceId(Long eventBookingId, Long eventServiceId);
 
     void delete(EventBookingService eventBookingService);

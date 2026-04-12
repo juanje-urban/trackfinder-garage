@@ -16,5 +16,7 @@ public interface SpringDataEventBookingServiceRepository extends JpaRepository<E
 
     List<EventBookingService> findByEventBookingEventIdAndEventBookingUserId(Long eventId, Long userId);
 
+    List<EventBookingService> findByEventServiceId(Long eventServiceId);
+
     Optional<EventBookingService> findByEventBookingIdAndEventServiceId(Long eventBookingId, Long eventServiceId);
 }

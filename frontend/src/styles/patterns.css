@@ -48,6 +48,57 @@
   gap: var(--space-md);
 }
 
+.icon-button {
+  min-width: 40px;
+  min-height: 40px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  display: inline-grid;
+  place-items: center;
+}
+
+.icon-button > * {
+  display: block;
+}
+
+.icon-button--success {
+  border-color: rgba(150, 255, 176, 0.45);
+  background: linear-gradient(135deg, rgba(20, 150, 78, 0.94), rgba(11, 98, 49, 0.94));
+  color: #f2fff5;
+  box-shadow: 0 14px 30px rgba(11, 98, 49, 0.24);
+}
+
+.icon-button--danger {
+  border-color: rgba(255, 114, 114, 0.5);
+  background: linear-gradient(135deg, rgba(214, 31, 31, 0.94), rgba(146, 12, 12, 0.94));
+  color: #fff4f4;
+  box-shadow: 0 14px 30px rgba(146, 12, 12, 0.24);
+}
+
+.pill-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.pill-tab {
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-pill);
+  background: var(--surface-glass);
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.pill-tab--active {
+  border-color: transparent;
+  background: var(--accent-gradient-horizontal);
+  color: var(--text-strong);
+  box-shadow: var(--accent-shadow);
+}
+
 .brand-lockup {
   display: inline-flex;
   align-items: center;

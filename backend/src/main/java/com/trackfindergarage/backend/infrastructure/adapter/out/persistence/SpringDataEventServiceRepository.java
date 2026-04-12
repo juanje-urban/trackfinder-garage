@@ -28,6 +28,15 @@ public interface SpringDataEventServiceRepository extends JpaRepository<EventSer
     })
     List<EventService> findByEventId(Long eventId);
 
+    @EntityGraph(attributePaths = {
+            "event",
+            "trackService",
+            "trackService.service",
+            "organizerService",
+            "organizerService.service"
+    })
+    List<EventService> findByOrganizerServiceId(Long organizerServiceId);
+
     Optional<EventService> findByEventIdAndTrackServiceId(Long eventId, Long trackServiceId);
 
     Optional<EventService> findByEventIdAndOrganizerServiceId(Long eventId, Long organizerServiceId);

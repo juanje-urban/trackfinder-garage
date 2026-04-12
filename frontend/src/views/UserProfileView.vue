@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { isAxiosError } from 'axios'
 import { Eye, EyeOff, Pencil, Trash2 } from 'lucide-vue-next'
 import { computed, onMounted, reactive, ref } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
@@ -24,6 +23,9 @@ import type { LapTime } from '@/types/lapTime'
 import type { TrackRecord } from '@/types/trackRecord'
 import type { Track } from '@/types/track'
 import type { UserProfile } from '@/types/user'
+import { resolveApiErrorMessage } from '@/utils/apiErrors'
+import { isUserRole } from '@/utils/authRoles'
+import { toIsoDate } from '@/utils/date'
 import { formatCurrency, formatDisplayDate, formatLapTime } from '@/utils/format'
 
 type ProfileTab = 'reservas' | 'perfil' | 'vueltas' | 'mensajes'
@@ -35,6 +37,14 @@ type MockConversation = {
   excerpt: string
   sentAt: string
   unread: boolean
+}
+
+type BookingSection = {
+  id: 'future'
+  title: string
+  emptyMessage: string
+  bookings: EventBooking[]
+  allowCancellation: boolean
 }
 
 const auth = useAuth()
@@ -53,7 +63,6 @@ const trackRankings = ref<Record<number, TrackRecord[]>>({})
 
 const bookingError = ref('')
 const profileError = ref('')
-const lapMessage = ref('')
 const lapError = ref('')
 
 const profileSaving = ref(false)
@@ -80,7 +89,7 @@ const lapForm = reactive({
   vehicle: '',
 })
 
-const isStandardUser = computed(() => auth.session.value?.roleName === 'USER')
+const isStandardUser = computed(() => isUserRole(auth.session.value?.roleName))
 
 const todayIso = computed(() => toIsoDate(new Date()))
 const cancellationCutoffIso = computed(() => {
@@ -147,7 +156,17 @@ const tabItems: Array<{ id: ProfileTab; label: string }> = [
   { id: 'mensajes', label: 'Mensajes' },
 ]
 
-const mockConversations = computed<MockConversation[]>(() => [
+const bookingSections = computed<BookingSection[]>(() => [
+  {
+    id: 'future',
+    title: 'Reservas activas',
+    emptyMessage: 'Todavia no tienes reservas futuras.',
+    bookings: futureBookings.value,
+    allowCancellation: true,
+  },
+])
+
+const mockConversations: MockConversation[] = [
   {
     id: 'tracklimits',
     counterpart: 'tracklimits.iberia',
@@ -175,7 +194,7 @@ const mockConversations = computed<MockConversation[]>(() => [
     sentAt: '2026-03-14',
     unread: false,
   },
-])
+]
 
 onMounted(async () => {
   if (!isStandardUser.value) {
@@ -259,6 +278,10 @@ function cancelProfileEdit() {
   syncProfileForm(profile.value)
   profileError.value = ''
   profileEditMode.value = false
+}
+
+function getBookingVisibilityToneClass(isVisible: boolean): string {
+  return isVisible ? 'icon-button--danger' : 'icon-button--success'
 }
 
 function canCancelBooking(booking: EventBooking): boolean {
@@ -369,9 +392,9 @@ async function saveProfile() {
 
     if (credentialChanged) {
       auth.clearSession()
+      toast.showToast('Tus credenciales se han actualizado. Inicia sesion de nuevo para continuar.')
       await router.push('/')
       auth.openAuthDialog()
-      window.alert('Tus credenciales se han actualizado. Inicia sesion de nuevo para continuar.')
       return
     }
 
@@ -386,7 +409,6 @@ async function saveProfile() {
 async function addLapTime() {
   lapSaving.value = true
   lapError.value = ''
-  lapMessage.value = ''
 
   const trackId = Number(lapForm.trackId)
   if (!trackId) {
@@ -417,12 +439,12 @@ async function addLapTime() {
     })
 
     lapTimes.value = [...lapTimes.value, createdLapTime]
-    await refreshTrackRankings([...lapTimes.value])
+    await refreshTrackRankings(lapTimes.value)
     lapForm.trackId = ''
     lapForm.lapDate = ''
     lapForm.lapTimeText = ''
     lapForm.vehicle = ''
-    lapMessage.value = 'La vuelta se ha registrado correctamente.'
+    toast.showToast('La vuelta se ha registrado correctamente.')
   } catch (requestError) {
     lapError.value = resolveLapTimeError(requestError)
   } finally {
@@ -432,7 +454,6 @@ async function addLapTime() {
 
 async function removeLapTime(lapTime: LapTime) {
   lapError.value = ''
-  lapMessage.value = ''
 
   try {
     await deleteCurrentUserLapTime(lapTime.id)
@@ -460,101 +481,53 @@ function parseLapTimeInput(value: string): number | null {
 }
 
 function resolveBookingCancellationError(requestError: unknown): string {
-  if (!isAxiosError(requestError)) {
-    return 'No se pudo anular la reserva.'
-  }
-
-  const backendMessage = requestError.response?.data?.error
-
-  if (typeof backendMessage === 'string') {
-    if (backendMessage.includes('less than 14 days before the event')) {
-      return 'No puedes anular una reserva con menos de 14 dias de antelacion.'
-    }
-
-    return backendMessage
-  }
-
-  return 'No se pudo anular la reserva.'
+  return resolveApiErrorMessage(requestError, {
+    fallback: 'No se pudo anular la reserva.',
+    matches: [
+      {
+        includes: 'less than 14 days before the event',
+        message: 'No puedes anular una reserva con menos de 14 dias de antelacion.',
+      },
+    ],
+  })
 }
 
 function resolveBookingVisibilityError(requestError: unknown): string {
-  if (!isAxiosError(requestError)) {
-    return 'No se pudo actualizar la visibilidad de la reserva.'
-  }
-
-  const backendMessage = requestError.response?.data?.error
-
-  if (typeof backendMessage === 'string') {
-    if (backendMessage.includes('owner of the booking')) {
-      return 'Solo puedes cambiar la visibilidad de tus propias reservas.'
-    }
-
-    return backendMessage
-  }
-
-  if (requestError.response?.status === 401) {
-    return 'Tu sesion ha caducado. Inicia sesion de nuevo.'
-  }
-
-  if (requestError.response?.status === 403) {
-    return 'Solo puedes cambiar la visibilidad de tus propias reservas.'
-  }
-
-  return 'No se pudo actualizar la visibilidad de la reserva.'
+  return resolveApiErrorMessage(requestError, {
+    fallback: 'No se pudo actualizar la visibilidad de la reserva.',
+    statusMessages: {
+      401: 'Tu sesion ha caducado. Inicia sesion de nuevo.',
+      403: 'Solo puedes cambiar la visibilidad de tus propias reservas.',
+    },
+    matches: [
+      {
+        includes: 'owner of the booking',
+        message: 'Solo puedes cambiar la visibilidad de tus propias reservas.',
+      },
+    ],
+  })
 }
 
 function resolveProfileError(requestError: unknown): string {
-  if (!isAxiosError(requestError)) {
-    return 'No se pudo actualizar tu perfil.'
-  }
-
-  const backendMessage = requestError.response?.data?.error
-  if (typeof backendMessage === 'string') {
-    if (backendMessage.includes('email')) {
-      return 'Ya existe una cuenta registrada con ese correo.'
-    }
-
-    if (backendMessage.includes('phone')) {
-      return 'Ya existe una cuenta registrada con ese telefono.'
-    }
-
-    return backendMessage
-  }
-
-  return 'No se pudo actualizar tu perfil.'
+  return resolveApiErrorMessage(requestError, {
+    fallback: 'No se pudo actualizar tu perfil.',
+    matches: [
+      { includes: 'email', message: 'Ya existe una cuenta registrada con ese correo.' },
+      { includes: 'phone', message: 'Ya existe una cuenta registrada con ese telefono.' },
+    ],
+  })
 }
 
 function resolveLapTimeError(requestError: unknown): string {
-  if (!isAxiosError(requestError)) {
-    return 'No se pudo registrar la vuelta.'
-  }
-
-  const backendMessage = requestError.response?.data?.error
-  if (typeof backendMessage === 'string') {
-    return backendMessage
-  }
-
-  return 'No se pudo registrar la vuelta.'
+  return resolveApiErrorMessage(requestError, {
+    fallback: 'No se pudo registrar la vuelta.',
+  })
 }
 
 function resolveLapTimeDeleteError(requestError: unknown): string {
-  if (!isAxiosError(requestError)) {
-    return 'No se pudo eliminar la vuelta.'
-  }
-
-  const backendMessage = requestError.response?.data?.error
-  if (typeof backendMessage === 'string') {
-    return backendMessage
-  }
-
-  return 'No se pudo eliminar la vuelta.'
-}
-
-function toIsoDate(date: Date): string {
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
+  return resolveApiErrorMessage(requestError, {
+    fallback: 'No se pudo eliminar la vuelta.',
+  })
 }
 </script>
 
@@ -583,12 +556,12 @@ function toIsoDate(date: Date): string {
       />
 
       <section class="profile-tabs panel panel-pad-lg panel-stack-lg">
-        <div class="profile-tabs__nav" role="tablist" aria-label="Navegacion del perfil">
+        <div class="pill-tabs" role="tablist" aria-label="Navegacion del perfil">
           <button
             v-for="tab in tabItems"
             :key="tab.id"
-            class="profile-tabs__tab"
-            :class="{ 'profile-tabs__tab--active': activeTab === tab.id }"
+            class="pill-tab"
+            :class="{ 'pill-tab--active': activeTab === tab.id }"
             type="button"
             @click="activeTab = tab.id"
           >
@@ -600,25 +573,27 @@ function toIsoDate(date: Date): string {
           <p v-if="bookingError" class="status-message status-message--error">{{ bookingError }}</p>
 
           <div class="profile-grid">
-            <article class="panel panel-pad-lg panel-stack-sm">
-              <h3 class="ui-title-card">Reservas activas</h3>
+            <article
+              v-for="section in bookingSections"
+              :key="section.id"
+              class="panel panel-pad-lg panel-stack-sm"
+            >
+              <h3 class="ui-title-card">{{ section.title }}</h3>
 
-              <p v-if="futureBookings.length === 0" class="ui-copy-muted">
-                Todavia no tienes reservas futuras.
+              <p v-if="section.bookings.length === 0" class="ui-copy-muted">
+                {{ section.emptyMessage }}
               </p>
 
               <div v-else class="profile-booking-list">
                 <article
-                  v-for="booking in futureBookings"
+                  v-for="booking in section.bookings"
                   :key="booking.id"
                   class="profile-booking-card"
                 >
                   <RouterLink class="profile-booking-card__main" :to="`/events/${booking.eventId}`">
                     <div class="panel-copy">
                       <p class="ui-eyebrow">{{ formatDisplayDate(booking.eventDate) }}</p>
-                      <span class="profile-booking-card__link">
-                        {{ booking.trackName }}
-                      </span>
+                      <strong class="profile-booking-card__title">{{ booking.trackName }}</strong>
                       <p class="ui-copy-muted">{{ booking.organizerLegalName }}</p>
                     </div>
                   </RouterLink>
@@ -626,12 +601,8 @@ function toIsoDate(date: Date): string {
                   <div class="profile-booking-card__actions">
                     <div class="profile-booking-card__action-row">
                       <button
-                        class="action-button action-button--ghost profile-booking-card__visibility"
-                        :class="
-                          booking.isVisible
-                            ? 'profile-booking-card__visibility--hide'
-                            : 'profile-booking-card__visibility--show'
-                        "
+                        class="icon-button"
+                        :class="getBookingVisibilityToneClass(booking.isVisible)"
                         type="button"
                         :disabled="bookingVisibilityUpdatingId === booking.id"
                         :aria-label="
@@ -658,18 +629,20 @@ function toIsoDate(date: Date): string {
                         />
                         <span v-else class="profile-booking-card__visibility-waiting">...</span>
                       </button>
-                      <button
-                        v-if="canCancelBooking(booking)"
-                        class="action-button profile-booking-card__cancel"
-                        type="button"
-                        :disabled="bookingCancellingId === booking.id"
-                        @click="cancelBooking(booking)"
-                      >
-                        {{ bookingCancellingId === booking.id ? 'Anulando...' : 'Anular reserva' }}
-                      </button>
-                      <span v-else class="subtle-note profile-booking-card__note">
-                        La anulacion se cierra 14 dias antes.
-                      </span>
+                      <template v-if="section.allowCancellation">
+                        <button
+                          v-if="canCancelBooking(booking)"
+                          class="action-button profile-booking-card__cancel"
+                          type="button"
+                          :disabled="bookingCancellingId === booking.id"
+                          @click="cancelBooking(booking)"
+                        >
+                          {{ bookingCancellingId === booking.id ? 'Anulando...' : 'Anular reserva' }}
+                        </button>
+                        <span v-else class="subtle-note profile-booking-card__note">
+                          La anulacion se cierra 14 dias antes.
+                        </span>
+                      </template>
                     </div>
                   </div>
                 </article>
@@ -689,20 +662,16 @@ function toIsoDate(date: Date): string {
                   :key="booking.id"
                   class="profile-booking-card"
                 >
-                  <div class="panel-copy profile-booking-card__main">
+                  <RouterLink class="profile-booking-card__main" :to="`/events/${booking.eventId}`">
                     <p class="ui-eyebrow">{{ formatDisplayDate(booking.eventDate) }}</p>
                     <strong class="profile-booking-card__title">{{ booking.trackName }}</strong>
                     <p class="ui-copy-muted">{{ booking.organizerLegalName }}</p>
-                  </div>
+                  </RouterLink>
 
                   <div class="profile-booking-card__actions">
                     <button
-                      class="action-button action-button--ghost profile-booking-card__visibility"
-                      :class="
-                        booking.isVisible
-                          ? 'profile-booking-card__visibility--hide'
-                          : 'profile-booking-card__visibility--show'
-                      "
+                      class="icon-button"
+                      :class="getBookingVisibilityToneClass(booking.isVisible)"
                       type="button"
                       :disabled="bookingVisibilityUpdatingId === booking.id"
                       :aria-label="
@@ -748,7 +717,7 @@ function toIsoDate(date: Date): string {
               <div class="profile-detail-header__actions">
                 <button
                   v-if="!profileEditMode"
-                  class="action-button action-button--ghost profile-detail-header__icon-action"
+                  class="icon-button icon-button--danger"
                   type="button"
                   aria-label="Editar perfil"
                   title="Editar perfil"
@@ -881,7 +850,6 @@ function toIsoDate(date: Date): string {
             </p>
           </div>
 
-          <p v-if="lapMessage" class="status-message">{{ lapMessage }}</p>
           <p v-if="lapError" class="status-message status-message--error">{{ lapError }}</p>
 
           <div class="profile-grid">
@@ -957,7 +925,7 @@ function toIsoDate(date: Date): string {
                   </div>
 
                   <button
-                    class="action-button action-button--ghost profile-lap-card__delete"
+                    class="icon-button icon-button--danger"
                     type="button"
                     aria-label="Eliminar vuelta"
                     title="Eliminar vuelta"
@@ -1034,29 +1002,6 @@ function toIsoDate(date: Date): string {
 </template>
 
 <style scoped>
-.profile-tabs__nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-sm);
-}
-
-.profile-tabs__tab {
-  min-height: 44px;
-  padding: 0 18px;
-  border: 1px solid var(--line-soft);
-  border-radius: var(--radius-pill);
-  background: var(--surface-glass);
-  color: var(--text-muted);
-  font-weight: 700;
-}
-
-.profile-tabs__tab--active {
-  border-color: transparent;
-  background: var(--accent-gradient-horizontal);
-  color: var(--text-strong);
-  box-shadow: var(--accent-shadow);
-}
-
 .profile-grid {
   display: grid;
   align-items: start;
@@ -1083,7 +1028,6 @@ function toIsoDate(date: Date): string {
   background: var(--surface-glass-subtle);
 }
 
-.profile-booking-card__link,
 .profile-booking-card__title {
   color: var(--text-strong);
   font-size: var(--fs-title-sm);
@@ -1119,31 +1063,6 @@ function toIsoDate(date: Date): string {
   background: linear-gradient(135deg, rgba(190, 34, 34, 0.92), rgba(126, 10, 10, 0.92));
 }
 
-.profile-booking-card__visibility {
-  min-width: 38px;
-  min-height: 38px;
-  padding: 0;
-  border-radius: 999px;
-}
-
-.profile-booking-card__visibility :deep(svg) {
-  display: block;
-}
-
-.profile-booking-card__visibility--hide {
-  border-color: rgba(255, 114, 114, 0.5);
-  background: linear-gradient(135deg, rgba(214, 31, 31, 0.94), rgba(146, 12, 12, 0.94));
-  color: #fff4f4;
-  box-shadow: 0 14px 30px rgba(146, 12, 12, 0.24);
-}
-
-.profile-booking-card__visibility--show {
-  border-color: rgba(150, 255, 176, 0.45);
-  background: linear-gradient(135deg, rgba(20, 150, 78, 0.94), rgba(11, 98, 49, 0.94));
-  color: #f2fff5;
-  box-shadow: 0 14px 30px rgba(11, 98, 49, 0.24);
-}
-
 .profile-booking-card__visibility-waiting {
   font-size: var(--fs-caption);
   font-weight: 700;
@@ -1166,17 +1085,6 @@ function toIsoDate(date: Date): string {
   flex-wrap: wrap;
   justify-content: end;
   gap: var(--space-sm);
-}
-
-.profile-detail-header__icon-action {
-  min-width: 42px;
-  min-height: 42px;
-  padding: 0;
-  border-radius: 999px;
-}
-
-.profile-detail-header__icon-action :deep(svg) {
-  display: block;
 }
 
 .profile-detail-grid {
@@ -1279,25 +1187,6 @@ function toIsoDate(date: Date): string {
 .profile-lap-card__time {
   color: var(--text-strong);
   font-size: var(--fs-title-sm);
-}
-
-.profile-lap-card__delete {
-  min-width: 40px;
-  min-height: 40px;
-  padding: 0;
-  border-radius: 999px;
-}
-
-.profile-lap-card__delete :deep(svg) {
-  display: block;
-}
-
-.profile-detail-header__icon-action,
-.profile-lap-card__delete {
-  border-color: rgba(255, 114, 114, 0.5);
-  background: linear-gradient(135deg, rgba(214, 31, 31, 0.94), rgba(146, 12, 12, 0.94));
-  color: #fff4f4;
-  box-shadow: 0 14px 30px rgba(146, 12, 12, 0.24);
 }
 
 .profile-message-card__header {

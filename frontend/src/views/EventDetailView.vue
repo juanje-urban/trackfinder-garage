@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { isAxiosError } from 'axios'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
+import AppModal from '@/components/AppModal.vue'
 import DetailInfoCard from '@/components/DetailInfoCard.vue'
 import EventAttendeeList from '@/components/EventAttendeeList.vue'
 import EventAvailabilityBadge from '@/components/EventAvailabilityBadge.vue'
@@ -24,11 +24,14 @@ import type { Event } from '@/types/event'
 import type { EventBooking } from '@/types/eventBooking'
 import type { EventServiceItem } from '@/types/eventService'
 import type { Track } from '@/types/track'
+import { resolveApiErrorMessage } from '@/utils/apiErrors'
 import {
   getEventAvailabilityLabel,
   getEventAvailabilityState,
   getEventRemainingLabel,
 } from '@/utils/eventAvailability'
+import { isUserRole } from '@/utils/authRoles'
+import { toIsoDate } from '@/utils/date'
 import { formatCurrency, formatDisplayDate } from '@/utils/format'
 import { getTrackMedia } from '@/utils/trackMedia'
 import { createVisualStyle, eventVisualPalettes } from '@/utils/visualPalettes'
@@ -38,6 +41,14 @@ type DisplayService = {
   name: string
   price: number
   source: 'track' | 'organizer'
+}
+
+type DisplayServiceGroup = {
+  id: 'track' | 'organizer'
+  eyebrow: string
+  title: string
+  emptyMessage: string
+  services: DisplayService[]
 }
 
 type MediaDialog = {
@@ -70,11 +81,7 @@ const activeMediaDialog = ref<MediaDialog | null>(null)
 
 const eventId = computed(() => Number(route.params.id))
 const todayIso = computed(() => {
-  const date = new Date()
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
+  return toIsoDate(new Date())
 })
 
 const eventDetail = computed(() => {
@@ -119,22 +126,39 @@ const secondGalleryImage = computed(() => trackMedia.value.gallery[1])
 
 const availableServices = computed<DisplayService[]>(() =>
   eventServices.value
-    .map((service) => ({
-      id: service.id,
-      name: service.trackServiceName ?? service.organizerServiceName ?? 'Servicio',
-      price: service.price,
-      source: service.trackServiceId ? ('track' as const) : ('organizer' as const),
-    }))
+    .flatMap((service) => {
+      const name = service.trackServiceName ?? service.organizerServiceName
+
+      if (!name) {
+        return []
+      }
+
+      return [{
+        id: service.id,
+        name,
+        price: service.price,
+        source: service.trackServiceId ? ('track' as const) : ('organizer' as const),
+      }]
+    })
     .sort((left, right) => left.name.localeCompare(right.name, 'es')),
 )
 
-const trackEventServices = computed(() =>
-  availableServices.value.filter((service) => service.source === 'track'),
-)
-
-const organizerEventServices = computed(() =>
-  availableServices.value.filter((service) => service.source === 'organizer'),
-)
+const serviceGroups = computed<DisplayServiceGroup[]>(() => [
+  {
+    id: 'track',
+    eyebrow: 'Circuito',
+    title: 'Servicios del circuito',
+    emptyMessage: 'Sin servicios de circuito en esta fecha.',
+    services: availableServices.value.filter((service) => service.source === 'track'),
+  },
+  {
+    id: 'organizer',
+    eyebrow: 'Organizador',
+    title: 'Servicios del organizador',
+    emptyMessage: 'Sin servicios del organizador en esta fecha.',
+    services: availableServices.value.filter((service) => service.source === 'organizer'),
+  },
+])
 
 const selectedServices = computed(() =>
   availableServices.value.filter((service) => selectedServiceIds.value.includes(service.id)),
@@ -153,7 +177,8 @@ const isPastEvent = computed(() =>
   eventDetail.value ? eventDetail.value.event.eventDate < todayIso.value : false,
 )
 
-const isUserSession = computed(() => auth.session.value?.roleName === 'USER')
+const isUserSession = computed(() => isUserRole(auth.session.value?.roleName))
+const hasBookableSession = computed(() => auth.isAuthenticated.value && isUserSession.value)
 
 const isBookingActionDisabled = computed(
   () =>
@@ -302,9 +327,7 @@ function isServiceSelected(serviceId: number): boolean {
 }
 
 async function loadExistingBookingState(selectedEventId: number) {
-  const session = auth.session.value
-
-  if (!session || session.roleName !== 'USER') {
+  if (!hasBookableSession.value) {
     existingBooking.value = null
     selectedServiceIds.value = []
     bookingVisibleOnPublicProfile.value = false
@@ -369,9 +392,7 @@ async function confirmBookingDialogAction() {
 }
 
 async function confirmBookingCheckout() {
-  const session = auth.session.value
-
-  if (!session || !eventDetail.value || session.roleName !== 'USER') {
+  if (!eventDetail.value || !hasBookableSession.value) {
     return
   }
 
@@ -387,13 +408,6 @@ async function confirmBookingCheckout() {
 
     existingBooking.value = createdBooking
     bookingVisibleOnPublicProfile.value = createdBooking.isVisible
-
-    if (event.value) {
-      event.value = {
-        ...event.value,
-        remainingCapacity: Math.max(0, event.value.remainingCapacity - 1),
-      }
-    }
 
     const [updatedEventResult, bookedServicesResult] = await Promise.allSettled([
       getEventById(eventDetail.value.event.id),
@@ -417,10 +431,9 @@ async function confirmBookingCheckout() {
 }
 
 async function confirmBookingCancellation() {
-  const session = auth.session.value
   const booking = existingBooking.value
 
-  if (!session || !booking || !eventDetail.value || session.roleName !== 'USER') {
+  if (!booking || !eventDetail.value || !hasBookableSession.value) {
     return
   }
 
@@ -433,13 +446,6 @@ async function confirmBookingCancellation() {
     selectedServiceIds.value = []
     bookingVisibleOnPublicProfile.value = false
 
-    if (event.value) {
-      event.value = {
-        ...event.value,
-        remainingCapacity: event.value.remainingCapacity + 1,
-      }
-    }
-
     const updatedEvent = await getEventById(eventDetail.value.event.id)
     event.value = updatedEvent
     bookingDialogOpen.value = false
@@ -451,67 +457,32 @@ async function confirmBookingCancellation() {
 }
 
 function resolveBookingError(requestError: unknown): string {
-  if (!isAxiosError(requestError)) {
-    return 'No se pudo confirmar la reserva.'
-  }
-
-  const backendMessage = requestError.response?.data?.error
-
-  if (typeof backendMessage === 'string') {
-    if (backendMessage.includes('already has a booking')) {
-      return 'Ya tienes una reserva confirmada para este evento.'
-    }
-
-    if (backendMessage.includes('is full')) {
-      return 'No quedan plazas disponibles para este evento.'
-    }
-
-    if (backendMessage.includes('Only standard users')) {
-      return 'Solo las cuentas de usuario pueden reservar plaza.'
-    }
-
-    return backendMessage
-  }
-
-  if (requestError.response?.status === 401) {
-    return 'Tu sesion ha caducado. Inicia sesion de nuevo.'
-  }
-
-  if (requestError.response?.status === 403) {
-    return 'Solo las cuentas de usuario pueden reservar plaza.'
-  }
-
-  return 'No se pudo confirmar la reserva.'
+  return resolveApiErrorMessage(requestError, {
+    fallback: 'No se pudo confirmar la reserva.',
+    statusMessages: {
+      401: 'Tu sesion ha caducado. Inicia sesion de nuevo.',
+      403: 'Solo las cuentas de usuario pueden reservar plaza.',
+    },
+    matches: [
+      { includes: 'already has a booking', message: 'Ya tienes una reserva confirmada para este evento.' },
+      { includes: 'is full', message: 'No quedan plazas disponibles para este evento.' },
+      { includes: 'Only standard users', message: 'Solo las cuentas de usuario pueden reservar plaza.' },
+    ],
+  })
 }
 
 function resolveBookingCancellationError(requestError: unknown): string {
-  if (!isAxiosError(requestError)) {
-    return 'No se pudo anular la reserva.'
-  }
-
-  const backendMessage = requestError.response?.data?.error
-
-  if (typeof backendMessage === 'string') {
-    if (backendMessage.includes('less than 14 days before the event')) {
-      return 'No puedes anular la reserva con menos de 14 dias de antelacion.'
-    }
-
-    if (backendMessage.includes('owner of the booking')) {
-      return 'Solo puedes anular tus propias reservas.'
-    }
-
-    return backendMessage
-  }
-
-  if (requestError.response?.status === 401) {
-    return 'Tu sesion ha caducado. Inicia sesion de nuevo.'
-  }
-
-  if (requestError.response?.status === 403) {
-    return 'Solo puedes anular tus propias reservas.'
-  }
-
-  return 'No se pudo anular la reserva.'
+  return resolveApiErrorMessage(requestError, {
+    fallback: 'No se pudo anular la reserva.',
+    statusMessages: {
+      401: 'Tu sesion ha caducado. Inicia sesion de nuevo.',
+      403: 'Solo puedes anular tus propias reservas.',
+    },
+    matches: [
+      { includes: 'less than 14 days before the event', message: 'No puedes anular la reserva con menos de 14 dias de antelacion.' },
+      { includes: 'owner of the booking', message: 'Solo puedes anular tus propias reservas.' },
+    ],
+  })
 }
 
 function openTrackMapDialog() {
@@ -673,15 +644,19 @@ function handleTrackMapDialogKeydown(event: KeyboardEvent) {
               No hay servicios adicionales disponibles para este evento.
             </p>
             <div v-else class="event-detail__service-groups">
-              <article class="event-detail__service-group">
+              <article
+                v-for="group in serviceGroups"
+                :key="group.id"
+                class="event-detail__service-group"
+              >
                 <div class="panel-copy">
-                  <p class="ui-eyebrow">Circuito</p>
-                  <h3 class="ui-title-card">Servicios del circuito</h3>
+                  <p class="ui-eyebrow">{{ group.eyebrow }}</p>
+                  <h3 class="ui-title-card">{{ group.title }}</h3>
                 </div>
 
-                <div v-if="trackEventServices.length > 0" class="event-detail__service-list">
+                <div v-if="group.services.length > 0" class="event-detail__service-list">
                   <label
-                    v-for="service in trackEventServices"
+                    v-for="service in group.services"
                     :key="service.id"
                     class="event-detail__service-row"
                     :class="{
@@ -700,37 +675,7 @@ function handleTrackMapDialogKeydown(event: KeyboardEvent) {
                     <strong>{{ formatCurrency(service.price) }}</strong>
                   </label>
                 </div>
-                <p v-else class="ui-copy-muted">Sin servicios de circuito en esta fecha.</p>
-              </article>
-
-              <article class="event-detail__service-group">
-                <div class="panel-copy">
-                  <p class="ui-eyebrow">Organizador</p>
-                  <h3 class="ui-title-card">Servicios del organizador</h3>
-                </div>
-
-                <div v-if="organizerEventServices.length > 0" class="event-detail__service-list">
-                  <label
-                    v-for="service in organizerEventServices"
-                    :key="service.id"
-                    class="event-detail__service-row"
-                    :class="{
-                      'event-detail__service-row--selected': isServiceSelected(service.id),
-                      'event-detail__service-row--locked': hasConfirmedBooking,
-                    }"
-                  >
-                    <input
-                      class="event-detail__service-checkbox"
-                      type="checkbox"
-                      :checked="isServiceSelected(service.id)"
-                      :disabled="hasConfirmedBooking"
-                      @change="toggleServiceSelection(service.id)"
-                    />
-                    <span class="event-detail__service-name">{{ service.name }}</span>
-                    <strong>{{ formatCurrency(service.price) }}</strong>
-                  </label>
-                </div>
-                <p v-else class="ui-copy-muted">Sin servicios del organizador en esta fecha.</p>
+                <p v-else class="ui-copy-muted">{{ group.emptyMessage }}</p>
               </article>
             </div>
           </SectionCard>
@@ -795,34 +740,24 @@ function handleTrackMapDialogKeydown(event: KeyboardEvent) {
         </aside>
       </section>
 
-      <div
-        v-if="activeMediaDialog"
-        class="track-map-dialog"
-        role="dialog"
-        aria-modal="true"
-        :aria-label="activeMediaDialog.alt"
-        @click.self="closeTrackMapDialog"
+      <AppModal
+        :is-open="activeMediaDialog !== null"
+        :ariaLabel="activeMediaDialog?.alt ?? 'Vista ampliada'"
+        :eyebrow="activeMediaDialog?.eyebrow ?? ''"
+        :title="activeMediaDialog?.title ?? ''"
+        width="920px"
+        light
+        @close="closeTrackMapDialog"
       >
-        <section class="track-map-dialog__panel panel panel-pad-lg panel-stack-md">
-          <div class="track-map-dialog__header">
-            <div class="panel-copy">
-              <p class="ui-eyebrow">{{ activeMediaDialog.eyebrow }}</p>
-              <h2 class="ui-title-section">{{ activeMediaDialog.title }}</h2>
-            </div>
-            <button class="track-map-dialog__close" type="button" @click="closeTrackMapDialog">
-              Cerrar
-            </button>
-          </div>
-
-          <div class="track-map-dialog__image-wrap">
-            <img
-              class="track-map-dialog__image"
-              :src="activeMediaDialog.src"
-              :alt="activeMediaDialog.alt"
-            />
-          </div>
-        </section>
-      </div>
+        <div class="track-map-dialog__image-wrap">
+          <img
+            v-if="activeMediaDialog"
+            class="track-map-dialog__image"
+            :src="activeMediaDialog.src"
+            :alt="activeMediaDialog.alt"
+          />
+        </div>
+      </AppModal>
 
       <EventBookingDialog
         :is-open="bookingDialogOpen"
@@ -930,45 +865,6 @@ function handleTrackMapDialogKeydown(event: KeyboardEvent) {
   object-fit: contain;
   border-radius: var(--radius-inner);
   background: var(--surface-light);
-}
-
-.track-map-dialog {
-  position: fixed;
-  inset: 0;
-  z-index: 50;
-  display: grid;
-  place-items: center;
-  padding: 24px;
-  background: rgba(8, 8, 10, 0.74);
-  backdrop-filter: blur(10px);
-}
-
-.track-map-dialog__panel {
-  width: min(920px, calc(100vw - 32px));
-  max-height: calc(100vh - 32px);
-  overflow: auto;
-  border-color: rgba(48, 17, 15, 0.12);
-  background: var(--surface-light);
-  color: var(--text-on-light);
-}
-
-.track-map-dialog__header {
-  display: flex;
-  align-items: start;
-  justify-content: space-between;
-  gap: var(--space-lg);
-}
-
-.track-map-dialog__header .ui-eyebrow {
-  color: var(--accent);
-}
-
-.track-map-dialog__close {
-  padding: 10px 14px;
-  border: 1px solid rgba(48, 17, 15, 0.14);
-  border-radius: var(--radius-sm);
-  background: rgba(48, 17, 15, 0.06);
-  color: var(--text-on-light);
 }
 
 .track-map-dialog__image-wrap {
@@ -1176,14 +1072,6 @@ function handleTrackMapDialogKeydown(event: KeyboardEvent) {
 
   .event-detail__hero-description {
     padding: var(--space-lg);
-  }
-
-  .track-map-dialog {
-    padding: 16px;
-  }
-
-  .track-map-dialog__header {
-    flex-direction: column;
   }
 
   .event-detail__booking-line,

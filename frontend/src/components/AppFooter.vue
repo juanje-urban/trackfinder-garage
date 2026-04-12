@@ -3,10 +3,12 @@ import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
 import logoUrl from '@/assets/tfg_logo.svg'
+import { isAdminRole, isOrganizerRole, isUserRole } from '@/utils/authRoles'
 
 const auth = useAuth()
-const isStandardUser = computed(() => auth.session.value?.roleName === 'USER')
-const isAdmin = computed(() => auth.session.value?.roleName === 'ADMIN')
+const isStandardUser = computed(() => isUserRole(auth.session.value?.roleName))
+const isOrganizer = computed(() => isOrganizerRole(auth.session.value?.roleName))
+const isAdmin = computed(() => isAdminRole(auth.session.value?.roleName))
 </script>
 
 <template>
@@ -23,6 +25,7 @@ const isAdmin = computed(() => auth.session.value?.roleName === 'ADMIN')
         <RouterLink to="/">Home</RouterLink>
         <RouterLink to="/tracks">Circuitos</RouterLink>
         <RouterLink to="/events">Eventos</RouterLink>
+        <RouterLink v-if="isOrganizer" to="/organizer">Organizaci&oacute;n</RouterLink>
         <RouterLink v-if="isAdmin" to="/admin">Administraci&oacute;n</RouterLink>
         <RouterLink v-if="isStandardUser" to="/profile">Mi perfil</RouterLink>
         <a href="#">Politica de privacidad</a>

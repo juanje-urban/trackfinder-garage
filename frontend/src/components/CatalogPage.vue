@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import CatalogToolbar from '@/components/CatalogToolbar.vue'
 import ContentSection from '@/components/ContentSection.vue'
 import HeroInfoPanel from '@/components/HeroInfoPanel.vue'
 import PageHero from '@/components/PageHero.vue'
@@ -9,10 +8,8 @@ withDefaults(
     heroEyebrow: string
     heroTitle: string
     heroDescription: string
-    infoLabel: string
-    infoCaption: string
-    toolbarChips?: Array<{ label: string; accent?: boolean }>
-    toolbarNote?: string
+    infoLabel?: string
+    infoCaption?: string
     sectionEyebrow?: string
     sectionTitle?: string
     sectionHint?: string
@@ -23,8 +20,8 @@ withDefaults(
     emptyMessage: string
   }>(),
   {
-    toolbarChips: () => [],
-    toolbarNote: '',
+    infoLabel: '',
+    infoCaption: '',
     sectionEyebrow: '',
     sectionTitle: '',
     sectionHint: '',
@@ -39,7 +36,7 @@ withDefaults(
       :title="heroTitle"
       :description="heroDescription"
     >
-      <template #aside>
+      <template v-if="$slots['hero-value']" #aside>
         <HeroInfoPanel :label="infoLabel" :caption="infoCaption">
           <slot name="hero-value" />
         </HeroInfoPanel>
@@ -52,9 +49,7 @@ withDefaults(
 
     <slot name="summary" />
 
-    <slot name="toolbar">
-      <CatalogToolbar :chips="toolbarChips" :note="toolbarNote" />
-    </slot>
+    <slot name="toolbar" />
 
     <ContentSection
       :eyebrow="sectionEyebrow"

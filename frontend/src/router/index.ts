@@ -7,6 +7,8 @@ import EventDetailView from '@/views/EventDetailView.vue'
 import UserProfileView from '@/views/UserProfileView.vue'
 import PublicUserProfileView from '@/views/PublicUserProfileView.vue'
 import AdminView from '@/views/AdminView.vue'
+import OrganizerView from '@/views/OrganizerView.vue'
+import { isAdminRole, isOrganizerRole, isUserRole } from '@/utils/authRoles'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -16,6 +18,7 @@ const router = createRouter({
     { path: '/events/:id', name: 'event-detail', component: EventDetailView },
     { path: '/tracks', name: 'tracks', component: TracksView },
     { path: '/profile', name: 'profile', component: UserProfileView, meta: { requiresUser: true } },
+    { path: '/organizer', name: 'organizer', component: OrganizerView, meta: { requiresOrganizer: true } },
     { path: '/admin', name: 'admin', component: AdminView, meta: { requiresAdmin: true } },
     { path: '/profiles/:displayName', name: 'public-profile', component: PublicUserProfileView },
   ],
@@ -23,20 +26,26 @@ const router = createRouter({
 
 router.beforeEach((to) => {
   const auth = useAuth()
+  const session = auth.session.value
 
   if (
     to.name === 'public-profile' &&
-    auth.session.value?.roleName === 'USER' &&
-    auth.session.value.displayName === to.params.displayName
+    session &&
+    isUserRole(session.roleName) &&
+    session.displayName === to.params.displayName
   ) {
     return { name: 'profile' }
   }
 
-  if (to.meta.requiresUser && auth.session.value?.roleName !== 'USER') {
+  if (to.meta.requiresUser && !isUserRole(session?.roleName)) {
     return { name: 'home' }
   }
 
-  if (to.meta.requiresAdmin && auth.session.value?.roleName !== 'ADMIN') {
+  if (to.meta.requiresOrganizer && !isOrganizerRole(session?.roleName)) {
+    return { name: 'home' }
+  }
+
+  if (to.meta.requiresAdmin && !isAdminRole(session?.roleName)) {
     return { name: 'home' }
   }
 

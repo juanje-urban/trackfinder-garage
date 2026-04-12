@@ -52,6 +52,11 @@ public class EventBookingServicePersistenceAdapter implements EventBookingServic
     }
 
     @Override
+    public List<EventBookingService> findByEventServiceId(Long eventServiceId) {
+        return eventBookingServiceRepository.findByEventServiceId(eventServiceId);
+    }
+
+    @Override
     public Optional<EventBookingService> findByEventBookingIdAndEventServiceId(Long eventBookingId, Long eventServiceId) {
         return eventBookingServiceRepository.findByEventBookingIdAndEventServiceId(eventBookingId, eventServiceId);
     }

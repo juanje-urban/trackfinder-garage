@@ -16,6 +16,7 @@ import com.trackfindergarage.backend.domain.model.Role;
 import com.trackfindergarage.backend.domain.model.Track;
 import com.trackfindergarage.backend.domain.model.User;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -148,10 +149,10 @@ class EventBookingServiceTest {
 
         when(userPersistencePort.findByEmail("user@example.com")).thenReturn(Optional.of(organizerUser));
 
-        assertThrows(
-                AccessDeniedException.class,
-                () -> eventBookingService.checkoutEventBooking("user@example.com", 2L, selectedServiceIds, true)
-        );
+        Executable checkoutAttempt =
+                () -> eventBookingService.checkoutEventBooking("user@example.com", 2L, selectedServiceIds, true);
+
+        assertThrows(AccessDeniedException.class, checkoutAttempt);
     }
 
     @Test
@@ -174,10 +175,10 @@ class EventBookingServiceTest {
         when(eventBookingPersistencePort.save(any(EventBooking.class))).thenReturn(persistedBooking);
         when(eventServicePersistencePort.findById(9L)).thenReturn(Optional.of(eventService));
 
-        assertThrows(
-                IllegalArgumentException.class,
-                () -> eventBookingService.checkoutEventBooking("user@example.com", 2L, selectedServiceIds, false)
-        );
+        Executable checkoutAttempt =
+                () -> eventBookingService.checkoutEventBooking("user@example.com", 2L, selectedServiceIds, false);
+
+        assertThrows(IllegalArgumentException.class, checkoutAttempt);
     }
 
     @Test

@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
+import { isUserRole } from '@/utils/authRoles'
 
 const props = defineProps<{
   displayName: string
@@ -10,9 +11,12 @@ const props = defineProps<{
 const auth = useAuth()
 
 const profileTarget = computed(() => {
+  const session = auth.session.value
+
   if (
-    auth.session.value?.roleName === 'USER' &&
-    auth.session.value.displayName === props.displayName
+    session &&
+    isUserRole(session.roleName) &&
+    session.displayName === props.displayName
   ) {
     return '/profile'
   }
