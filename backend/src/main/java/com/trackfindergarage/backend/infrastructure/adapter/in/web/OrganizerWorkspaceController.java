@@ -83,4 +83,15 @@ public class OrganizerWorkspaceController {
                 )
         );
     }
+
+    @DeleteMapping("/events/{eventId}")
+    public OrganizerWorkspaceResponse deleteEvent(@PathVariable Long eventId,
+                                                  Authentication authentication) {
+        return organizerWorkspaceWebMapper.toResponse(
+                organizerWorkspaceUseCase.deleteEvent(
+                        authentication != null ? authentication.getName() : null,
+                        eventId
+                )
+        );
+    }
 }

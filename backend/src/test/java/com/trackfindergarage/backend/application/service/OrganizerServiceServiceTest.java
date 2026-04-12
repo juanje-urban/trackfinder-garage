@@ -19,6 +19,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -55,7 +56,27 @@ class OrganizerServiceServiceTest {
         assertSame(organizerService, created);
         assertSame(organizer, organizerService.getOrganizer());
         assertSame(service, organizerService.getService());
+        assertTrue(created.getEnabled());
         verify(organizerServicePersistencePort).save(organizerService);
+    }
+
+    @Test
+    void createOrganizerServiceReactivatesDisabledAssignment() {
+        OrganizerService organizerService = organizerServiceWithIds(1L, 2L);
+        organizerService.setId(7L);
+        organizerService.setEnabled(false);
+
+        when(organizerServicePersistencePort.findByOrganizerIdUserAndServiceId(1L, 2L))
+                .thenReturn(Optional.of(organizerService));
+        when(organizerServicePersistencePort.save(organizerService)).thenReturn(organizerService);
+
+        OrganizerService reactivated = organizerServiceService.createOrganizerService(organizerServiceWithIds(1L, 2L));
+
+        assertSame(organizerService, reactivated);
+        assertTrue(reactivated.getEnabled());
+        verify(organizerServicePersistencePort).save(organizerService);
+        verify(organizerPersistencePort, never()).findById(1L);
+        verify(servicePersistencePort, never()).findById(2L);
     }
 
     @Test
@@ -85,24 +106,30 @@ class OrganizerServiceServiceTest {
     }
 
     @Test
-    void deleteOrganizerServiceRemovesExistingAssignment() {
+    void deleteOrganizerServiceDisablesExistingAssignment() {
         OrganizerService organizerService = organizerServiceWithIds(1L, 2L);
         organizerService.setId(3L);
+        organizerService.setEnabled(true);
 
         when(organizerServicePersistencePort.findById(3L)).thenReturn(Optional.of(organizerService));
+        when(organizerServicePersistencePort.save(organizerService)).thenReturn(organizerService);
 
         organizerServiceService.deleteOrganizerService(3L);
 
-        verify(organizerServicePersistencePort).delete(organizerService);
+        assertEquals(Boolean.FALSE, organizerService.getEnabled());
+        verify(organizerServicePersistencePort).save(organizerService);
     }
 
     @Test
     void getAllOrganizerServicesReturnsPersistenceResult() {
-        List<OrganizerService> assignments = List.of(organizerServiceWithIds(1L, 2L));
+        OrganizerService activeAssignment = organizerServiceWithIds(1L, 2L);
+        activeAssignment.setEnabled(true);
+        OrganizerService inactiveAssignment = organizerServiceWithIds(1L, 3L);
+        inactiveAssignment.setEnabled(false);
 
-        when(organizerServicePersistencePort.findAll()).thenReturn(assignments);
+        when(organizerServicePersistencePort.findAll()).thenReturn(List.of(activeAssignment, inactiveAssignment));
 
-        assertEquals(assignments, organizerServiceService.getAllOrganizerServices());
+        assertEquals(List.of(activeAssignment), organizerServiceService.getAllOrganizerServices());
     }
 
     @Test
@@ -110,6 +137,20 @@ class OrganizerServiceServiceTest {
         when(organizerPersistencePort.findById(99L)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> organizerServiceService.getOrganizerServicesByOrganizerId(99L));
+    }
+
+    @Test
+    void getOrganizerServicesByOrganizerIdReturnsOnlyActiveAssignments() {
+        OrganizerService activeAssignment = organizerServiceWithIds(1L, 2L);
+        activeAssignment.setEnabled(true);
+        OrganizerService inactiveAssignment = organizerServiceWithIds(1L, 3L);
+        inactiveAssignment.setEnabled(false);
+
+        when(organizerPersistencePort.findById(1L)).thenReturn(Optional.of(organizerWithId(1L)));
+        when(organizerServicePersistencePort.findByOrganizerIdUser(1L))
+                .thenReturn(List.of(activeAssignment, inactiveAssignment));
+
+        assertEquals(List.of(activeAssignment), organizerServiceService.getOrganizerServicesByOrganizerId(1L));
     }
 
     private OrganizerService organizerServiceWithIds(Long organizerId, Long serviceId) {

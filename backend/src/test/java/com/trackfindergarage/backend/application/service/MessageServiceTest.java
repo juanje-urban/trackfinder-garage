@@ -149,6 +149,96 @@ class MessageServiceTest {
     }
 
     @Test
+    void getOwnMessagesReturnsMessagesForAuthenticatedUser() {
+        User currentUser = userWithId(1L, "sender");
+        currentUser.setEmail("sender@example.com");
+        currentUser.setEnabled(true);
+        List<Message> messages = List.of(messageWithId(5L, 1L, 2L), messageWithId(6L, 2L, 1L));
+
+        when(userPersistencePort.findByEmail("sender@example.com")).thenReturn(Optional.of(currentUser));
+        when(messagePersistencePort.findByParticipantIdOrderBySentAtAsc(1L)).thenReturn(messages);
+
+        assertEquals(messages, messageService.getOwnMessages("sender@example.com"));
+    }
+
+    @Test
+    void createOwnMessageUsesAuthenticatedSenderAndPersists() {
+        User sender = userWithId(1L, "sender");
+        sender.setEmail("sender@example.com");
+        sender.setEnabled(true);
+        User receiver = userWithId(2L, "receiver");
+        receiver.setEnabled(true);
+
+        when(userPersistencePort.findByEmail("sender@example.com")).thenReturn(Optional.of(sender));
+        when(userPersistencePort.findById(1L)).thenReturn(Optional.of(sender));
+        when(userPersistencePort.findById(2L)).thenReturn(Optional.of(receiver));
+        when(messagePersistencePort.save(org.mockito.ArgumentMatchers.any(Message.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        Message created = messageService.createOwnMessage("sender@example.com", 2L, "Hola", "Que tal");
+
+        assertEquals(1L, created.getSender().getId());
+        assertEquals(2L, created.getReceiver().getId());
+        assertEquals("Hola", created.getSubject());
+        assertEquals("Que tal", created.getContent());
+        assertFalse(created.getIsRead());
+    }
+
+    @Test
+    void createOwnMessageThrowsWhenReceiverIsDisabled() {
+        User sender = userWithId(1L, "sender");
+        sender.setEmail("sender@example.com");
+        sender.setEnabled(true);
+        User receiver = userWithId(2L, "receiver");
+        receiver.setEnabled(false);
+
+        when(userPersistencePort.findByEmail("sender@example.com")).thenReturn(Optional.of(sender));
+        when(userPersistencePort.findById(2L)).thenReturn(Optional.of(receiver));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> messageService.createOwnMessage("sender@example.com", 2L, "Hola", "Que tal"));
+    }
+
+    @Test
+    void getAvailableRecipientsReturnsEnabledUsersExceptCurrentOne() {
+        User currentUser = userWithId(1L, "sender");
+        currentUser.setEmail("sender@example.com");
+        currentUser.setEnabled(true);
+
+        User alpha = userWithId(2L, "Alpha");
+        alpha.setEnabled(true);
+        User disabled = userWithId(3L, "Disabled");
+        disabled.setEnabled(false);
+        User zulu = userWithId(4L, "Zulu");
+        zulu.setEnabled(true);
+
+        when(userPersistencePort.findByEmail("sender@example.com")).thenReturn(Optional.of(currentUser));
+        when(userPersistencePort.findAll()).thenReturn(List.of(zulu, currentUser, disabled, alpha));
+
+        List<User> recipients = messageService.getAvailableRecipients("sender@example.com");
+
+        assertEquals(List.of("Alpha", "Zulu"), recipients.stream().map(User::getDisplayName).toList());
+    }
+
+    @Test
+    void markOwnMessageAsReadUsesAuthenticatedReceiver() {
+        User receiver = userWithId(2L, "receiver");
+        receiver.setEmail("receiver@example.com");
+        receiver.setEnabled(true);
+        Message message = messageWithId(5L, 1L, 2L);
+        message.setIsRead(false);
+
+        when(userPersistencePort.findByEmail("receiver@example.com")).thenReturn(Optional.of(receiver));
+        when(messagePersistencePort.findById(5L)).thenReturn(Optional.of(message));
+        when(userPersistencePort.findById(2L)).thenReturn(Optional.of(receiver));
+        when(messagePersistencePort.save(message)).thenReturn(message);
+
+        Message updated = messageService.markOwnMessageAsRead("receiver@example.com", 5L);
+
+        assertTrue(updated.getIsRead());
+    }
+
+    @Test
     void markAsReadPersistsWhenUserIsReceiver() {
         Message message = messageWithId(5L, 1L, 2L);
         message.setIsRead(false);

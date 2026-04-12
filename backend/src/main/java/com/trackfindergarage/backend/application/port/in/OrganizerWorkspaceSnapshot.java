@@ -10,6 +10,7 @@ import com.trackfindergarage.backend.domain.model.TrackService;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public record OrganizerWorkspaceSnapshot(
         Organizer organizer,
@@ -19,6 +20,7 @@ public record OrganizerWorkspaceSnapshot(
         List<TrackService> trackServices,
         List<Event> events,
         Map<Long, List<EventService>> eventServicesByEventId,
+        Map<Long, Set<Long>> bookedEventServiceIdsByEventId,
         OrganizerWorkspaceStatsView stats
 ) {
 }

@@ -3,16 +3,17 @@ package com.trackfindergarage.backend.infrastructure.adapter.in.web;
 import com.trackfindergarage.backend.application.port.in.MessageUseCase;
 import com.trackfindergarage.backend.domain.model.Message;
 import com.trackfindergarage.backend.domain.model.User;
-import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.CreateMessageRequest;
+import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.CreateOwnMessageRequest;
+import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.MessageContactResponse;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.MessageResponse;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.mapper.MessageWebMapper;
 import org.junit.jupiter.api.Test;
+import org.springframework.security.core.Authentication;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -24,17 +25,17 @@ class MessageControllerTest {
 
     @Test
     void createMessageDelegatesToUseCaseAndReturnsMappedResponse() {
-        CreateMessageRequest request = new CreateMessageRequest();
-        request.setSenderId(1L);
+        Authentication authentication = authentication("sender@example.com");
+        CreateOwnMessageRequest request = new CreateOwnMessageRequest();
         request.setReceiverId(2L);
         request.setSubject("Hola");
         request.setMessage("Que tal");
 
         Message message = messageWithId(10L, 1L, 2L);
 
-        when(messageUseCase.createMessage(any(Message.class))).thenReturn(message);
+        when(messageUseCase.createOwnMessage("sender@example.com", 2L, "Hola", "Que tal")).thenReturn(message);
 
-        MessageResponse response = messageController.createMessage(request);
+        MessageResponse response = messageController.createMessage(authentication, request);
 
         assertEquals(10L, response.getId());
         assertEquals(1L, response.getSenderId());
@@ -43,23 +44,31 @@ class MessageControllerTest {
 
     @Test
     void queryEndpointsMapUseCaseResult() {
+        Authentication authentication = authentication("sender@example.com");
         Message message = messageWithId(10L, 1L, 2L);
+        User receiver = new User();
+        receiver.setId(2L);
+        receiver.setDisplayName("receiver");
 
-        when(messageUseCase.getAllMessages()).thenReturn(List.of(message));
-        when(messageUseCase.getMessageById(10L)).thenReturn(message);
-        when(messageUseCase.getMessagesBySenderId(1L)).thenReturn(List.of(message));
-        when(messageUseCase.getMessagesByReceiverId(2L)).thenReturn(List.of(message));
-        when(messageUseCase.getConversation(1L, 2L)).thenReturn(List.of(message));
-        when(messageUseCase.markAsRead(10L, 2L)).thenReturn(message);
-        when(messageUseCase.markAsUnread(10L, 2L)).thenReturn(message);
+        when(messageUseCase.getOwnMessages("sender@example.com")).thenReturn(List.of(message));
+        when(messageUseCase.getOwnConversation("sender@example.com", 2L)).thenReturn(List.of(message));
+        when(messageUseCase.getAvailableRecipients("sender@example.com")).thenReturn(List.of(receiver));
+        when(messageUseCase.markOwnMessageAsRead("sender@example.com", 10L)).thenReturn(message);
+        when(messageUseCase.markOwnMessageAsUnread("sender@example.com", 10L)).thenReturn(message);
 
-        assertEquals(1, messageController.getAllMessages().size());
-        assertEquals(10L, messageController.getMessageById(10L).getId());
-        assertEquals(1, messageController.getMessagesBySenderId(1L).size());
-        assertEquals(1, messageController.getMessagesByReceiverId(2L).size());
-        assertEquals(1, messageController.getConversation(1L, 2L).size());
-        assertEquals(10L, messageController.markAsRead(10L, 2L).getId());
-        assertEquals(10L, messageController.markAsUnread(10L, 2L).getId());
+        assertEquals(1, messageController.getOwnMessages(authentication).size());
+        assertEquals(1, messageController.getOwnConversation(2L, authentication).size());
+        List<MessageContactResponse> contacts = messageController.getAvailableRecipients(authentication);
+        assertEquals(1, contacts.size());
+        assertEquals(2L, contacts.get(0).getId());
+        assertEquals(10L, messageController.markAsRead(10L, authentication).getId());
+        assertEquals(10L, messageController.markAsUnread(10L, authentication).getId());
+    }
+
+    private Authentication authentication(String email) {
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getName()).thenReturn(email);
+        return authentication;
     }
 
     private Message messageWithId(Long id, Long senderId, Long receiverId) {

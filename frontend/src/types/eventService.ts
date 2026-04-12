@@ -6,4 +6,5 @@ export interface EventServiceItem {
   organizerServiceId: number | null
   organizerServiceName: string | null
   price: number
+  hasBookings: boolean
 }

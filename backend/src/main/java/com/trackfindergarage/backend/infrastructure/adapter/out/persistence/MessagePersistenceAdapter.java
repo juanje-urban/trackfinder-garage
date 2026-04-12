@@ -42,6 +42,11 @@ public class MessagePersistenceAdapter implements MessagePersistencePort {
     }
 
     @Override
+    public List<Message> findByParticipantIdOrderBySentAtAsc(Long userId) {
+        return messageRepository.findByParticipantIdOrderBySentAtAsc(userId);
+    }
+
+    @Override
     public List<Message> findConversation(Long userId1, Long userId2) {
         return messageRepository.findConversation(userId1, userId2);
     }

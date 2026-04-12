@@ -11,4 +11,6 @@ public interface OrganizerWorkspaceUseCase {
     OrganizerWorkspaceSnapshot createEvent(String authenticatedEmail, OrganizerEventDraft draft);
 
     OrganizerWorkspaceSnapshot updateEvent(String authenticatedEmail, Long eventId, OrganizerEventDraft draft);
+
+    OrganizerWorkspaceSnapshot deleteEvent(String authenticatedEmail, Long eventId);
 }

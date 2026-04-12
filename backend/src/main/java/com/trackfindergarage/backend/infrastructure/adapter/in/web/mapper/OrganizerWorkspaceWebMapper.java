@@ -18,6 +18,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -74,6 +75,7 @@ public class OrganizerWorkspaceWebMapper {
                 .map(event -> toManagedEventResponse(
                         event,
                         snapshot.eventServicesByEventId().getOrDefault(event.getId(), List.of()),
+                        snapshot.bookedEventServiceIdsByEventId().getOrDefault(event.getId(), Set.of()),
                         eventStatsById.get(event.getId())
                 ))
                 .sorted(Comparator.comparing(item -> item.getEvent().getEventDate()))
@@ -92,10 +94,16 @@ public class OrganizerWorkspaceWebMapper {
 
     private OrganizerManagedEventResponse toManagedEventResponse(Event event,
                                                                  List<EventService> services,
+                                                                 Set<Long> bookedEventServiceIds,
                                                                  OrganizerWorkspaceEventStatsView stats) {
         return OrganizerManagedEventResponse.builder()
                 .event(eventWebMapper.toResponse(event, stats != null ? stats.remainingCapacity() : 0))
-                .services(services.stream().map(eventServiceWebMapper::toResponse).toList())
+                .services(services.stream()
+                        .map(service -> eventServiceWebMapper.toResponse(
+                                service,
+                                bookedEventServiceIds.contains(service.getId())
+                        ))
+                        .toList())
                 .stats(stats != null ? toEventStatsResponse(stats) : null)
                 .build();
     }

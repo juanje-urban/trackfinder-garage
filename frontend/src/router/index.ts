@@ -8,6 +8,7 @@ import UserProfileView from '@/views/UserProfileView.vue'
 import PublicUserProfileView from '@/views/PublicUserProfileView.vue'
 import AdminView from '@/views/AdminView.vue'
 import OrganizerView from '@/views/OrganizerView.vue'
+import MessagesView from '@/views/MessagesView.vue'
 import { isAdminRole, isOrganizerRole, isUserRole } from '@/utils/authRoles'
 
 const router = createRouter({
@@ -17,6 +18,7 @@ const router = createRouter({
     { path: '/events', name: 'events', component: FutureEventsView },
     { path: '/events/:id', name: 'event-detail', component: EventDetailView },
     { path: '/tracks', name: 'tracks', component: TracksView },
+    { path: '/messages', name: 'messages', component: MessagesView, meta: { requiresAuth: true } },
     { path: '/profile', name: 'profile', component: UserProfileView, meta: { requiresUser: true } },
     { path: '/organizer', name: 'organizer', component: OrganizerView, meta: { requiresOrganizer: true } },
     { path: '/admin', name: 'admin', component: AdminView, meta: { requiresAdmin: true } },
@@ -38,6 +40,10 @@ router.beforeEach((to) => {
   }
 
   if (to.meta.requiresUser && !isUserRole(session?.roleName)) {
+    return { name: 'home' }
+  }
+
+  if (to.meta.requiresAuth && !session) {
     return { name: 'home' }
   }
 

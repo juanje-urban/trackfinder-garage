@@ -9,6 +9,7 @@ import { useToast } from '@/composables/useToast'
 import {
   addOrganizerCatalogService,
   createOrganizerEvent,
+  deleteOrganizerEvent,
   getOrganizerWorkspace,
   removeOrganizerCatalogService,
   updateOrganizerEvent,
@@ -39,6 +40,9 @@ const removingOrganizerServiceId = ref<number | null>(null)
 const isEventModalOpen = ref(false)
 const editingEventId = ref<number | null>(null)
 const eventSaving = ref(false)
+const deletingEventId = ref<number | null>(null)
+const eventPendingDeletion = ref<OrganizerManagedEvent | null>(null)
+const isDeleteEventModalOpen = ref(false)
 
 const eventForm = reactive({
   trackId: '',
@@ -63,18 +67,9 @@ const tabItems: Array<{ id: OrganizerTab; label: string }> = [
 ]
 
 const sortedEvents = computed(() =>
-  [...(workspace.value?.events ?? [])].sort((left, right) => {
-    const leftPast = isPastEvent(left.event.eventDate)
-    const rightPast = isPastEvent(right.event.eventDate)
-
-    if (leftPast !== rightPast) {
-      return leftPast ? 1 : -1
-    }
-
-    return leftPast
-      ? right.event.eventDate.localeCompare(left.event.eventDate)
-      : left.event.eventDate.localeCompare(right.event.eventDate)
-  }),
+  [...(workspace.value?.events ?? [])].sort((left, right) =>
+    right.event.eventDate.localeCompare(left.event.eventDate),
+  ),
 )
 
 const availableCatalogServices = computed(() => {
@@ -82,8 +77,15 @@ const availableCatalogServices = computed(() => {
     return []
   }
 
-  const assignedIds = new Set(workspace.value.organizerServices.map((service) => service.serviceId))
-  return workspace.value.availableServices.filter((service) => !assignedIds.has(service.id))
+  const assignedIds = new Set(
+    workspace.value.organizerServices
+      .map((service) => service.serviceId)
+      .filter((serviceId): serviceId is number => typeof serviceId === 'number'),
+  )
+
+  return workspace.value.availableServices
+    .filter((service) => !assignedIds.has(service.id))
+    .sort((left, right) => left.name.localeCompare(right.name))
 })
 
 const currentTrackServiceOptions = computed(() => {
@@ -119,6 +121,24 @@ const futureOrganizerServiceIdsInUse = computed(() => {
 
   return nextIds
 })
+
+const revenueChartBars = computed(() => {
+  const eventStats = [...(workspace.value?.stats.eventStats ?? [])].sort((left, right) =>
+    right.eventDate.localeCompare(left.eventDate),
+  )
+  const maxRevenue = Math.max(...eventStats.map((stat) => stat.grossRevenue), 0)
+
+  return eventStats.map((stat) => ({
+    ...stat,
+    width: maxRevenue > 0 ? `${Math.max(8, Math.round((stat.grossRevenue / maxRevenue) * 100))}%` : '0%',
+  }))
+})
+
+const editingManagedEvent = computed(
+  () => workspace.value?.events.find((event) => event.event.id === editingEventId.value) ?? null,
+)
+
+const minimumParticipantsForEdit = computed(() => editingManagedEvent.value?.stats.bookings ?? 1)
 
 onMounted(async () => {
   if (!isOrganizer.value) {
@@ -195,6 +215,16 @@ function closeEventModal() {
   resetEventForm()
 }
 
+function closeDeleteEventModal() {
+  if (deletingEventId.value !== null) {
+    return
+  }
+
+  eventError.value = ''
+  isDeleteEventModalOpen.value = false
+  eventPendingDeletion.value = null
+}
+
 function openCreateEventModal() {
   resetEventForm()
   isEventModalOpen.value = true
@@ -225,6 +255,12 @@ function openEditEventModal(managedEvent: OrganizerManagedEvent) {
   isEventModalOpen.value = true
 }
 
+function openDeleteEventModal(managedEvent: OrganizerManagedEvent) {
+  eventError.value = ''
+  eventPendingDeletion.value = managedEvent
+  isDeleteEventModalOpen.value = true
+}
+
 function isPastEvent(eventDate: string): boolean {
   return eventDate <= todayIso.value
 }
@@ -233,12 +269,28 @@ function isOrganizerServiceLocked(organizerServiceId: number): boolean {
   return futureOrganizerServiceIdsInUse.value.has(organizerServiceId)
 }
 
-function toServiceKey(kind: 'track' | 'organizer', id: number): string {
-  return `${kind}:${id}`
+function canDeleteEvent(managedEvent: OrganizerManagedEvent): boolean {
+  return !isPastEvent(managedEvent.event.eventDate) && managedEvent.stats.bookings === 0
 }
 
-function getServicePriceInput(kind: 'track' | 'organizer', id: number): string {
-  return servicePriceInputs[toServiceKey(kind, id)] ?? ''
+function isTrackServiceLockedForEdit(trackServiceId: number): boolean {
+  return Boolean(
+    editingManagedEvent.value?.services.some(
+      (service) => service.trackServiceId === trackServiceId && service.hasBookings,
+    ),
+  )
+}
+
+function isOrganizerEventServiceLockedForEdit(organizerServiceId: number): boolean {
+  return Boolean(
+    editingManagedEvent.value?.services.some(
+      (service) => service.organizerServiceId === organizerServiceId && service.hasBookings,
+    ),
+  )
+}
+
+function toServiceKey(kind: 'track' | 'organizer', id: number): string {
+  return `${kind}:${id}`
 }
 
 async function addCatalogService() {
@@ -283,6 +335,17 @@ async function removeCatalogService(organizerServiceId: number) {
   } finally {
     removingOrganizerServiceId.value = null
   }
+}
+
+function requestCatalogServiceRemoval(organizerServiceId: number) {
+  if (isOrganizerServiceLocked(organizerServiceId)) {
+    toast.showToast('No puedes retirar un servicio que ya esta presente en eventos futuros.', {
+      tone: 'error',
+    })
+    return
+  }
+
+  void removeCatalogService(organizerServiceId)
 }
 
 function buildEventPayload() {
@@ -381,13 +444,57 @@ async function saveEvent() {
           message: 'No puedes incluir el mismo servicio dos veces en un evento.',
         },
         {
+          includes: 'track cannot be changed',
+          message: 'No puedes cambiar el circuito de un evento que ya existe.',
+        },
+        {
+          includes: 'date cannot be changed',
+          message: 'No puedes cambiar la fecha de un evento que ya existe.',
+        },
+        {
           includes: 'track id',
           message: 'Ya existe un evento para ese circuito en la misma fecha.',
+        },
+        {
+          includes: 'current bookings',
+          message: 'No puedes bajar el aforo por debajo de las reservas ya confirmadas.',
         },
       ],
     })
   } finally {
     eventSaving.value = false
+  }
+}
+
+async function deleteEvent() {
+  if (!eventPendingDeletion.value) {
+    return
+  }
+
+  deletingEventId.value = eventPendingDeletion.value.event.id
+  eventError.value = ''
+
+  try {
+    workspace.value = await deleteOrganizerEvent(eventPendingDeletion.value.event.id)
+    toast.showToast('El evento se ha eliminado correctamente.')
+    isDeleteEventModalOpen.value = false
+    eventPendingDeletion.value = null
+  } catch (requestError) {
+    eventError.value = resolveApiErrorMessage(requestError, {
+      fallback: 'No se pudo eliminar el evento.',
+      matches: [
+        {
+          includes: 'future events can be deleted',
+          message: 'Solo puedes eliminar eventos futuros.',
+        },
+        {
+          includes: 'already has bookings',
+          message: 'No puedes eliminar un evento que ya tiene reservas.',
+        },
+      ],
+    })
+  } finally {
+    deletingEventId.value = null
   }
 }
 
@@ -472,8 +579,14 @@ function formatEventServiceName(service: OrganizerManagedEvent['services'][numbe
             <div class="organizer-toolbar">
               <label class="organizer-field">
                 <span>Servicio disponible</span>
-                <select v-model="selectedAvailableServiceId">
-                  <option value="">Selecciona un servicio</option>
+                <select v-model="selectedAvailableServiceId" :disabled="availableCatalogServices.length === 0">
+                  <option value="">
+                    {{
+                      availableCatalogServices.length === 0
+                        ? 'No quedan servicios disponibles'
+                        : 'Selecciona un servicio'
+                    }}
+                  </option>
                   <option
                     v-for="service in availableCatalogServices"
                     :key="service.id"
@@ -487,13 +600,21 @@ function formatEventServiceName(service: OrganizerManagedEvent['services'][numbe
               <button
                 class="action-button organizer-toolbar__button"
                 type="button"
-                :disabled="serviceSubmitting || selectedAvailableServiceId === ''"
+                :disabled="
+                  serviceSubmitting ||
+                  selectedAvailableServiceId === '' ||
+                  availableCatalogServices.length === 0
+                "
                 @click="addCatalogService"
               >
                 <Plus :size="16" aria-hidden="true" />
                 Anadir servicio
               </button>
             </div>
+
+            <p v-if="availableCatalogServices.length === 0" class="ui-copy-muted">
+              Ya has incorporado todos los servicios disponibles del catalogo general.
+            </p>
 
             <p v-if="workspace.organizerServices.length === 0" class="ui-copy-muted">
               Todavia no has anadido servicios a tu catalogo.
@@ -515,10 +636,10 @@ function formatEventServiceName(service: OrganizerManagedEvent['services'][numbe
                 <button
                   class="icon-button icon-button--danger"
                   type="button"
-                  :disabled="removingOrganizerServiceId === service.id || isOrganizerServiceLocked(service.id)"
+                  :disabled="removingOrganizerServiceId === service.id"
                   aria-label="Retirar servicio del catalogo"
                   title="Retirar servicio del catalogo"
-                  @click="removeCatalogService(service.id)"
+                  @click="requestCatalogServiceRemoval(service.id)"
                 >
                   <Trash2 :size="16" aria-hidden="true" />
                 </button>
@@ -563,16 +684,12 @@ function formatEventServiceName(service: OrganizerManagedEvent['services'][numbe
                   <p class="ui-copy-muted">
                     Desde {{ formatCurrency(managedEvent.event.basePrice) }} ·
                     {{ managedEvent.stats.bookings }} asistentes ·
+                    {{ managedEvent.stats.remainingCapacity }} / {{ managedEvent.stats.totalCapacity }} plazas libres ·
+                    {{ managedEvent.services.length }} servicios configurados ·
                     {{ formatCurrency(managedEvent.stats.grossRevenue) }} brutos
                   </p>
 
                   <div class="meta-pills">
-                    <span class="meta-pill">
-                      {{ managedEvent.stats.remainingCapacity }} / {{ managedEvent.stats.totalCapacity }} plazas libres
-                    </span>
-                    <span class="meta-pill">
-                      {{ managedEvent.services.length }} servicios configurados
-                    </span>
                     <span v-if="isPastEvent(managedEvent.event.eventDate)" class="meta-pill">
                       Evento finalizado
                     </span>
@@ -589,16 +706,28 @@ function formatEventServiceName(service: OrganizerManagedEvent['services'][numbe
                   </div>
                 </div>
 
-                <button
-                  class="icon-button icon-button--danger"
-                  type="button"
-                  :disabled="isPastEvent(managedEvent.event.eventDate)"
-                  aria-label="Editar evento"
-                  title="Editar evento"
-                  @click="openEditEventModal(managedEvent)"
-                >
-                  <Pencil :size="16" aria-hidden="true" />
-                </button>
+                <div v-if="!isPastEvent(managedEvent.event.eventDate)" class="organizer-card__actions">
+                  <button
+                    class="icon-button icon-button--danger"
+                    type="button"
+                    aria-label="Editar evento"
+                    title="Editar evento"
+                    @click="openEditEventModal(managedEvent)"
+                  >
+                    <Pencil :size="16" aria-hidden="true" />
+                  </button>
+
+                  <button
+                    v-if="canDeleteEvent(managedEvent)"
+                    class="icon-button icon-button--danger"
+                    type="button"
+                    aria-label="Eliminar evento"
+                    title="Eliminar evento"
+                    @click="openDeleteEventModal(managedEvent)"
+                  >
+                    <Trash2 :size="16" aria-hidden="true" />
+                  </button>
+                </div>
               </article>
             </div>
           </article>
@@ -640,9 +769,38 @@ function formatEventServiceName(service: OrganizerManagedEvent['services'][numbe
               Todavia no hay eventos que analizar.
             </div>
 
-            <div v-else class="list-divider">
+            <div v-else class="panel-stack-lg">
+              <article class="organizer-chart panel panel-pad-lg panel-stack-md">
+                <div class="panel-copy">
+                  <h4 class="ui-title-card organizer-chart__title">Ingresos brutos por evento</h4>
+                  <p class="ui-copy-muted">
+                    Comparativa visual de facturacion entre jornadas.
+                  </p>
+                </div>
+
+                <div class="organizer-chart__bars">
+                  <article
+                    v-for="eventStat in revenueChartBars"
+                    :key="eventStat.eventId"
+                    class="organizer-chart__row"
+                  >
+                    <div class="organizer-chart__meta">
+                      <strong class="ui-title-info">{{ eventStat.trackName }}</strong>
+                      <span class="ui-copy-muted">{{ formatDisplayDate(eventStat.eventDate) }}</span>
+                    </div>
+                    <div class="organizer-chart__track">
+                      <div class="organizer-chart__fill" :style="{ width: eventStat.width }"></div>
+                    </div>
+                    <strong class="organizer-chart__value">
+                      {{ formatCurrency(eventStat.grossRevenue) }}
+                    </strong>
+                  </article>
+                </div>
+              </article>
+
+              <div class="list-divider">
               <article
-                v-for="eventStat in workspace.stats.eventStats"
+                v-for="eventStat in revenueChartBars"
                 :key="eventStat.eventId"
                 class="list-divider__item organizer-stats-row"
               >
@@ -657,6 +815,7 @@ function formatEventServiceName(service: OrganizerManagedEvent['services'][numbe
                   <strong>{{ formatCurrency(eventStat.grossRevenue) }}</strong>
                 </div>
               </article>
+              </div>
             </div>
           </article>
         </section>
@@ -676,7 +835,7 @@ function formatEventServiceName(service: OrganizerManagedEvent['services'][numbe
 
         <label class="organizer-field">
           <span>Circuito</span>
-          <select v-model="eventForm.trackId">
+          <select v-model="eventForm.trackId" :disabled="editingEventId !== null">
             <option value="">Selecciona un circuito</option>
             <option v-for="track in workspace?.tracks ?? []" :key="track.id" :value="String(track.id)">
               {{ track.name }}
@@ -686,7 +845,7 @@ function formatEventServiceName(service: OrganizerManagedEvent['services'][numbe
 
         <label class="organizer-field">
           <span>Fecha</span>
-          <input v-model="eventForm.eventDate" type="date" :min="todayIso" />
+          <input v-model="eventForm.eventDate" type="date" :min="todayIso" :disabled="editingEventId !== null" />
         </label>
 
         <label class="organizer-field">
@@ -696,13 +855,23 @@ function formatEventServiceName(service: OrganizerManagedEvent['services'][numbe
 
         <label class="organizer-field">
           <span>Aforo maximo</span>
-          <input v-model="eventForm.maxParticipants" type="number" min="1" step="1" />
+          <input
+            v-model="eventForm.maxParticipants"
+            type="number"
+            :min="String(minimumParticipantsForEdit)"
+            step="1"
+          />
         </label>
 
         <label class="organizer-field organizer-field--full">
           <span>Descripcion</span>
           <textarea v-model="eventForm.description" rows="5" maxlength="5000"></textarea>
         </label>
+
+        <p v-if="editingManagedEvent" class="ui-copy-muted organizer-form__hint organizer-field--full">
+          El circuito y la fecha quedan bloqueados tras crear el evento. El aforo no puede bajar de
+          {{ minimumParticipantsForEdit }} reservas confirmadas.
+        </p>
 
         <section class="organizer-form__section organizer-field--full">
           <div class="panel-copy">
@@ -721,14 +890,19 @@ function formatEventServiceName(service: OrganizerManagedEvent['services'][numbe
               v-for="service in currentTrackServiceOptions"
               :key="service.id"
               class="organizer-service-option"
+              :class="{ 'organizer-service-option--locked': isTrackServiceLockedForEdit(service.id) }"
             >
               <div class="organizer-service-option__copy">
                 <input
                   v-model="selectedTrackServiceIds"
                   type="checkbox"
                   :value="service.id"
+                  :disabled="isTrackServiceLockedForEdit(service.id)"
                 />
                 <span>{{ service.serviceName }}</span>
+                <span v-if="isTrackServiceLockedForEdit(service.id)" class="ui-copy-muted">
+                  Ya contratado
+                </span>
               </div>
 
               <input
@@ -760,14 +934,19 @@ function formatEventServiceName(service: OrganizerManagedEvent['services'][numbe
               v-for="service in organizerServiceOptions"
               :key="service.id"
               class="organizer-service-option"
+              :class="{ 'organizer-service-option--locked': isOrganizerEventServiceLockedForEdit(service.id) }"
             >
               <div class="organizer-service-option__copy">
                 <input
                   v-model="selectedOrganizerServiceIds"
                   type="checkbox"
                   :value="service.id"
+                  :disabled="isOrganizerEventServiceLockedForEdit(service.id)"
                 />
                 <span>{{ service.serviceName }}</span>
+                <span v-if="isOrganizerEventServiceLockedForEdit(service.id)" class="ui-copy-muted">
+                  Ya contratado
+                </span>
               </div>
 
               <input
@@ -791,6 +970,37 @@ function formatEventServiceName(service: OrganizerManagedEvent['services'][numbe
           </button>
         </div>
       </form>
+    </AppModal>
+
+    <AppModal
+      :is-open="isDeleteEventModalOpen"
+      ariaLabel="Eliminar evento"
+      eyebrow="Eventos"
+      title="Eliminar evento"
+      width="560px"
+      @close="closeDeleteEventModal"
+    >
+      <div class="panel-copy panel-stack-md">
+        <p v-if="eventError" class="status-message status-message--error">{{ eventError }}</p>
+        <p class="ui-copy-muted">
+          Vas a eliminar <strong>{{ eventPendingDeletion?.event.trackName }}</strong> del
+          <strong>{{
+            eventPendingDeletion ? formatDisplayDate(eventPendingDeletion.event.eventDate) : ''
+          }}</strong>.
+        </p>
+        <p class="ui-copy-muted">
+          Solo se puede eliminar si el evento sigue siendo futuro y todavia no tiene ninguna reserva.
+        </p>
+      </div>
+
+      <div class="organizer-form__actions">
+        <button class="action-button action-button--ghost" type="button" @click="closeDeleteEventModal">
+          Cancelar
+        </button>
+        <button class="action-button" type="button" :disabled="deletingEventId !== null" @click="deleteEvent">
+          {{ deletingEventId !== null ? 'Eliminando...' : 'Eliminar evento' }}
+        </button>
+      </div>
     </AppModal>
   </main>
 </template>
@@ -837,7 +1047,13 @@ function formatEventServiceName(service: OrganizerManagedEvent['services'][numbe
 }
 
 .organizer-card--event {
-  align-items: center;
+  align-items: start;
+}
+
+.organizer-card__actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
 }
 
 .organizer-card__copy {
@@ -911,6 +1127,10 @@ function formatEventServiceName(service: OrganizerManagedEvent['services'][numbe
   gap: var(--space-md);
 }
 
+.organizer-form__hint {
+  margin-top: calc(-1 * var(--space-xs));
+}
+
 .organizer-form__section-title {
   font-size: var(--fs-title-info);
 }
@@ -931,9 +1151,15 @@ function formatEventServiceName(service: OrganizerManagedEvent['services'][numbe
   background: var(--surface-glass);
 }
 
+.organizer-service-option--locked {
+  border-color: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.04);
+}
+
 .organizer-service-option__copy {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: var(--space-sm);
   font-weight: 600;
 }
@@ -958,6 +1184,58 @@ function formatEventServiceName(service: OrganizerManagedEvent['services'][numbe
   justify-content: flex-end;
   gap: var(--space-lg);
   color: var(--text-muted);
+}
+
+.organizer-chart {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    radial-gradient(circle at top right, rgba(255, 70, 49, 0.18), transparent 36%),
+    linear-gradient(180deg, rgba(18, 18, 20, 0.9) 0%, rgba(12, 12, 14, 0.96) 100%);
+}
+
+.organizer-chart__title {
+  font-size: var(--fs-title-info);
+}
+
+.organizer-chart__bars {
+  display: grid;
+  gap: var(--space-md);
+}
+
+.organizer-chart__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 2fr) auto;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.organizer-chart__meta {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.organizer-chart__track {
+  position: relative;
+  min-width: 0;
+  height: 12px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.organizer-chart__fill {
+  height: 100%;
+  min-width: 8px;
+  border-radius: inherit;
+  background:
+    linear-gradient(90deg, rgba(255, 76, 58, 0.92) 0%, rgba(255, 167, 55, 0.92) 100%);
+  box-shadow: 0 0 18px rgba(255, 76, 58, 0.28);
+}
+
+.organizer-chart__value {
+  color: var(--text-strong);
+  white-space: nowrap;
 }
 
 @media (max-width: 980px) {
@@ -990,6 +1268,11 @@ function formatEventServiceName(service: OrganizerManagedEvent['services'][numbe
   .organizer-form__actions .action-button,
   .organizer-service-option input[type='number'] {
     width: 100%;
+  }
+
+  .organizer-chart__row {
+    display: grid;
+    grid-template-columns: 1fr;
   }
 }
 </style>

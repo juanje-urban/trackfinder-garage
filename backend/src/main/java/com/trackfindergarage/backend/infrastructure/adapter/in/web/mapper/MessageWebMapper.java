@@ -3,6 +3,7 @@ package com.trackfindergarage.backend.infrastructure.adapter.in.web.mapper;
 import com.trackfindergarage.backend.domain.model.Message;
 import com.trackfindergarage.backend.domain.model.User;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.CreateMessageRequest;
+import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.MessageContactResponse;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.MessageResponse;
 import org.springframework.stereotype.Component;
 
@@ -36,6 +37,14 @@ public class MessageWebMapper {
                 .isRead(message.getIsRead())
                 .subject(message.getSubject())
                 .message(message.getContent())
+                .build();
+    }
+
+    public MessageContactResponse toContactResponse(User user) {
+        return MessageContactResponse.builder()
+                .id(user.getId())
+                .displayName(user.getDisplayName())
+                .roleName(user.getRole() != null ? user.getRole().getRoleName() : null)
                 .build();
     }
 }

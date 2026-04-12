@@ -44,12 +44,20 @@ public class OrganizerServiceService implements OrganizerServiceUseCase {
         Long organizerId = extractOrganizerId(organizerService);
         Long serviceId = extractServiceId(organizerService);
 
-        organizerServicePersistencePort.findByOrganizerIdUserAndServiceId(organizerId, serviceId)
-                .ifPresent(existingAssignment -> {
-                    throw new DuplicateResourceException(
-                            ORGANIZER_SERVICE_ALREADY_EXISTS.formatted(organizerId, serviceId)
-                    );
-                });
+        OrganizerService existingAssignment = organizerServicePersistencePort
+                .findByOrganizerIdUserAndServiceId(organizerId, serviceId)
+                .orElse(null);
+
+        if (existingAssignment != null) {
+            if (Boolean.FALSE.equals(existingAssignment.getEnabled())) {
+                existingAssignment.setEnabled(true);
+                return organizerServicePersistencePort.save(existingAssignment);
+            }
+
+            throw new DuplicateResourceException(
+                    ORGANIZER_SERVICE_ALREADY_EXISTS.formatted(organizerId, serviceId)
+            );
+        }
 
         Organizer organizer = organizerPersistencePort.findById(organizerId)
                 .orElseThrow(() -> new ResourceNotFoundException(ORGANIZER_NOT_FOUND_WITH_ID + organizerId));
@@ -61,6 +69,7 @@ public class OrganizerServiceService implements OrganizerServiceUseCase {
 
         organizerService.setOrganizer(organizer);
         organizerService.setService(service);
+        organizerService.setEnabled(true);
 
         return organizerServicePersistencePort.save(organizerService);
     }
@@ -68,13 +77,16 @@ public class OrganizerServiceService implements OrganizerServiceUseCase {
     @Override
     public void deleteOrganizerService(Long id) {
         OrganizerService organizerService = findOrganizerServiceOrThrow(id);
-        organizerServicePersistencePort.delete(organizerService);
+        organizerService.setEnabled(false);
+        organizerServicePersistencePort.save(organizerService);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<OrganizerService> getAllOrganizerServices() {
-        return organizerServicePersistencePort.findAll();
+        return organizerServicePersistencePort.findAll().stream()
+                .filter(this::isCatalogActive)
+                .toList();
     }
 
     @Override
@@ -90,7 +102,9 @@ public class OrganizerServiceService implements OrganizerServiceUseCase {
         organizerPersistencePort.findById(organizerId)
                 .orElseThrow(() -> new ResourceNotFoundException(ORGANIZER_NOT_FOUND_WITH_ID + organizerId));
 
-        return organizerServicePersistencePort.findByOrganizerIdUser(organizerId);
+        return organizerServicePersistencePort.findByOrganizerIdUser(organizerId).stream()
+                .filter(this::isCatalogActive)
+                .toList();
     }
 
     @Override
@@ -99,7 +113,9 @@ public class OrganizerServiceService implements OrganizerServiceUseCase {
         servicePersistencePort.findById(serviceId)
                 .orElseThrow(() -> new ResourceNotFoundException(SERVICE_NOT_FOUND_WITH_ID + serviceId));
 
-        return organizerServicePersistencePort.findByServiceId(serviceId);
+        return organizerServicePersistencePort.findByServiceId(serviceId).stream()
+                .filter(this::isCatalogActive)
+                .toList();
     }
 
     private Long extractOrganizerId(OrganizerService organizerService) {
@@ -120,6 +136,10 @@ public class OrganizerServiceService implements OrganizerServiceUseCase {
         if (!Boolean.TRUE.equals(service.getAllowedForOrganizer())) {
             throw new IllegalArgumentException(SERVICE_NOT_ALLOWED_FOR_ORGANIZERS.formatted(service.getId()));
         }
+    }
+
+    private boolean isCatalogActive(OrganizerService organizerService) {
+        return !Boolean.FALSE.equals(organizerService.getEnabled());
     }
 
     private OrganizerService findOrganizerServiceOrThrow(Long id) {

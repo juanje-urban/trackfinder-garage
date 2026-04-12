@@ -17,5 +17,7 @@ public interface MessagePersistencePort {
 
     List<Message> findByReceiverIdOrderBySentAtAsc(Long receiverId);
 
+    List<Message> findByParticipantIdOrderBySentAtAsc(Long userId);
+
     List<Message> findConversation(Long userId1, Long userId2);
 }

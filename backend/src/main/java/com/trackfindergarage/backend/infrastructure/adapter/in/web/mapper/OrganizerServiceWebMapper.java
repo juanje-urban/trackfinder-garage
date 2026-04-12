@@ -37,6 +37,7 @@ public class OrganizerServiceWebMapper {
                 .serviceName(
                         organizerService.getService() != null ? organizerService.getService().getName() : null
                 )
+                .enabled(organizerService.getEnabled())
                 .build();
     }
 }

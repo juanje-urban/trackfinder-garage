@@ -56,6 +56,14 @@ public class OrganizerWorkspaceService implements OrganizerWorkspaceUseCase {
             "Organizer account is pending approval";
     private static final String EVENT_DOES_NOT_BELONG_TO_AUTHENTICATED_ORGANIZER =
             "Event does not belong to the authenticated organizer";
+    private static final String EVENT_TRACK_CANNOT_BE_CHANGED =
+            "Event track cannot be changed once the event has been created";
+    private static final String EVENT_DATE_CANNOT_BE_CHANGED =
+            "Event date cannot be changed once the event has been created";
+    private static final String ONLY_FUTURE_EVENTS_CAN_BE_DELETED =
+            "Only future events can be deleted";
+    private static final String EVENT_WITH_BOOKINGS_CANNOT_BE_DELETED =
+            "Event cannot be deleted while it already has bookings";
     private static final String ORGANIZER_SERVICE_DOES_NOT_BELONG_TO_AUTHENTICATED_ORGANIZER =
             "Organizer service does not belong to the authenticated organizer";
     private static final String ORGANIZER_SERVICE_IN_USE_BY_FUTURE_EVENTS =
@@ -136,8 +144,8 @@ public class OrganizerWorkspaceService implements OrganizerWorkspaceUseCase {
             throw new AccessDeniedException(ORGANIZER_SERVICE_DOES_NOT_BELONG_TO_AUTHENTICATED_ORGANIZER);
         }
 
-        boolean attachedToFutureEvents = eventServicePersistencePort.findByOrganizerServiceId(organizerServiceId)
-                .stream()
+        List<EventService> attachedEventServices = eventServicePersistencePort.findByOrganizerServiceId(organizerServiceId);
+        boolean attachedToFutureEvents = attachedEventServices.stream()
                 .map(EventService::getEvent)
                 .filter(Objects::nonNull)
                 .anyMatch(event -> event.getEventDate() != null && event.getEventDate().isAfter(LocalDate.now()));
@@ -168,9 +176,31 @@ public class OrganizerWorkspaceService implements OrganizerWorkspaceUseCase {
 
         Event existingEvent = eventUseCase.getEventById(eventId);
         ensureEventBelongsToOrganizer(existingEvent, organizer);
+        validateEditableEventFields(existingEvent, draft);
 
         eventUseCase.updateEvent(eventId, buildEventDomain(organizer.getIdUser(), draft));
         syncEventServices(eventId, draft.services());
+
+        return buildWorkspaceSnapshot(organizer);
+    }
+
+    @Override
+    public OrganizerWorkspaceSnapshot deleteEvent(String authenticatedEmail, Long eventId) {
+        Organizer organizer = loadEnabledOrganizer(authenticatedEmail);
+        Event existingEvent = eventUseCase.getEventById(eventId);
+        ensureEventBelongsToOrganizer(existingEvent, organizer);
+
+        if (existingEvent.getEventDate() == null || !existingEvent.getEventDate().isAfter(LocalDate.now())) {
+            throw new IllegalArgumentException(ONLY_FUTURE_EVENTS_CAN_BE_DELETED);
+        }
+
+        if (eventBookingPersistencePort.countByEventId(eventId) > 0) {
+            throw new ConflictException(EVENT_WITH_BOOKINGS_CANNOT_BE_DELETED);
+        }
+
+        eventServiceUseCase.getEventServicesByEventId(eventId)
+                .forEach(eventService -> eventServiceUseCase.deleteEventService(eventService.getId()));
+        eventUseCase.deleteEvent(eventId);
 
         return buildWorkspaceSnapshot(organizer);
     }
@@ -209,6 +239,7 @@ public class OrganizerWorkspaceService implements OrganizerWorkspaceUseCase {
                 .toList();
 
         Map<Long, List<EventService>> eventServicesByEventId = new HashMap<>();
+        Map<Long, Set<Long>> bookedEventServiceIdsByEventId = new HashMap<>();
         List<OrganizerWorkspaceEventStatsView> eventStats = new ArrayList<>();
         BigDecimal totalBaseRevenue = BigDecimal.ZERO;
         BigDecimal totalServiceRevenue = BigDecimal.ZERO;
@@ -223,6 +254,7 @@ public class OrganizerWorkspaceService implements OrganizerWorkspaceUseCase {
         for (Event event : events) {
             List<EventService> eventServices = eventServiceUseCase.getEventServicesByEventId(event.getId());
             eventServicesByEventId.put(event.getId(), eventServices);
+            bookedEventServiceIdsByEventId.put(event.getId(), findBookedEventServiceIds(event.getId()));
 
             OrganizerWorkspaceEventStatsView eventStat = buildEventStats(event);
             eventStats.add(eventStat);
@@ -250,6 +282,7 @@ public class OrganizerWorkspaceService implements OrganizerWorkspaceUseCase {
                 trackServices,
                 events,
                 eventServicesByEventId,
+                bookedEventServiceIdsByEventId,
                 new OrganizerWorkspaceStatsView(
                         totalBaseRevenue,
                         totalServiceRevenue,
@@ -350,6 +383,16 @@ public class OrganizerWorkspaceService implements OrganizerWorkspaceUseCase {
         }
     }
 
+    private void validateEditableEventFields(Event existingEvent, OrganizerEventDraft draft) {
+        if (existingEvent.getTrack() != null && !Objects.equals(existingEvent.getTrack().getId(), draft.trackId())) {
+            throw new ConflictException(EVENT_TRACK_CANNOT_BE_CHANGED);
+        }
+
+        if (!Objects.equals(existingEvent.getEventDate(), draft.eventDate())) {
+            throw new ConflictException(EVENT_DATE_CANNOT_BE_CHANGED);
+        }
+    }
+
     private void validateEventServiceDrafts(List<OrganizerEventServiceDraft> drafts) {
         Set<String> seenKeys = new HashSet<>();
 
@@ -378,56 +421,11 @@ public class OrganizerWorkspaceService implements OrganizerWorkspaceUseCase {
     private void syncEventServices(Long eventId, List<OrganizerEventServiceDraft> requestedServices) {
         List<OrganizerEventServiceDraft> normalizedRequestedServices = normalizeDraftServices(requestedServices);
         List<EventService> existingServices = eventServiceUseCase.getEventServicesByEventId(eventId);
+        Map<String, OrganizerEventServiceDraft> requestedByKey = indexRequestedServices(normalizedRequestedServices);
+        Map<String, EventService> existingByKey = indexExistingServices(existingServices);
 
-        Map<String, OrganizerEventServiceDraft> requestedByKey = new HashMap<>();
-        for (OrganizerEventServiceDraft requestedService : normalizedRequestedServices) {
-            requestedByKey.put(
-                    toServiceKey(requestedService.trackServiceId(), requestedService.organizerServiceId()),
-                    requestedService
-            );
-        }
-
-        Map<String, EventService> existingByKey = new HashMap<>();
-        for (EventService existingService : existingServices) {
-            existingByKey.put(
-                    toServiceKey(
-                            existingService.getTrackService() != null ? existingService.getTrackService().getId() : null,
-                            existingService.getOrganizerService() != null ? existingService.getOrganizerService().getId() : null
-                    ),
-                    existingService
-            );
-        }
-
-        for (OrganizerEventServiceDraft requestedService : normalizedRequestedServices) {
-            String key = toServiceKey(requestedService.trackServiceId(), requestedService.organizerServiceId());
-            EventService existingService = existingByKey.get(key);
-
-            if (existingService == null) {
-                eventServiceUseCase.createEventService(buildEventServiceDomain(eventId, requestedService));
-                continue;
-            }
-
-            if (existingService.getPrice().compareTo(requestedService.price()) != 0) {
-                eventServiceUseCase.updateEventService(existingService.getId(), buildEventServiceDomain(eventId, requestedService));
-            }
-        }
-
-        for (EventService existingService : existingServices) {
-            String key = toServiceKey(
-                    existingService.getTrackService() != null ? existingService.getTrackService().getId() : null,
-                    existingService.getOrganizerService() != null ? existingService.getOrganizerService().getId() : null
-            );
-
-            if (requestedByKey.containsKey(key)) {
-                continue;
-            }
-
-            if (!eventBookingServicePersistencePort.findByEventServiceId(existingService.getId()).isEmpty()) {
-                throw new ConflictException(EVENT_SERVICE_ALREADY_HAS_BOOKINGS);
-            }
-
-            eventServiceUseCase.deleteEventService(existingService.getId());
-        }
+        synchronizeRequestedServices(eventId, normalizedRequestedServices, existingByKey);
+        removeUnselectedServices(existingServices, requestedByKey);
     }
 
     private EventService buildEventServiceDomain(Long eventId, OrganizerEventServiceDraft draft) {
@@ -460,6 +458,91 @@ public class OrganizerWorkspaceService implements OrganizerWorkspaceUseCase {
         }
 
         return drafts.stream().filter(Objects::nonNull).toList();
+    }
+
+    private Map<String, OrganizerEventServiceDraft> indexRequestedServices(List<OrganizerEventServiceDraft> requestedServices) {
+        Map<String, OrganizerEventServiceDraft> requestedByKey = new HashMap<>();
+
+        for (OrganizerEventServiceDraft requestedService : requestedServices) {
+            requestedByKey.put(toServiceKey(requestedService), requestedService);
+        }
+
+        return requestedByKey;
+    }
+
+    private Map<String, EventService> indexExistingServices(List<EventService> existingServices) {
+        Map<String, EventService> existingByKey = new HashMap<>();
+
+        for (EventService existingService : existingServices) {
+            existingByKey.put(toServiceKey(existingService), existingService);
+        }
+
+        return existingByKey;
+    }
+
+    private void synchronizeRequestedServices(Long eventId,
+                                             List<OrganizerEventServiceDraft> requestedServices,
+                                             Map<String, EventService> existingByKey) {
+        for (OrganizerEventServiceDraft requestedService : requestedServices) {
+            synchronizeRequestedService(eventId, requestedService, existingByKey);
+        }
+    }
+
+    private void synchronizeRequestedService(Long eventId,
+                                            OrganizerEventServiceDraft requestedService,
+                                            Map<String, EventService> existingByKey) {
+        EventService existingService = existingByKey.get(toServiceKey(requestedService));
+
+        if (existingService == null) {
+            eventServiceUseCase.createEventService(buildEventServiceDomain(eventId, requestedService));
+            return;
+        }
+
+        if (existingService.getPrice().compareTo(requestedService.price()) != 0) {
+            eventServiceUseCase.updateEventService(existingService.getId(), buildEventServiceDomain(eventId, requestedService));
+        }
+    }
+
+    private void removeUnselectedServices(List<EventService> existingServices,
+                                          Map<String, OrganizerEventServiceDraft> requestedByKey) {
+        for (EventService existingService : existingServices) {
+            if (requestedByKey.containsKey(toServiceKey(existingService))) {
+                continue;
+            }
+
+            deleteEventServiceIfUnbooked(existingService);
+        }
+    }
+
+    private void deleteEventServiceIfUnbooked(EventService existingService) {
+        if (!eventBookingServicePersistencePort.findByEventServiceId(existingService.getId()).isEmpty()) {
+            throw new ConflictException(EVENT_SERVICE_ALREADY_HAS_BOOKINGS);
+        }
+
+        eventServiceUseCase.deleteEventService(existingService.getId());
+    }
+
+    private Set<Long> findBookedEventServiceIds(Long eventId) {
+        Set<Long> bookedEventServiceIds = new HashSet<>();
+
+        for (EventBookingService soldService : eventBookingServicePersistencePort.findByEventBookingEventId(eventId)) {
+            if (soldService.getEventService() != null && soldService.getEventService().getId() != null) {
+                bookedEventServiceIds.add(soldService.getEventService().getId());
+            }
+        }
+
+        return bookedEventServiceIds;
+    }
+
+    private String toServiceKey(OrganizerEventServiceDraft draft) {
+        return toServiceKey(draft.trackServiceId(), draft.organizerServiceId());
+    }
+
+    private String toServiceKey(EventService existingService) {
+        return toServiceKey(
+                existingService.getTrackService() != null ? existingService.getTrackService().getId() : null,
+                existingService.getOrganizerService() != null ? existingService.getOrganizerService().getId() : null
+        );
     }
 
     private String toServiceKey(Long trackServiceId, Long organizerServiceId) {

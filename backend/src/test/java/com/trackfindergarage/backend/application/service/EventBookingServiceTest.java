@@ -133,7 +133,7 @@ class EventBookingServiceTest {
 
         assertSame(persistedBooking, createdBooking);
         verify(eventBookingPersistencePort).save(any(EventBooking.class));
-        verify(eventBookingPersistencePort).save(argThat(savedBooking -> savedBooking.isVisible()));
+        verify(eventBookingPersistencePort).save(argThat(EventBooking::isVisible));
         verify(eventBookingServicePersistencePort).save(argThat(savedService ->
                 savedService.getEventBooking() == persistedBooking
                         && savedService.getEventService() == eventService

@@ -16,4 +16,5 @@ public class EventServiceResponse {
     private Long organizerServiceId;
     private String organizerServiceName;
     private BigDecimal price;
+    private Boolean hasBookings;
 }

@@ -40,3 +40,8 @@ export async function updateOrganizerEvent(
   )
   return response.data
 }
+
+export async function deleteOrganizerEvent(eventId: number): Promise<OrganizerWorkspace> {
+  const response = await api.delete<OrganizerWorkspace>(`/organizer-workspace/events/${eventId}`)
+  return response.data
+}

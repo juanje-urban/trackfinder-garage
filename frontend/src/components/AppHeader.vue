@@ -46,6 +46,7 @@ const roleLabel = computed(() => {
         <RouterLink class="nav-link" to="/">Home</RouterLink>
         <RouterLink class="nav-link" to="/tracks">Circuitos</RouterLink>
         <RouterLink class="nav-link" to="/events">Eventos</RouterLink>
+        <RouterLink v-if="auth.isAuthenticated.value" class="nav-link" to="/messages">Mensajes</RouterLink>
         <RouterLink v-if="isOrganizer" class="nav-link" to="/organizer">Organizaci&oacute;n</RouterLink>
         <RouterLink v-if="isAdmin" class="nav-link" to="/admin">Administraci&oacute;n</RouterLink>
         <RouterLink v-if="isStandardUser" class="nav-link" to="/profile">Mi perfil</RouterLink>

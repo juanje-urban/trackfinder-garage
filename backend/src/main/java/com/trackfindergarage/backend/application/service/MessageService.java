@@ -9,7 +9,10 @@ import com.trackfindergarage.backend.domain.model.User;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 
 @org.springframework.stereotype.Service
 @Transactional
@@ -17,6 +20,8 @@ public class MessageService implements MessageUseCase {
 
     private static final String MESSAGE_NOT_FOUND_WITH_ID = "Message not found with id: ";
     private static final String USER_NOT_FOUND_WITH_ID = "User not found with id: ";
+    private static final String USER_NOT_FOUND_WITH_EMAIL = "User not found with email: ";
+    private static final String AUTHENTICATED_EMAIL_REQUIRED = "Authenticated user email is required";
     private static final String SENDER_ID_REQUIRED = "Sender id is required";
     private static final String RECEIVER_ID_REQUIRED = "Receiver id is required";
     private static final String SUBJECT_REQUIRED = "Subject is required";
@@ -28,6 +33,8 @@ public class MessageService implements MessageUseCase {
             "Conversation requires two different users";
     private static final String ONLY_RECEIVER_CAN_CHANGE_READ_STATUS =
             "Only the receiver can change the read status of a message";
+    private static final String RECEIVER_ACCOUNT_IS_DISABLED =
+            "Receiver account must be active to receive new messages";
 
     private final MessagePersistencePort messagePersistencePort;
     private final UserPersistencePort userPersistencePort;
@@ -122,6 +129,68 @@ public class MessageService implements MessageUseCase {
         return messagePersistencePort.save(message);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<Message> getOwnMessages(String authenticatedEmail) {
+        User currentUser = loadAuthenticatedUser(authenticatedEmail);
+        return messagePersistencePort.findByParticipantIdOrderBySentAtAsc(currentUser.getId());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Message> getOwnConversation(String authenticatedEmail, Long counterpartUserId) {
+        User currentUser = loadAuthenticatedUser(authenticatedEmail);
+        validateConversationUsers(currentUser.getId(), counterpartUserId);
+        userPersistencePort.findById(counterpartUserId)
+                .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND_WITH_ID + counterpartUserId));
+
+        return messagePersistencePort.findConversation(currentUser.getId(), counterpartUserId);
+    }
+
+    @Override
+    public Message createOwnMessage(String authenticatedEmail, Long receiverId, String subject, String content) {
+        User sender = loadAuthenticatedUser(authenticatedEmail);
+        User receiver = userPersistencePort.findById(receiverId)
+                .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND_WITH_ID + receiverId));
+
+        if (!Boolean.TRUE.equals(receiver.getEnabled())) {
+            throw new IllegalArgumentException(RECEIVER_ACCOUNT_IS_DISABLED);
+        }
+
+        Message message = new Message();
+        message.setSender(sender);
+        message.setReceiver(receiver);
+        message.setSubject(subject);
+        message.setContent(content);
+
+        return createMessage(message);
+    }
+
+    @Override
+    public Message markOwnMessageAsRead(String authenticatedEmail, Long id) {
+        User currentUser = loadAuthenticatedUser(authenticatedEmail);
+        return markAsRead(id, currentUser.getId());
+    }
+
+    @Override
+    public Message markOwnMessageAsUnread(String authenticatedEmail, Long id) {
+        User currentUser = loadAuthenticatedUser(authenticatedEmail);
+        return markAsUnread(id, currentUser.getId());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<User> getAvailableRecipients(String authenticatedEmail) {
+        User currentUser = loadAuthenticatedUser(authenticatedEmail);
+
+        return userPersistencePort.findAll()
+                .stream()
+                .filter(user -> !Objects.equals(user.getId(), currentUser.getId()))
+                .filter(user -> Boolean.TRUE.equals(user.getEnabled()))
+                .sorted(Comparator.comparing(User::getDisplayName, String.CASE_INSENSITIVE_ORDER))
+                .toList();
+    }
+
     private void validateMessage(Message message) {
         if (message.getSender() == null || message.getSender().getId() == null) {
             throw new IllegalArgumentException(SENDER_ID_REQUIRED);
@@ -162,6 +231,16 @@ public class MessageService implements MessageUseCase {
         if (!message.getReceiver().getId().equals(userId)) {
             throw new IllegalArgumentException(ONLY_RECEIVER_CAN_CHANGE_READ_STATUS);
         }
+    }
+
+    private User loadAuthenticatedUser(String authenticatedEmail) {
+        if (authenticatedEmail == null || authenticatedEmail.isBlank()) {
+            throw new IllegalArgumentException(AUTHENTICATED_EMAIL_REQUIRED);
+        }
+
+        String normalizedEmail = authenticatedEmail.trim().toLowerCase(Locale.ROOT);
+        return userPersistencePort.findByEmail(normalizedEmail)
+                .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND_WITH_EMAIL + normalizedEmail));
     }
 
     private Long extractSenderId(Message message) {

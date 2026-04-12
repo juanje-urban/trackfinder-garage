@@ -28,16 +28,7 @@ import { isUserRole } from '@/utils/authRoles'
 import { toIsoDate } from '@/utils/date'
 import { formatCurrency, formatDisplayDate, formatLapTime } from '@/utils/format'
 
-type ProfileTab = 'reservas' | 'perfil' | 'vueltas' | 'mensajes'
-
-type MockConversation = {
-  id: string
-  counterpart: string
-  subject: string
-  excerpt: string
-  sentAt: string
-  unread: boolean
-}
+type ProfileTab = 'reservas' | 'perfil' | 'vueltas'
 
 type BookingSection = {
   id: 'future'
@@ -153,7 +144,6 @@ const tabItems: Array<{ id: ProfileTab; label: string }> = [
   { id: 'reservas', label: 'Reservas' },
   { id: 'perfil', label: 'Perfil' },
   { id: 'vueltas', label: 'Vueltas' },
-  { id: 'mensajes', label: 'Mensajes' },
 ]
 
 const bookingSections = computed<BookingSection[]>(() => [
@@ -165,36 +155,6 @@ const bookingSections = computed<BookingSection[]>(() => [
     allowCancellation: true,
   },
 ])
-
-const mockConversations: MockConversation[] = [
-  {
-    id: 'tracklimits',
-    counterpart: 'tracklimits.iberia',
-    subject: 'Consulta sobre boxes cubiertos',
-    excerpt:
-      'Te confirmamos que todavia quedan boxes cubiertos para la jornada de Jarama. Si quieres, te avisamos cuando se abra la reserva premium.',
-    sentAt: '2026-03-28',
-    unread: true,
-  },
-  {
-    id: 'apexhunter',
-    counterpart: 'apexhunter',
-    subject: 'Nos vemos en Guadix',
-    excerpt:
-      'He visto que tambien ruedas en Guadix. Si te apetece, compartimos box y revisamos presiones alli mismo.',
-    sentAt: '2026-03-21',
-    unread: false,
-  },
-  {
-    id: 'racingpro',
-    counterpart: 'racingpro',
-    subject: 'Recordatorio de briefing',
-    excerpt:
-      'El briefing obligatorio empezara a las 08:15 en la sala principal del paddock. Lleva pulsera identificativa y licencia si la tienes.',
-    sentAt: '2026-03-14',
-    unread: false,
-  },
-]
 
 onMounted(async () => {
   if (!isStandardUser.value) {
@@ -939,35 +899,6 @@ function resolveLapTimeDeleteError(requestError: unknown): string {
           </div>
         </section>
 
-        <section v-else class="panel-stack-lg">
-          <div class="panel-copy">
-            <p class="ui-eyebrow">Mensajes</p>
-            <h2 class="ui-title-section">Conversaciones</h2>
-            <p class="ui-copy-muted">
-              Este bloque esta mockeado temporalmente y se afinara cuando abordemos la mensajeria en
-              detalle.
-            </p>
-          </div>
-
-          <div class="profile-message-list">
-            <article
-              v-for="conversation in mockConversations"
-              :key="conversation.id"
-              class="profile-message-card panel panel-pad-lg panel-stack-sm"
-            >
-              <div class="profile-message-card__header">
-                <div class="panel-copy">
-                  <p class="ui-eyebrow">{{ conversation.counterpart }}</p>
-                  <h3 class="ui-title-card">{{ conversation.subject }}</h3>
-                </div>
-                <span v-if="conversation.unread" class="profile-message-card__badge">Nuevo</span>
-              </div>
-
-              <p class="ui-copy-body">{{ conversation.excerpt }}</p>
-              <p class="ui-copy-muted">{{ formatDisplayDate(conversation.sentAt) }}</p>
-            </article>
-          </div>
-        </section>
       </section>
     </template>
 
@@ -1010,8 +941,7 @@ function resolveLapTimeDeleteError(requestError: unknown): string {
 }
 
 .profile-booking-list,
-.profile-lap-list,
-.profile-message-list {
+.profile-lap-list {
   display: grid;
   gap: var(--space-md);
 }
@@ -1189,22 +1119,6 @@ function resolveLapTimeDeleteError(requestError: unknown): string {
   font-size: var(--fs-title-sm);
 }
 
-.profile-message-card__header {
-  display: flex;
-  align-items: start;
-  justify-content: space-between;
-  gap: var(--space-lg);
-}
-
-.profile-message-card__badge {
-  padding: 6px 10px;
-  border-radius: var(--radius-pill);
-  background: var(--success-surface);
-  color: var(--success-text);
-  font-size: var(--fs-caption);
-  font-weight: 700;
-}
-
 @media (max-width: 980px) {
   .profile-grid {
     grid-template-columns: 1fr;
@@ -1221,8 +1135,7 @@ function resolveLapTimeDeleteError(requestError: unknown): string {
 
 @media (max-width: 720px) {
   .profile-booking-card,
-  .profile-lap-card,
-  .profile-message-card__header {
+  .profile-lap-card {
     flex-direction: column;
     align-items: start;
   }

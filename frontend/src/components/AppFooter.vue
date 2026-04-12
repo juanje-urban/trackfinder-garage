@@ -25,6 +25,7 @@ const isAdmin = computed(() => isAdminRole(auth.session.value?.roleName))
         <RouterLink to="/">Home</RouterLink>
         <RouterLink to="/tracks">Circuitos</RouterLink>
         <RouterLink to="/events">Eventos</RouterLink>
+        <RouterLink v-if="auth.isAuthenticated.value" to="/messages">Mensajes</RouterLink>
         <RouterLink v-if="isOrganizer" to="/organizer">Organizaci&oacute;n</RouterLink>
         <RouterLink v-if="isAdmin" to="/admin">Administraci&oacute;n</RouterLink>
         <RouterLink v-if="isStandardUser" to="/profile">Mi perfil</RouterLink>

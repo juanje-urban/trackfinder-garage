@@ -327,30 +327,30 @@ public class DemoDataSeeder implements CommandLineRunner {
         }
     }
 
-    private void createOrganizer(String displayName,
-                                 String email,
-                                 String name,
-                                 String surname,
-                                 String legalName,
-                                 String cif,
-                                 boolean enabled,
-                                 Role organizerRole) {
-        Organizer existingOrganizer = organizerRepository.findByLegalName(legalName).orElse(null);
+    private void createOrganizer(OrganizerSeed organizerSeed, Role organizerRole) {
+        Organizer existingOrganizer = organizerRepository.findByLegalName(organizerSeed.legalName()).orElse(null);
         if (existingOrganizer != null) {
-            if (!Objects.equals(existingOrganizer.getEnabled(), enabled)) {
-                existingOrganizer.setEnabled(enabled);
+            if (!Objects.equals(existingOrganizer.getEnabled(), organizerSeed.enabled())) {
+                existingOrganizer.setEnabled(organizerSeed.enabled());
                 organizerRepository.save(existingOrganizer);
             }
             return;
         }
 
-        User user = createUser(displayName, email, name, surname, DEFAULT_ORGANIZER_LOGIN, organizerRole);
+        User user = createUser(
+                organizerSeed.displayName(),
+                organizerSeed.email(),
+                organizerSeed.name(),
+                organizerSeed.surname(),
+                DEFAULT_ORGANIZER_LOGIN,
+                organizerRole
+        );
 
         Organizer organizer = new Organizer();
         organizer.setUser(user);
-        organizer.setLegalName(legalName);
-        organizer.setCif(cif);
-        organizer.setEnabled(enabled);
+        organizer.setLegalName(organizerSeed.legalName());
+        organizer.setCif(organizerSeed.cif());
+        organizer.setEnabled(organizerSeed.enabled());
 
         organizerRepository.save(organizer);
     }
@@ -367,16 +367,7 @@ public class DemoDataSeeder implements CommandLineRunner {
     }
 
     private void seedOrganizers(Role organizerRole) {
-        organizerSeeds().forEach(organizerSeed -> createOrganizer(
-                organizerSeed.displayName(),
-                organizerSeed.email(),
-                organizerSeed.name(),
-                organizerSeed.surname(),
-                organizerSeed.legalName(),
-                organizerSeed.cif(),
-                organizerSeed.enabled(),
-                organizerRole
-        ));
+        organizerSeeds().forEach(organizerSeed -> createOrganizer(organizerSeed, organizerRole));
     }
 
     private void seedTracks() {
@@ -1864,12 +1855,20 @@ public class DemoDataSeeder implements CommandLineRunner {
         Service service = findServiceByNameOrThrow(serviceName);
 
         if (organizerServiceRepository.findByOrganizerIdUserAndServiceId(organizer.getIdUser(), service.getId()).isPresent()) {
+            organizerServiceRepository.findByOrganizerIdUserAndServiceId(organizer.getIdUser(), service.getId())
+                    .ifPresent(existingOrganizerService -> {
+                        if (!Boolean.TRUE.equals(existingOrganizerService.getEnabled())) {
+                            existingOrganizerService.setEnabled(true);
+                            organizerServiceRepository.save(existingOrganizerService);
+                        }
+                    });
             return;
         }
 
         OrganizerService organizerService = new OrganizerService();
         organizerService.setOrganizer(organizer);
         organizerService.setService(service);
+        organizerService.setEnabled(true);
         organizerServiceRepository.save(organizerService);
     }
 

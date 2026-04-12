@@ -32,4 +32,7 @@ public class OrganizerService {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "id_service", nullable = false)
     private Service service;
+
+    @Column(name = "enabled")
+    private Boolean enabled;
 }

@@ -12,4 +12,5 @@ public class OrganizerServiceResponse {
     private String organizerLegalName;
     private Long serviceId;
     private String serviceName;
+    private Boolean enabled;
 }

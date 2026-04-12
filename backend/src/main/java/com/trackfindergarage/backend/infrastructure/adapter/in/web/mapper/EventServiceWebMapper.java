@@ -23,6 +23,10 @@ public class EventServiceWebMapper {
     }
 
     public EventServiceResponse toResponse(EventService eventService) {
+        return toResponse(eventService, false);
+    }
+
+    public EventServiceResponse toResponse(EventService eventService, boolean hasBookings) {
         return EventServiceResponse.builder()
                 .id(eventService.getId())
                 .eventId(eventService.getEvent() != null ? eventService.getEvent().getId() : null)
@@ -41,6 +45,7 @@ public class EventServiceWebMapper {
                                 : null
                 )
                 .price(eventService.getPrice())
+                .hasBookings(hasBookings)
                 .build();
     }
 
