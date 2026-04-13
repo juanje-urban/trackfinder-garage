@@ -19,7 +19,7 @@ const router = createRouter({
     { path: '/events/:id', name: 'event-detail', component: EventDetailView },
     { path: '/tracks', name: 'tracks', component: TracksView },
     { path: '/messages', name: 'messages', component: MessagesView, meta: { requiresAuth: true } },
-    { path: '/profile', name: 'profile', component: UserProfileView, meta: { requiresUser: true } },
+    { path: '/profile', name: 'profile', component: UserProfileView, meta: { requiresProfile: true } },
     { path: '/organizer', name: 'organizer', component: OrganizerView, meta: { requiresOrganizer: true } },
     { path: '/admin', name: 'admin', component: AdminView, meta: { requiresAdmin: true } },
     { path: '/profiles/:displayName', name: 'public-profile', component: PublicUserProfileView },
@@ -40,6 +40,14 @@ router.beforeEach((to) => {
   }
 
   if (to.meta.requiresUser && !isUserRole(session?.roleName)) {
+    return { name: 'home' }
+  }
+
+  if (to.meta.requiresProfile && !session) {
+    return { name: 'home' }
+  }
+
+  if (to.meta.requiresProfile && !isUserRole(session?.roleName) && !isOrganizerRole(session?.roleName)) {
     return { name: 'home' }
   }
 

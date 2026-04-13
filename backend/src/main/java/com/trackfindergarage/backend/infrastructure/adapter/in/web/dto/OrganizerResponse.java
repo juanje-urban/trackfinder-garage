@@ -1,5 +1,7 @@
 package com.trackfindergarage.backend.infrastructure.adapter.in.web.dto;
 
+import java.time.LocalDateTime;
+
 import lombok.Builder;
 import lombok.Getter;
 
@@ -14,8 +16,10 @@ public class OrganizerResponse {
     private String surname;
     private String address;
     private String phone;
+    private LocalDateTime created;
     private Boolean userEnabled;
     private Long roleId;
+    private String roleName;
 
     //Atributos exclusivos de los organizadores
     private String legalName;

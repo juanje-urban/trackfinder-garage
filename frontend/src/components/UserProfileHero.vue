@@ -2,6 +2,10 @@
 import { Mail } from 'lucide-vue-next'
 import profileHeroBackground from '@/assets/profile/profile_hero.jpg'
 
+const emit = defineEmits<{
+  (event: 'email-action'): void
+}>()
+
 withDefaults(
   defineProps<{
     displayName: string
@@ -53,6 +57,7 @@ withDefaults(
           type="button"
           aria-label="Contacto por correo proximamente"
           title="Contacto por correo proximamente"
+          @click="emit('email-action')"
         >
           <Mail :size="18" aria-hidden="true" />
         </button>

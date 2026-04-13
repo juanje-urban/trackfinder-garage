@@ -6,9 +6,11 @@ import logoUrl from '@/assets/tfg_logo.svg'
 import { isAdminRole, isOrganizerRole, isUserRole } from '@/utils/authRoles'
 
 const auth = useAuth()
-const isStandardUser = computed(() => isUserRole(auth.session.value?.roleName))
 const isOrganizer = computed(() => isOrganizerRole(auth.session.value?.roleName))
 const isAdmin = computed(() => isAdminRole(auth.session.value?.roleName))
+const canAccessOwnProfile = computed(
+  () => isUserRole(auth.session.value?.roleName) || isOrganizerRole(auth.session.value?.roleName),
+)
 </script>
 
 <template>
@@ -28,7 +30,7 @@ const isAdmin = computed(() => isAdminRole(auth.session.value?.roleName))
         <RouterLink v-if="auth.isAuthenticated.value" to="/messages">Mensajes</RouterLink>
         <RouterLink v-if="isOrganizer" to="/organizer">Organizaci&oacute;n</RouterLink>
         <RouterLink v-if="isAdmin" to="/admin">Administraci&oacute;n</RouterLink>
-        <RouterLink v-if="isStandardUser" to="/profile">Mi perfil</RouterLink>
+        <RouterLink v-if="canAccessOwnProfile" to="/profile">Mi perfil</RouterLink>
         <a href="#">Politica de privacidad</a>
         <a href="#">Soporte</a>
       </nav>

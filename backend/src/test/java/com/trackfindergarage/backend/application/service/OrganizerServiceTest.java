@@ -5,6 +5,7 @@ import com.trackfindergarage.backend.application.port.out.RolePersistencePort;
 import com.trackfindergarage.backend.application.port.out.UserPersistencePort;
 import com.trackfindergarage.backend.common.exception.DuplicateResourceException;
 import com.trackfindergarage.backend.common.exception.ResourceNotFoundException;
+import com.trackfindergarage.backend.application.port.in.UpdateCurrentOrganizerProfileCommand;
 import com.trackfindergarage.backend.domain.model.Organizer;
 import com.trackfindergarage.backend.domain.model.Role;
 import com.trackfindergarage.backend.domain.model.User;
@@ -129,6 +130,62 @@ class OrganizerServiceTest {
         assertEquals("New Legal", existingOrganizer.getLegalName());
         assertEquals("B99999999", existingOrganizer.getCif());
         verify(userPersistencePort).save(existingUser);
+        verify(organizerPersistencePort).save(existingOrganizer);
+    }
+
+    @Test
+    void getCurrentOrganizerReturnsOrganizerForAuthenticatedEmail() {
+        Organizer existingOrganizer = organizerWithUser(5L, "promoter");
+        existingOrganizer.getUser().setEmail("promoter@example.com");
+
+        when(userPersistencePort.findByEmail("promoter@example.com"))
+                .thenReturn(Optional.of(existingOrganizer.getUser()));
+        when(organizerPersistencePort.findById(5L)).thenReturn(Optional.of(existingOrganizer));
+
+        Organizer currentOrganizer = organizerService.getCurrentOrganizer("promoter@example.com");
+
+        assertSame(existingOrganizer, currentOrganizer);
+    }
+
+    @Test
+    void updateCurrentOrganizerProfileCopiesEditableFieldsAndPassword() {
+        Organizer existingOrganizer = organizerWithUser(5L, "promoter");
+        existingOrganizer.getUser().setEmail("promoter@example.com");
+
+        when(userPersistencePort.findByEmail("promoter@example.com"))
+                .thenReturn(Optional.of(existingOrganizer.getUser()));
+        when(organizerPersistencePort.findById(5L)).thenReturn(Optional.of(existingOrganizer));
+        when(userPersistencePort.findByEmail("new@example.com")).thenReturn(Optional.empty());
+        when(userPersistencePort.findByPhone("777")).thenReturn(Optional.empty());
+        when(organizerPersistencePort.findByLegalName("New Legal")).thenReturn(Optional.empty());
+        when(organizerPersistencePort.findByCif("B99999999")).thenReturn(Optional.empty());
+        when(passwordEncoder.encode("new-secret")).thenReturn("hashed-secret");
+        when(organizerPersistencePort.save(existingOrganizer)).thenReturn(existingOrganizer);
+
+        Organizer updatedOrganizer = organizerService.updateCurrentOrganizerProfile(
+                "promoter@example.com",
+                new UpdateCurrentOrganizerProfileCommand(
+                        "New",
+                        "Organizer",
+                        "new@example.com",
+                        "New address",
+                        "777",
+                        "New Legal",
+                        "B99999999",
+                        "new-secret"
+                )
+        );
+
+        assertSame(existingOrganizer, updatedOrganizer);
+        assertEquals("New", existingOrganizer.getUser().getName());
+        assertEquals("Organizer", existingOrganizer.getUser().getSurname());
+        assertEquals("new@example.com", existingOrganizer.getUser().getEmail());
+        assertEquals("New address", existingOrganizer.getUser().getAddress());
+        assertEquals("777", existingOrganizer.getUser().getPhone());
+        assertEquals("hashed-secret", existingOrganizer.getUser().getPasswordHash());
+        assertEquals("New Legal", existingOrganizer.getLegalName());
+        assertEquals("B99999999", existingOrganizer.getCif());
+        verify(userPersistencePort).save(existingOrganizer.getUser());
         verify(organizerPersistencePort).save(existingOrganizer);
     }
 

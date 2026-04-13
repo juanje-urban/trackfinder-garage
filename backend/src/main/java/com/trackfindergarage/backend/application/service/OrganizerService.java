@@ -1,6 +1,7 @@
 package com.trackfindergarage.backend.application.service;
 
 import com.trackfindergarage.backend.application.port.in.OrganizerUseCase;
+import com.trackfindergarage.backend.application.port.in.UpdateCurrentOrganizerProfileCommand;
 import com.trackfindergarage.backend.application.port.out.OrganizerPersistencePort;
 import com.trackfindergarage.backend.application.port.out.RolePersistencePort;
 import com.trackfindergarage.backend.application.port.out.UserPersistencePort;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Locale;
 
 @Service
 @Transactional
@@ -65,6 +67,48 @@ public class OrganizerService implements OrganizerUseCase {
         organizer.setEnabled(false);
 
         return organizerPersistencePort.save(organizer);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Organizer getCurrentOrganizer(String authenticatedEmail) {
+        return findOrganizerByAuthenticatedEmail(authenticatedEmail);
+    }
+
+    @Override
+    public Organizer updateCurrentOrganizerProfile(String authenticatedEmail,
+                                                   UpdateCurrentOrganizerProfileCommand command) {
+        Organizer existingOrganizer = findOrganizerByAuthenticatedEmail(authenticatedEmail);
+        User existingUser = existingOrganizer.getUser();
+
+        String normalizedName = normalizeText(command.name());
+        String normalizedSurname = normalizeText(command.surname());
+        String normalizedEmail = normalizeEmail(command.email());
+        String normalizedAddress = normalizeText(command.address());
+        String normalizedPhone = normalizeText(command.phone());
+        String normalizedLegalName = normalizeText(command.legalName());
+        String normalizedCif = normalizeText(command.cif());
+
+        validateEmailForUpdate(existingUser.getId(), normalizedEmail);
+        validatePhoneForUpdate(existingUser.getId(), normalizedPhone);
+        validateLegalNameForUpdate(existingOrganizer.getIdUser(), normalizedLegalName);
+        validateCifForUpdate(existingOrganizer.getIdUser(), normalizedCif);
+
+        existingUser.setName(normalizedName);
+        existingUser.setSurname(normalizedSurname);
+        existingUser.setEmail(normalizedEmail);
+        existingUser.setAddress(normalizedAddress);
+        existingUser.setPhone(normalizedPhone);
+
+        if (command.rawPassword() != null && !command.rawPassword().isBlank()) {
+            existingUser.setPasswordHash(passwordEncoder.encode(command.rawPassword().trim()));
+        }
+
+        existingOrganizer.setLegalName(normalizedLegalName);
+        existingOrganizer.setCif(normalizedCif);
+
+        userPersistencePort.save(existingUser);
+        return organizerPersistencePort.save(existingOrganizer);
     }
 
     @Override
@@ -218,5 +262,23 @@ public class OrganizerService implements OrganizerUseCase {
     private Organizer findOrganizerOrThrow(Long id) {
         return organizerPersistencePort.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ORGANIZER_NOT_FOUND_WITH_ID + id));
+    }
+
+    private Organizer findOrganizerByAuthenticatedEmail(String authenticatedEmail) {
+        String normalizedEmail = normalizeEmail(authenticatedEmail);
+
+        User user = userPersistencePort.findByEmail(normalizedEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + normalizedEmail));
+
+        return organizerPersistencePort.findById(user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException(ORGANIZER_NOT_FOUND_WITH_ID + user.getId()));
+    }
+
+    private String normalizeText(String value) {
+        return value == null ? null : value.trim();
+    }
+
+    private String normalizeEmail(String value) {
+        return value == null ? null : value.trim().toLowerCase(Locale.ROOT);
     }
 }

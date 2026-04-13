@@ -12,6 +12,10 @@ import {
   updateOwnEventBookingVisibility,
 } from '@/services/eventBookingService'
 import {
+  getCurrentOrganizerProfile,
+  updateCurrentOrganizerProfile,
+} from '@/services/organizerService'
+import {
   createCurrentUserLapTime,
   deleteCurrentUserLapTime,
   getCurrentUserLapTimes,
@@ -20,11 +24,12 @@ import { getTrackRanking, getTracks } from '@/services/trackService'
 import { getCurrentUserProfile, updateCurrentUserProfile } from '@/services/userService'
 import type { EventBooking } from '@/types/eventBooking'
 import type { LapTime } from '@/types/lapTime'
+import type { OrganizerProfile } from '@/types/organizer'
 import type { TrackRecord } from '@/types/trackRecord'
 import type { Track } from '@/types/track'
 import type { UserProfile } from '@/types/user'
 import { resolveApiErrorMessage } from '@/utils/apiErrors'
-import { isUserRole } from '@/utils/authRoles'
+import { isOrganizerRole, isUserRole } from '@/utils/authRoles'
 import { toIsoDate } from '@/utils/date'
 import { formatCurrency, formatDisplayDate, formatLapTime } from '@/utils/format'
 
@@ -47,6 +52,7 @@ const error = ref('')
 const activeTab = ref<ProfileTab>('reservas')
 
 const profile = ref<UserProfile | null>(null)
+const organizerProfile = ref<OrganizerProfile | null>(null)
 const bookings = ref<EventBooking[]>([])
 const lapTimes = ref<LapTime[]>([])
 const tracks = ref<Track[]>([])
@@ -69,6 +75,8 @@ const profileForm = reactive({
   email: '',
   address: '',
   phone: '',
+  legalName: '',
+  cif: '',
   password: '',
   passwordConfirmation: '',
 })
@@ -81,6 +89,7 @@ const lapForm = reactive({
 })
 
 const isStandardUser = computed(() => isUserRole(auth.session.value?.roleName))
+const isOrganizerAccount = computed(() => isOrganizerRole(auth.session.value?.roleName))
 
 const todayIso = computed(() => toIsoDate(new Date()))
 const cancellationCutoffIso = computed(() => {
@@ -140,11 +149,15 @@ const poleCount = computed(() => {
   ).length
 })
 
-const tabItems: Array<{ id: ProfileTab; label: string }> = [
-  { id: 'reservas', label: 'Reservas' },
-  { id: 'perfil', label: 'Perfil' },
-  { id: 'vueltas', label: 'Vueltas' },
-]
+const tabItems = computed<Array<{ id: ProfileTab; label: string }>>(() =>
+  isOrganizerAccount.value
+    ? [{ id: 'perfil', label: 'Perfil' }]
+    : [
+        { id: 'reservas', label: 'Reservas' },
+        { id: 'perfil', label: 'Perfil' },
+        { id: 'vueltas', label: 'Vueltas' },
+      ],
+)
 
 const bookingSections = computed<BookingSection[]>(() => [
   {
@@ -157,9 +170,9 @@ const bookingSections = computed<BookingSection[]>(() => [
 ])
 
 onMounted(async () => {
-  if (!isStandardUser.value) {
+  if (!isStandardUser.value && !isOrganizerAccount.value) {
     loading.value = false
-    error.value = 'Esta area esta reservada para usuarios con cuenta estandar.'
+    error.value = 'Esta area esta reservada para usuarios y organizadores con sesion iniciada.'
     return
   }
 
@@ -171,6 +184,18 @@ async function loadProfilePage() {
   error.value = ''
 
   try {
+    if (isOrganizerAccount.value) {
+      activeTab.value = 'perfil'
+      organizerProfile.value = await getCurrentOrganizerProfile()
+      profile.value = null
+      bookings.value = []
+      lapTimes.value = []
+      tracks.value = []
+      trackRankings.value = {}
+      syncOrganizerProfileForm(organizerProfile.value)
+      return
+    }
+
     const [profileResult, bookingsResult, lapTimesResult, tracksResult] = await Promise.all([
       getCurrentUserProfile(),
       getCurrentUserEventBookings(),
@@ -178,11 +203,12 @@ async function loadProfilePage() {
       getTracks(),
     ])
 
+    organizerProfile.value = null
     profile.value = profileResult
     bookings.value = bookingsResult
     lapTimes.value = lapTimesResult
     tracks.value = tracksResult
-    syncProfileForm(profileResult)
+    syncUserProfileForm(profileResult)
     await refreshTrackRankings(lapTimesResult)
   } catch {
     error.value = 'No se pudo cargar tu perfil.'
@@ -210,32 +236,56 @@ async function refreshTrackRankings(sourceLapTimes: LapTime[]) {
   )
 }
 
-function syncProfileForm(nextProfile: UserProfile) {
+function syncUserProfileForm(nextProfile: UserProfile) {
   profileForm.name = nextProfile.name
   profileForm.surname = nextProfile.surname
   profileForm.email = nextProfile.email
   profileForm.address = nextProfile.address
   profileForm.phone = nextProfile.phone
+  profileForm.legalName = ''
+  profileForm.cif = ''
+  profileForm.password = ''
+  profileForm.passwordConfirmation = ''
+}
+
+function syncOrganizerProfileForm(nextProfile: OrganizerProfile) {
+  profileForm.name = nextProfile.name
+  profileForm.surname = nextProfile.surname
+  profileForm.email = nextProfile.email
+  profileForm.address = nextProfile.address
+  profileForm.phone = nextProfile.phone
+  profileForm.legalName = nextProfile.legalName
+  profileForm.cif = nextProfile.cif
   profileForm.password = ''
   profileForm.passwordConfirmation = ''
 }
 
 function startProfileEdit() {
-  if (!profile.value) {
+  if (!profile.value && !organizerProfile.value) {
     return
   }
 
-  syncProfileForm(profile.value)
+  if (isOrganizerAccount.value && organizerProfile.value) {
+    syncOrganizerProfileForm(organizerProfile.value)
+  } else if (profile.value) {
+    syncUserProfileForm(profile.value)
+  }
+
   profileError.value = ''
   profileEditMode.value = true
 }
 
 function cancelProfileEdit() {
-  if (!profile.value) {
+  if (!profile.value && !organizerProfile.value) {
     return
   }
 
-  syncProfileForm(profile.value)
+  if (isOrganizerAccount.value && organizerProfile.value) {
+    syncOrganizerProfileForm(organizerProfile.value)
+  } else if (profile.value) {
+    syncUserProfileForm(profile.value)
+  }
+
   profileError.value = ''
   profileEditMode.value = false
 }
@@ -314,6 +364,11 @@ async function toggleBookingVisibility(booking: EventBooking) {
 }
 
 async function saveProfile() {
+  if (isOrganizerAccount.value) {
+    await saveOrganizerProfile()
+    return
+  }
+
   if (!profile.value) {
     return
   }
@@ -347,7 +402,7 @@ async function saveProfile() {
     })
 
     profile.value = updatedProfile
-    syncProfileForm(updatedProfile)
+    syncUserProfileForm(updatedProfile)
     profileEditMode.value = false
 
     if (credentialChanged) {
@@ -361,6 +416,61 @@ async function saveProfile() {
     toast.showToast('Tus datos se han actualizado correctamente.')
   } catch (requestError) {
     profileError.value = resolveProfileError(requestError)
+  } finally {
+    profileSaving.value = false
+  }
+}
+
+async function saveOrganizerProfile() {
+  if (!organizerProfile.value) {
+    return
+  }
+
+  profileSaving.value = true
+  profileError.value = ''
+
+  const nextPassword = profileForm.password.trim()
+  const nextPasswordConfirmation = profileForm.passwordConfirmation.trim()
+
+  if ((nextPassword !== '' || nextPasswordConfirmation !== '') && nextPassword !== nextPasswordConfirmation) {
+    profileSaving.value = false
+    profileError.value = 'La confirmacion de la contrasena no coincide.'
+    return
+  }
+
+  try {
+    const nextName = profileForm.name.trim()
+    const nextSurname = profileForm.surname.trim()
+    const nextEmail = profileForm.email.trim().toLowerCase()
+    const credentialChanged =
+      nextEmail !== organizerProfile.value.email.toLowerCase() || nextPassword !== ''
+
+    const updatedProfile = await updateCurrentOrganizerProfile({
+      name: nextName,
+      surname: nextSurname,
+      email: nextEmail,
+      address: profileForm.address.trim(),
+      phone: profileForm.phone.trim(),
+      legalName: profileForm.legalName.trim(),
+      cif: profileForm.cif.trim(),
+      password: nextPassword || undefined,
+    })
+
+    organizerProfile.value = updatedProfile
+    syncOrganizerProfileForm(updatedProfile)
+    profileEditMode.value = false
+
+    if (credentialChanged) {
+      auth.clearSession()
+      toast.showToast('Tus credenciales se han actualizado. Inicia sesion de nuevo para continuar.')
+      await router.push('/')
+      auth.openAuthDialog()
+      return
+    }
+
+    toast.showToast('Tus datos se han actualizado correctamente.')
+  } catch (requestError) {
+    profileError.value = resolveOrganizerProfileError(requestError)
   } finally {
     profileSaving.value = false
   }
@@ -478,6 +588,18 @@ function resolveProfileError(requestError: unknown): string {
   })
 }
 
+function resolveOrganizerProfileError(requestError: unknown): string {
+  return resolveApiErrorMessage(requestError, {
+    fallback: 'No se pudo actualizar tu perfil de organizador.',
+    matches: [
+      { includes: 'email', message: 'Ya existe una cuenta registrada con ese correo.' },
+      { includes: 'phone', message: 'Ya existe una cuenta registrada con ese telefono.' },
+      { includes: 'legal name', message: 'Ya existe un organizador con esa razon social.' },
+      { includes: 'cif', message: 'Ya existe un organizador con ese CIF.' },
+    ],
+  })
+}
+
 function resolveLapTimeError(requestError: unknown): string {
   return resolveApiErrorMessage(requestError, {
     fallback: 'No se pudo registrar la vuelta.',
@@ -506,14 +628,24 @@ function resolveLapTimeDeleteError(requestError: unknown): string {
       <RouterLink class="action-button" to="/">Volver al inicio</RouterLink>
     </section>
 
-    <template v-else-if="profile">
+    <template v-else-if="profile || organizerProfile">
       <UserProfileHero
+        v-if="isStandardUser && profile"
         :display-name="profile.displayName"
         :completed-events="pastBookings.length"
         :visited-circuits="uniqueVisitedTracks"
         :top-five-lap-times="topFiveLapTimes"
         :pole-count="poleCount"
       />
+
+      <section v-else-if="organizerProfile" class="panel panel-pad-lg panel-stack-sm">
+        <p class="ui-eyebrow">Mi perfil</p>
+        <h1 class="ui-title-section">{{ organizerProfile.legalName }}</h1>
+        <p class="ui-copy-muted">
+          {{ organizerProfile.displayName }} ·
+          {{ organizerProfile.organizerEnabled ? 'Organizador validado' : 'Pendiente de validacion' }}
+        </p>
+      </section>
 
       <section class="profile-tabs panel panel-pad-lg panel-stack-lg">
         <div class="pill-tabs" role="tablist" aria-label="Navegacion del perfil">
@@ -706,7 +838,7 @@ function resolveLapTimeDeleteError(requestError: unknown): string {
               </div>
             </div>
 
-            <div class="profile-detail-grid">
+            <div v-if="profile" class="profile-detail-grid">
               <div class="profile-detail-item">
                 <span class="profile-detail-item__label">Alias</span>
                 <strong class="profile-detail-item__value">{{ profile.displayName }}</strong>
@@ -796,6 +928,124 @@ function resolveLapTimeDeleteError(requestError: unknown): string {
               <div v-else class="profile-detail-item profile-detail-item--full">
                 <span class="profile-detail-item__label">Contrasena</span>
                 <strong class="profile-detail-item__value">••••••••••••</strong>
+              </div>
+            </div>
+
+            <div v-else-if="organizerProfile" class="profile-detail-grid">
+              <div class="profile-detail-item">
+                <span class="profile-detail-item__label">Alias</span>
+                <strong class="profile-detail-item__value">{{ organizerProfile.displayName }}</strong>
+              </div>
+
+              <label v-if="profileEditMode" class="profile-detail-item">
+                <span class="profile-detail-item__label">Nombre</span>
+                <input v-model="profileForm.name" type="text" autocomplete="given-name" />
+              </label>
+              <div v-else class="profile-detail-item">
+                <span class="profile-detail-item__label">Nombre</span>
+                <strong class="profile-detail-item__value">{{ organizerProfile.name }}</strong>
+              </div>
+
+              <label v-if="profileEditMode" class="profile-detail-item">
+                <span class="profile-detail-item__label">Apellidos</span>
+                <input v-model="profileForm.surname" type="text" autocomplete="family-name" />
+              </label>
+              <div v-else class="profile-detail-item">
+                <span class="profile-detail-item__label">Apellidos</span>
+                <strong class="profile-detail-item__value">{{ organizerProfile.surname }}</strong>
+              </div>
+
+              <label v-if="profileEditMode" class="profile-detail-item">
+                <span class="profile-detail-item__label">Correo electr&oacute;nico</span>
+                <input v-model="profileForm.email" type="email" autocomplete="email" />
+              </label>
+              <div v-else class="profile-detail-item">
+                <span class="profile-detail-item__label">Correo electr&oacute;nico</span>
+                <strong class="profile-detail-item__value">{{ organizerProfile.email }}</strong>
+              </div>
+
+              <label v-if="profileEditMode" class="profile-detail-item">
+                <span class="profile-detail-item__label">Telefono</span>
+                <input v-model="profileForm.phone" type="tel" autocomplete="tel" />
+              </label>
+              <div v-else class="profile-detail-item">
+                <span class="profile-detail-item__label">Telefono</span>
+                <strong class="profile-detail-item__value">{{ organizerProfile.phone }}</strong>
+              </div>
+
+              <div class="profile-detail-item">
+                <span class="profile-detail-item__label">Alta</span>
+                <strong class="profile-detail-item__value">
+                  {{ organizerProfile.created ? formatDisplayDate(organizerProfile.created.slice(0, 10)) : 'Sin fecha' }}
+                </strong>
+              </div>
+
+              <div class="profile-detail-item">
+                <span class="profile-detail-item__label">Estado de cuenta</span>
+                <strong class="profile-detail-item__value">
+                  {{ organizerProfile.userEnabled ? 'Activa' : 'Inactiva' }}
+                </strong>
+              </div>
+
+              <label v-if="profileEditMode" class="profile-detail-item profile-detail-item--full">
+                <span class="profile-detail-item__label">Direccion</span>
+                <input
+                  v-model="profileForm.address"
+                  type="text"
+                  autocomplete="street-address"
+                />
+              </label>
+              <div v-else class="profile-detail-item profile-detail-item--full">
+                <span class="profile-detail-item__label">Direccion</span>
+                <strong class="profile-detail-item__value">{{ organizerProfile.address }}</strong>
+              </div>
+
+              <label v-if="profileEditMode" class="profile-detail-item">
+                <span class="profile-detail-item__label">Razon social</span>
+                <input v-model="profileForm.legalName" type="text" />
+              </label>
+              <div v-else class="profile-detail-item">
+                <span class="profile-detail-item__label">Razon social</span>
+                <strong class="profile-detail-item__value">{{ organizerProfile.legalName }}</strong>
+              </div>
+
+              <label v-if="profileEditMode" class="profile-detail-item">
+                <span class="profile-detail-item__label">CIF</span>
+                <input v-model="profileForm.cif" type="text" />
+              </label>
+              <div v-else class="profile-detail-item">
+                <span class="profile-detail-item__label">CIF</span>
+                <strong class="profile-detail-item__value">{{ organizerProfile.cif }}</strong>
+              </div>
+
+              <div class="profile-detail-item profile-detail-item--full">
+                <span class="profile-detail-item__label">Estado de organizador</span>
+                <strong class="profile-detail-item__value">
+                  {{ organizerProfile.organizerEnabled ? 'Validado' : 'Pendiente de validacion' }}
+                </strong>
+              </div>
+
+              <label v-if="profileEditMode" class="profile-detail-item profile-detail-item--full">
+                <span class="profile-detail-item__label">Nueva contrasena</span>
+                <input
+                  v-model="profileForm.password"
+                  type="password"
+                  autocomplete="new-password"
+                  placeholder="D&eacute;jala en blanco si no quieres cambiarla"
+                />
+              </label>
+              <label v-if="profileEditMode" class="profile-detail-item profile-detail-item--full">
+                <span class="profile-detail-item__label">Confirmar nueva contrasena</span>
+                <input
+                  v-model="profileForm.passwordConfirmation"
+                  type="password"
+                  autocomplete="new-password"
+                  placeholder="Repite la nueva contrasena"
+                />
+              </label>
+              <div v-else class="profile-detail-item profile-detail-item--full">
+                <span class="profile-detail-item__label">Contrasena</span>
+                <strong class="profile-detail-item__value">â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢</strong>
               </div>
             </div>
           </article>

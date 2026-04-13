@@ -8,6 +8,11 @@ public interface OrganizerUseCase {
 
     Organizer createOrganizer(Organizer organizer, String rawPassword);
 
+    Organizer getCurrentOrganizer(String authenticatedEmail);
+
+    Organizer updateCurrentOrganizerProfile(String authenticatedEmail,
+                                            UpdateCurrentOrganizerProfileCommand command);
+
     Organizer updateOrganizer(Long id, Organizer organizer);
 
     void deleteOrganizer(Long id);

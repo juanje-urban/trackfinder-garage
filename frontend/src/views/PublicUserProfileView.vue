@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
-import { RouterLink, useRoute } from 'vue-router'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 import RankingPositionBadge from '@/components/RankingPositionBadge.vue'
 import UserProfileHero from '@/components/UserProfileHero.vue'
+import { useAuth } from '@/composables/useAuth'
 import { getEventBookingsByUserId } from '@/services/eventBookingService'
 import { getLapTimesByUserId } from '@/services/lapTimeService'
 import { getTrackRanking } from '@/services/trackService'
@@ -27,6 +28,8 @@ type PublicLapTimeGroup = {
 const FULL_TRACK_RANKING_LIMIT = 100
 
 const route = useRoute()
+const router = useRouter()
+const auth = useAuth()
 
 const loading = ref(true)
 const error = ref('')
@@ -183,6 +186,24 @@ function resolveLapPosition(lapTime: LapTime): number | null {
 
   return matchingIndex >= 0 ? matchingIndex + 1 : null
 }
+
+function handleEmailAction() {
+  if (!publicProfile.value) {
+    return
+  }
+
+  if (!auth.isAuthenticated.value) {
+    auth.openAuthDialog()
+    return
+  }
+
+  void router.push({
+    name: 'messages',
+    query: {
+      receiverId: String(publicProfile.value.id),
+    },
+  })
+}
 </script>
 
 <template>
@@ -208,6 +229,7 @@ function resolveLapPosition(lapTime: LapTime): number | null {
         :top-five-lap-times="publicProfile.topFiveLapTimes"
         :pole-count="publicProfile.poleCount"
         :show-email-action="true"
+        @email-action="handleEmailAction"
       />
 
       <section class="public-profile-tabs panel panel-pad-lg panel-stack-lg">

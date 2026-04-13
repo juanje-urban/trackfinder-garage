@@ -1,21 +1,25 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 import { Bell, User } from 'lucide-vue-next'
 import { useAuth } from '@/composables/useAuth'
+import { useMessageInbox } from '@/composables/useMessageInbox'
 import logoUrl from '@/assets/tfg_logo.svg'
 import { isAdminRole, isOrganizerRole, isUserRole, normalizeRoleName } from '@/utils/authRoles'
 import { getDisplayNameMonogram } from '@/utils/identity'
 
 const auth = useAuth()
+const messageInbox = useMessageInbox()
 
 const profileMonogram = computed(() =>
   getDisplayNameMonogram(auth.session.value?.displayName ?? ''),
 )
 
-const isStandardUser = computed(() => isUserRole(auth.session.value?.roleName))
 const isOrganizer = computed(() => isOrganizerRole(auth.session.value?.roleName))
 const isAdmin = computed(() => isAdminRole(auth.session.value?.roleName))
+const canAccessOwnProfile = computed(
+  () => isUserRole(auth.session.value?.roleName) || isOrganizerRole(auth.session.value?.roleName),
+)
 
 const roleLabel = computed(() => {
   const roleName = normalizeRoleName(auth.session.value?.roleName)
@@ -30,6 +34,23 @@ const roleLabel = computed(() => {
 
   return ''
 })
+
+const unreadCountLabel = computed(() =>
+  messageInbox.unreadCount.value > 99 ? '99+' : String(messageInbox.unreadCount.value),
+)
+
+watch(
+  () => auth.session.value?.userId ?? null,
+  async (userId) => {
+    if (!userId) {
+      messageInbox.clearUnreadCount()
+      return
+    }
+
+    await messageInbox.refreshUnreadCount(userId)
+  },
+  { immediate: true },
+)
 </script>
 
 <template>
@@ -49,13 +70,25 @@ const roleLabel = computed(() => {
         <RouterLink v-if="auth.isAuthenticated.value" class="nav-link" to="/messages">Mensajes</RouterLink>
         <RouterLink v-if="isOrganizer" class="nav-link" to="/organizer">Organizaci&oacute;n</RouterLink>
         <RouterLink v-if="isAdmin" class="nav-link" to="/admin">Administraci&oacute;n</RouterLink>
-        <RouterLink v-if="isStandardUser" class="nav-link" to="/profile">Mi perfil</RouterLink>
+        <RouterLink v-if="canAccessOwnProfile" class="nav-link" to="/profile">Mi perfil</RouterLink>
       </nav>
 
       <div class="header-actions">
         <span v-if="roleLabel" class="header-role-label">{{ roleLabel }}</span>
 
-        <button class="header-action" type="button" aria-label="Notifications">
+        <RouterLink
+          v-if="auth.isAuthenticated.value"
+          class="header-action header-action--notifications"
+          to="/messages"
+          aria-label="Mensajes"
+        >
+          <Bell :size="18" :stroke-width="2.2" />
+          <span v-if="messageInbox.unreadCount.value > 0" class="header-action__badge">
+            {{ unreadCountLabel }}
+          </span>
+        </RouterLink>
+
+        <button v-else class="header-action" type="button" aria-label="Notifications">
           <Bell :size="18" :stroke-width="2.2" />
         </button>
 
@@ -131,6 +164,7 @@ const roleLabel = computed(() => {
 }
 
 .header-action {
+  position: relative;
   width: 44px;
   height: 44px;
   border: 1px solid var(--line-faint);
@@ -141,6 +175,9 @@ const roleLabel = computed(() => {
   place-items: center;
 }
 
+.header-action--notifications {
+  text-decoration: none;
+}
 
 .header-action--profile {
   border-color: var(--line-accent-soft);
@@ -152,6 +189,24 @@ const roleLabel = computed(() => {
 .header-action__monogram {
   font-size: var(--fs-caption);
   letter-spacing: 0.08em;
+}
+
+.header-action__badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border: 2px solid rgba(20, 8, 8, 0.92);
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255, 74, 58, 1) 0%, rgba(220, 38, 38, 1) 100%);
+  color: #fff7f5;
+  display: inline-grid;
+  place-items: center;
+  font-size: 0.68rem;
+  font-weight: 800;
+  line-height: 1;
 }
 
 @media (max-width: 980px) {
