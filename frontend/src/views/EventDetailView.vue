@@ -2,11 +2,12 @@
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import AppModal from '@/components/AppModal.vue'
-import DetailInfoCard from '@/components/DetailInfoCard.vue'
 import EventAttendeeList from '@/components/EventAttendeeList.vue'
-import EventAvailabilityBadge from '@/components/EventAvailabilityBadge.vue'
 import EventBookingDialog from '@/components/EventBookingDialog.vue'
-import SectionCard from '@/components/SectionCard.vue'
+import EventBookingSummaryCard from '@/components/event-detail/EventBookingSummaryCard.vue'
+import EventDetailCircuitOverview from '@/components/event-detail/EventDetailCircuitOverview.vue'
+import EventDetailHero from '@/components/event-detail/EventDetailHero.vue'
+import EventServiceConfigurator from '@/components/event-detail/EventServiceConfigurator.vue'
 import TrackRecordBoard from '@/components/TrackRecordBoard.vue'
 import { useAuth } from '@/composables/useAuth'
 import {
@@ -15,14 +16,17 @@ import {
   getCurrentUserBookedServicesByEventId,
   getCurrentUserEventBookings,
 } from '@/services/eventBookingService'
-import {
-  getEventById,
-  getEventServicesByEventId,
-} from '@/services/eventService'
+import { getEventById, getEventServicesByEventId } from '@/services/eventService'
 import { getTrackById } from '@/services/trackService'
 import type { Event } from '@/types/event'
 import type { EventBooking } from '@/types/eventBooking'
 import type { EventServiceItem } from '@/types/eventService'
+import type {
+  DisplayService,
+  DisplayServiceGroup,
+  EventAvailabilitySummary,
+  MediaDialogState,
+} from '@/types/eventDetail'
 import type { Track } from '@/types/track'
 import { resolveApiErrorMessage } from '@/utils/apiErrors'
 import {
@@ -35,28 +39,6 @@ import { toIsoDate } from '@/utils/date'
 import { formatCurrency, formatDisplayDate } from '@/utils/format'
 import { getTrackMedia } from '@/utils/trackMedia'
 import { createVisualStyle, eventVisualPalettes } from '@/utils/visualPalettes'
-
-type DisplayService = {
-  id: number
-  name: string
-  price: number
-  source: 'track' | 'organizer'
-}
-
-type DisplayServiceGroup = {
-  id: 'track' | 'organizer'
-  eyebrow: string
-  title: string
-  emptyMessage: string
-  services: DisplayService[]
-}
-
-type MediaDialog = {
-  eyebrow: string
-  title: string
-  src: string
-  alt: string
-}
 
 type BookingDialogMode = 'checkout' | 'cancel'
 
@@ -77,12 +59,10 @@ const track = ref<Track | null>(null)
 const eventServices = ref<EventServiceItem[]>([])
 const existingBooking = ref<EventBooking | null>(null)
 const selectedServiceIds = ref<number[]>([])
-const activeMediaDialog = ref<MediaDialog | null>(null)
+const activeMediaDialog = ref<MediaDialogState | null>(null)
 
 const eventId = computed(() => Number(route.params.id))
-const todayIso = computed(() => {
-  return toIsoDate(new Date())
-})
+const todayIso = toIsoDate(new Date())
 
 const eventDetail = computed(() => {
   if (!event.value || !track.value) {
@@ -103,13 +83,12 @@ const formattedPrice = computed(() =>
   eventDetail.value ? formatCurrency(eventDetail.value.event.basePrice) : '',
 )
 
-const availability = computed(() => {
+const availability = computed<EventAvailabilitySummary | null>(() => {
   if (!eventDetail.value) {
     return null
   }
 
   const remainingCapacity = eventDetail.value.event.remainingCapacity
-
   return {
     state: getEventAvailabilityState(remainingCapacity),
     label: getEventAvailabilityLabel(remainingCapacity),
@@ -174,9 +153,8 @@ const totalPrice = computed(() =>
 
 const hasConfirmedBooking = computed(() => existingBooking.value !== null)
 const isPastEvent = computed(() =>
-  eventDetail.value ? eventDetail.value.event.eventDate < todayIso.value : false,
+  eventDetail.value ? eventDetail.value.event.eventDate < todayIso : false,
 )
-
 const isUserSession = computed(() => isUserRole(auth.session.value?.roleName))
 const hasBookableSession = computed(() => auth.isAuthenticated.value && isUserSession.value)
 
@@ -249,7 +227,7 @@ const heroStyle = computed(() => {
 })
 
 onMounted(async () => {
-  window.addEventListener('keydown', handleTrackMapDialogKeydown)
+  window.addEventListener('keydown', handleMediaDialogKeydown)
 
   if (Number.isNaN(eventId.value)) {
     error.value = 'No se pudo identificar el evento solicitado.'
@@ -258,6 +236,30 @@ onMounted(async () => {
     return
   }
 
+  await loadEventDetail()
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleMediaDialogKeydown)
+})
+
+watch(
+  () => [auth.session.value?.userId ?? null, auth.session.value?.roleName ?? null] as const,
+  async () => {
+    if (Number.isNaN(eventId.value)) {
+      return
+    }
+
+    try {
+      event.value = await getEventById(eventId.value)
+      await loadExistingBookingState(eventId.value)
+    } catch {
+      // Keep the current UI state if the refresh fails.
+    }
+  },
+)
+
+async function loadEventDetail() {
   try {
     const selectedEvent = await getEventById(eventId.value)
     event.value = selectedEvent
@@ -287,43 +289,16 @@ onMounted(async () => {
     loading.value = false
     servicesLoading.value = false
   }
-})
-
-onUnmounted(() => {
-  window.removeEventListener('keydown', handleTrackMapDialogKeydown)
-})
-
-watch(
-  () => [auth.session.value?.userId ?? null, auth.session.value?.roleName ?? null] as const,
-  async () => {
-    if (Number.isNaN(eventId.value)) {
-      return
-    }
-
-    try {
-      event.value = await getEventById(eventId.value)
-      await loadExistingBookingState(eventId.value)
-    } catch {
-      // Keep the current UI state if the refresh fails.
-    }
-  },
-)
+}
 
 function toggleServiceSelection(serviceId: number) {
   if (hasConfirmedBooking.value) {
     return
   }
 
-  if (selectedServiceIds.value.includes(serviceId)) {
-    selectedServiceIds.value = selectedServiceIds.value.filter((id) => id !== serviceId)
-    return
-  }
-
-  selectedServiceIds.value = [...selectedServiceIds.value, serviceId]
-}
-
-function isServiceSelected(serviceId: number): boolean {
-  return selectedServiceIds.value.includes(serviceId)
+  selectedServiceIds.value = selectedServiceIds.value.includes(serviceId)
+    ? selectedServiceIds.value.filter((id) => id !== serviceId)
+    : [...selectedServiceIds.value, serviceId]
 }
 
 async function loadExistingBookingState(selectedEventId: number) {
@@ -370,11 +345,7 @@ function handleBookingAction() {
     return
   }
 
-  if (!eventDetail.value || !isUserSession.value) {
-    return
-  }
-
-  if (isPastEvent.value) {
+  if (!eventDetail.value || !isUserSession.value || isPastEvent.value) {
     return
   }
 
@@ -385,10 +356,9 @@ function handleBookingAction() {
 async function confirmBookingDialogAction() {
   if (bookingDialogMode.value === 'cancel') {
     await confirmBookingCancellation()
-    return
+  } else {
+    await confirmBookingCheckout()
   }
-
-  await confirmBookingCheckout()
 }
 
 async function confirmBookingCheckout() {
@@ -446,8 +416,7 @@ async function confirmBookingCancellation() {
     selectedServiceIds.value = []
     bookingVisibleOnPublicProfile.value = false
 
-    const updatedEvent = await getEventById(eventDetail.value.event.id)
-    event.value = updatedEvent
+    event.value = await getEventById(eventDetail.value.event.id)
     bookingDialogOpen.value = false
   } catch (requestError) {
     bookingDialogError.value = resolveBookingCancellationError(requestError)
@@ -511,13 +480,13 @@ function openCircuitPhotoDialog() {
   }
 }
 
-function closeTrackMapDialog() {
+function closeMediaDialog() {
   activeMediaDialog.value = null
 }
 
-function handleTrackMapDialogKeydown(event: KeyboardEvent) {
+function handleMediaDialogKeydown(event: KeyboardEvent) {
   if (event.key === 'Escape') {
-    closeTrackMapDialog()
+    closeMediaDialog()
   }
 }
 </script>
@@ -547,138 +516,33 @@ function handleTrackMapDialogKeydown(event: KeyboardEvent) {
         <span>{{ eventDetail.event.trackName }}</span>
       </nav>
 
-      <section class="event-detail__hero-layout">
-        <article class="event-detail__hero panel">
-          <div class="event-detail__hero-media" :style="heroStyle">
-            <div class="media-card__badges">
-              <EventAvailabilityBadge :remaining-capacity="eventDetail.event.remainingCapacity" />
-            </div>
-
-            <div class="event-detail__hero-copy">
-              <h1 class="ui-title-hero">{{ eventDetail.event.trackName }}</h1>
-              <p class="event-detail__hero-location">{{ eventDetail.track.location }}</p>
-            </div>
-          </div>
-
-          <div class="event-detail__hero-description panel-copy">
-            <p class="ui-eyebrow">Evento</p>
-            <p class="ui-copy-body">{{ eventDetail.event.description }}</p>
-          </div>
-        </article>
-
-        <aside class="event-detail__hero-side">
-          <DetailInfoCard
-            eyebrow="Disponibilidad"
-            :title="availability.label"
-            :subtitle="availability.remainingLabel"
-            :tone="availability.state"
-          />
-          <DetailInfoCard eyebrow="Fecha" :title="formattedDate" />
-          <DetailInfoCard eyebrow="Organiza" :title="eventDetail.event.organizerLegalName" />
-          <article
-            v-if="layoutImage"
-            class="event-detail__track-map panel panel-pad-lg panel-stack-sm"
-          >
-            <p class="ui-eyebrow">Trazado</p>
-            <button
-              class="event-detail__track-map-button"
-              type="button"
-              :aria-label="`Ampliar trazado de ${eventDetail.event.trackName}`"
-              @click="openTrackMapDialog"
-            >
-              <img
-                class="event-detail__track-map-image"
-                :src="layoutImage"
-                :alt="`Trazado de ${eventDetail.event.trackName}`"
-              />
-            </button>
-            <span class="event-detail__track-map-hint">Pulsa para ampliar</span>
-          </article>
-        </aside>
-      </section>
+      <EventDetailHero
+        :event="eventDetail.event"
+        :track="eventDetail.track"
+        :availability="availability"
+        :formatted-date="formattedDate"
+        :hero-style="heroStyle"
+        :layout-image="layoutImage"
+        @open-layout="openTrackMapDialog"
+      />
 
       <section class="event-detail__content-grid">
         <div class="event-detail__main">
-          <article class="section-card panel panel-pad-lg panel-stack-lg">
-            <div
-              class="event-detail__circuit-overview"
-              :class="{ 'event-detail__circuit-overview--with-photo': secondGalleryImage }"
-            >
-              <div class="panel-copy event-detail__circuit-copy">
-                <p class="ui-eyebrow">Circuito</p>
-                <h2 class="ui-title-section">{{ eventDetail.track.name }}</h2>
-                <p class="ui-copy-muted">{{ eventDetail.track.location }}</p>
-                <p class="ui-copy-body">{{ eventDetail.track.description }}</p>
-              </div>
+          <EventDetailCircuitOverview
+            :track="eventDetail.track"
+            :second-gallery-image="secondGalleryImage"
+            @open-photo="openCircuitPhotoDialog"
+          />
 
-              <button
-                v-if="secondGalleryImage"
-                class="event-detail__circuit-photo-button"
-                type="button"
-                :aria-label="`Ampliar imagen de ${eventDetail.track.name}`"
-                @click="openCircuitPhotoDialog"
-              >
-                <img
-                  class="event-detail__circuit-photo"
-                  :src="secondGalleryImage"
-                  :alt="`Vista del circuito ${eventDetail.track.name}`"
-                />
-                <span class="event-detail__circuit-photo-hint">Pulsa para ampliar</span>
-              </button>
-            </div>
-          </article>
-
-          <SectionCard
-            v-if="!isPastEvent"
-            eyebrow="Servicios"
-            title="Configura tu reserva"
-            description="Selecciona los servicios disponibles del circuito y del organizador para este evento."
-          >
-            <div v-if="servicesLoading" class="status-message">
-              Cargando servicios disponibles...
-            </div>
-            <p v-else-if="servicesError" class="status-message status-message--error">
-              {{ servicesError }}
-            </p>
-            <p v-else-if="availableServices.length === 0" class="status-message">
-              No hay servicios adicionales disponibles para este evento.
-            </p>
-            <div v-else class="event-detail__service-groups">
-              <article
-                v-for="group in serviceGroups"
-                :key="group.id"
-                class="event-detail__service-group"
-              >
-                <div class="panel-copy">
-                  <p class="ui-eyebrow">{{ group.eyebrow }}</p>
-                  <h3 class="ui-title-card">{{ group.title }}</h3>
-                </div>
-
-                <div v-if="group.services.length > 0" class="event-detail__service-list">
-                  <label
-                    v-for="service in group.services"
-                    :key="service.id"
-                    class="event-detail__service-row"
-                    :class="{
-                      'event-detail__service-row--selected': isServiceSelected(service.id),
-                      'event-detail__service-row--locked': hasConfirmedBooking,
-                    }"
-                  >
-                    <input
-                      class="event-detail__service-checkbox"
-                      type="checkbox"
-                      :checked="isServiceSelected(service.id)"
-                      :disabled="hasConfirmedBooking"
-                      @change="toggleServiceSelection(service.id)"
-                    />
-                    <span class="event-detail__service-name">{{ service.name }}</span>
-                    <strong>{{ formatCurrency(service.price) }}</strong>
-                  </label>
-                </div>
-                <p v-else class="ui-copy-muted">{{ group.emptyMessage }}</p>
-              </article>
-            </div>
-          </SectionCard>
+          <EventServiceConfigurator
+            :is-past-event="isPastEvent"
+            :services-loading="servicesLoading"
+            :services-error="servicesError"
+            :service-groups="serviceGroups"
+            :selected-service-ids="selectedServiceIds"
+            :is-locked="hasConfirmedBooking"
+            @toggle-service="toggleServiceSelection"
+          />
         </div>
 
         <aside class="event-detail__booking-side">
@@ -695,48 +559,16 @@ function handleTrackMapDialogKeydown(event: KeyboardEvent) {
             :track-id="eventDetail.event.trackId"
           />
 
-          <article class="event-detail__booking-card panel panel-pad-lg panel-stack-lg">
-            <div class="panel-copy">
-              <p class="ui-eyebrow">Reserva</p>
-              <h2 class="ui-title-price">{{ formatCurrency(totalPrice) }}</h2>
-              <p class="ui-copy-meta">Total estimado con la seleccion actual</p>
-            </div>
-
-            <p v-if="isPastEvent" class="event-detail__booking-status">
-              Evento finalizado
-            </p>
-
-            <div class="event-detail__booking-lines">
-              <div class="event-detail__booking-line">
-                <span>Entrada base</span>
-                <strong>{{ formattedPrice }}</strong>
-              </div>
-
-              <div
-                v-for="service in selectedServices"
-                :key="service.id"
-                class="event-detail__booking-line event-detail__booking-line--selected"
-              >
-                <span>{{ service.name }}</span>
-                <strong>{{ formatCurrency(service.price) }}</strong>
-              </div>
-            </div>
-
-            <p v-if="selectedServices.length === 0" class="ui-copy-muted">
-              No has seleccionado servicios adicionales.
-            </p>
-
-            <button
-              class="action-button event-detail__booking-cta"
-              type="button"
-              :disabled="isBookingActionDisabled"
-              @click="handleBookingAction"
-            >
-              {{ bookingButtonLabel }}
-            </button>
-
-            <p class="ui-copy-caption">{{ bookingCaption }}</p>
-          </article>
+          <EventBookingSummaryCard
+            :is-past-event="isPastEvent"
+            :total-price-label="formatCurrency(totalPrice)"
+            :formatted-price="formattedPrice"
+            :selected-services="selectedServices"
+            :booking-button-label="bookingButtonLabel"
+            :booking-caption="bookingCaption"
+            :is-booking-action-disabled="isBookingActionDisabled"
+            @booking-action="handleBookingAction"
+          />
         </aside>
       </section>
 
@@ -747,7 +579,7 @@ function handleTrackMapDialogKeydown(event: KeyboardEvent) {
         :title="activeMediaDialog?.title ?? ''"
         width="920px"
         light
-        @close="closeTrackMapDialog"
+        @close="closeMediaDialog"
       >
         <div class="track-map-dialog__image-wrap">
           <img
@@ -791,80 +623,21 @@ function handleTrackMapDialogKeydown(event: KeyboardEvent) {
   text-decoration: none;
 }
 
-.event-detail__hero-layout {
+.event-detail__content-grid {
   display: grid;
   gap: var(--space-xl);
-  grid-template-columns: minmax(0, 1.85fr) minmax(280px, 0.95fr);
+  grid-template-columns: minmax(0, 1.7fr) minmax(300px, 0.9fr);
   align-items: start;
 }
 
-.event-detail__hero {
-  overflow: hidden;
-}
-
-.event-detail__hero-media {
-  min-height: 400px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: clamp(20px, 3vw, 32px);
-  background-position: center;
-  background-size: cover;
-}
-
-.event-detail__hero-copy {
+.event-detail__main,
+.event-detail__booking-side {
   display: grid;
-  gap: var(--space-sm);
-  max-width: min(640px, 100%);
+  gap: var(--space-xl);
 }
 
-.event-detail__hero-date,
-.event-detail__hero-location {
-  margin: 0;
-  color: rgba(255, 246, 242, 0.92);
-  font-size: var(--fs-body);
-}
-
-.event-detail__hero-description {
-  padding: var(--space-xl);
-}
-
-.event-detail__hero-side {
-  display: grid;
+.event-detail__booking-side {
   gap: var(--space-lg);
-}
-
-.event-detail__track-map {
-  overflow: hidden;
-  border-color: rgba(48, 17, 15, 0.12);
-  background: var(--surface-light);
-  color: var(--text-on-light);
-}
-
-.event-detail__track-map .ui-eyebrow {
-  color: var(--accent);
-}
-
-.event-detail__track-map-button {
-  padding: 0;
-  border: 0;
-  background: transparent;
-  width: 100%;
-  cursor: zoom-in;
-}
-
-.event-detail__track-map-hint {
-  color: rgba(48, 17, 15, 0.62);
-  font-size: var(--fs-caption);
-}
-
-.event-detail__track-map-image {
-  display: block;
-  width: 100%;
-  max-height: 220px;
-  object-fit: contain;
-  border-radius: var(--radius-inner);
-  background: var(--surface-light);
 }
 
 .track-map-dialog__image-wrap {
@@ -880,204 +653,9 @@ function handleTrackMapDialogKeydown(event: KeyboardEvent) {
   background: var(--surface-light);
 }
 
-.event-detail__content-grid {
-  display: grid;
-  gap: var(--space-xl);
-  grid-template-columns: minmax(0, 1.7fr) minmax(300px, 0.9fr);
-  align-items: start;
-}
-
-.event-detail__main {
-  display: grid;
-  gap: var(--space-xl);
-}
-
-.event-detail__booking-status {
-  margin: 0;
-  padding: var(--space-sm) var(--space-md);
-  border: 1px solid rgba(255, 160, 72, 0.24);
-  border-radius: var(--radius-pill);
-  background: rgba(255, 160, 72, 0.12);
-  color: var(--racing-amber);
-  font-size: var(--fs-caption);
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  width: fit-content;
-}
-
-.event-detail__circuit-overview {
-  display: grid;
-  gap: var(--space-lg);
-}
-
-.event-detail__circuit-copy {
-  display: grid;
-  gap: var(--space-sm);
-  align-content: start;
-}
-
-.event-detail__circuit-overview--with-photo {
-  grid-template-columns: minmax(0, 1.3fr) minmax(240px, 0.9fr);
-  align-items: start;
-}
-
-.event-detail__circuit-overview .ui-copy-body {
-  margin: 0;
-}
-
-.event-detail__circuit-photo-button {
-  display: grid;
-  gap: var(--space-sm);
-  padding: 0;
-  border: 0;
-  background: transparent;
-  text-align: left;
-  cursor: zoom-in;
-}
-
-.event-detail__circuit-photo {
-  display: block;
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  object-fit: cover;
-  border-radius: var(--radius-inner);
-  border: 1px solid var(--line-soft);
-}
-
-.event-detail__circuit-photo-hint {
-  color: var(--text-muted);
-  font-size: var(--fs-caption);
-}
-
-.event-detail__booking-side {
-  display: grid;
-  gap: var(--space-lg);
-}
-
-.event-detail__booking-card {
-  border-color: var(--line-strong);
-}
-
-.event-detail__booking-lines {
-  display: grid;
-  gap: var(--space-sm);
-}
-
-.event-detail__booking-line {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-md);
-  padding: var(--space-md) var(--space-lg);
-  border: 1px solid var(--line-soft);
-  border-radius: var(--radius-control);
-  background: var(--surface-glass);
-}
-
-.event-detail__booking-line strong {
-  color: var(--text-strong);
-}
-
-.event-detail__booking-line--selected {
-  border-color: var(--line-strong);
-  background: var(--accent-soft);
-}
-
-.event-detail__booking-cta {
-  width: 100%;
-}
-
-.event-detail__service-groups {
-  display: grid;
-  gap: var(--space-lg);
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.event-detail__service-group {
-  display: grid;
-  gap: var(--space-lg);
-  padding: var(--space-lg);
-  border: 1px solid var(--line-soft);
-  border-radius: var(--radius-sm);
-  background: var(--surface-glass-subtle);
-}
-
-.event-detail__service-list {
-  display: grid;
-  gap: var(--space-sm);
-}
-
-.event-detail__service-row {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: center;
-  gap: var(--space-md);
-  padding: var(--space-md) var(--space-lg);
-  border: 1px solid var(--line-soft);
-  border-radius: var(--radius-control);
-  background: var(--surface-glass);
-}
-
-.event-detail__service-row--selected {
-  border-color: var(--line-strong);
-  background:
-    linear-gradient(180deg, rgba(255, 45, 32, 0.1) 0%, rgba(255, 45, 32, 0.03) 100%);
-}
-
-.event-detail__service-row--locked {
-  opacity: 0.82;
-}
-
-.event-detail__service-checkbox {
-  accent-color: var(--accent-strong);
-}
-
-.event-detail__service-name {
-  min-width: 0;
-  color: var(--text-body);
-}
-
-.event-detail__service-row strong {
-  color: var(--text-strong);
-}
-
 @media (max-width: 1080px) {
   .event-detail__content-grid {
     grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 980px) {
-  .event-detail__hero-layout {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 760px) {
-  .event-detail__service-groups {
-    grid-template-columns: 1fr;
-  }
-
-  .event-detail__circuit-overview--with-photo {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 640px) {
-  .event-detail__hero-media {
-    min-height: 320px;
-    padding: var(--space-lg);
-  }
-
-  .event-detail__hero-description {
-    padding: var(--space-lg);
-  }
-
-  .event-detail__booking-line,
-  .event-detail__service-row {
-    grid-template-columns: 1fr;
-    align-items: start;
   }
 }
 </style>

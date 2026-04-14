@@ -108,19 +108,8 @@ public class EventBookingService implements EventBookingUseCase {
 
     @Override
     public EventBooking checkoutEventBooking(String authenticatedEmail, Long eventId, List<Long> eventServiceIds, boolean isVisible) {
-        if (authenticatedEmail == null || authenticatedEmail.isBlank()) {
-            throw new IllegalArgumentException(AUTHENTICATED_EMAIL_REQUIRED);
-        }
-
-        String normalizedEmail = authenticatedEmail.trim().toLowerCase(Locale.ROOT);
-        User user = userPersistencePort.findByEmail(normalizedEmail)
-                .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND_WITH_EMAIL + normalizedEmail));
-
-        if (user.getRole() == null
-                || user.getRole().getRoleName() == null
-                || !USER_ROLE_NAME.equalsIgnoreCase(user.getRole().getRoleName())) {
-            throw new AccessDeniedException(ONLY_STANDARD_USERS_CAN_BOOK_EVENTS);
-        }
+        User user = loadAuthenticatedUser(authenticatedEmail);
+        ensureStandardUser(user);
 
         EventBooking eventBooking = new EventBooking();
         eventBooking.setUser(user);
@@ -152,18 +141,7 @@ public class EventBookingService implements EventBookingUseCase {
 
     @Override
     public EventBooking updateOwnEventBookingVisibility(String authenticatedEmail, Long id, boolean isVisible) {
-        if (authenticatedEmail == null || authenticatedEmail.isBlank()) {
-            throw new IllegalArgumentException(AUTHENTICATED_EMAIL_REQUIRED);
-        }
-
-        EventBooking eventBooking = findEventBookingOrThrow(id);
-        String normalizedEmail = authenticatedEmail.trim().toLowerCase(Locale.ROOT);
-
-        if (eventBooking.getUser() == null
-                || eventBooking.getUser().getEmail() == null
-                || !normalizedEmail.equals(eventBooking.getUser().getEmail().trim().toLowerCase(Locale.ROOT))) {
-            throw new AccessDeniedException(ONLY_BOOKING_OWNER_CAN_CANCEL_EVENT_BOOKING);
-        }
+        EventBooking eventBooking = loadOwnedBooking(authenticatedEmail, id);
 
         eventBooking.setVisible(isVisible);
         return eventBookingPersistencePort.save(eventBooking);
@@ -171,20 +149,7 @@ public class EventBookingService implements EventBookingUseCase {
 
     @Override
     public void deleteOwnEventBooking(String authenticatedEmail, Long id) {
-        if (authenticatedEmail == null || authenticatedEmail.isBlank()) {
-            throw new IllegalArgumentException(AUTHENTICATED_EMAIL_REQUIRED);
-        }
-
-        EventBooking eventBooking = findEventBookingOrThrow(id);
-        String normalizedEmail = authenticatedEmail.trim().toLowerCase(Locale.ROOT);
-
-        if (eventBooking.getUser() == null
-                || eventBooking.getUser().getEmail() == null
-                || !normalizedEmail.equals(eventBooking.getUser().getEmail().trim().toLowerCase(Locale.ROOT))) {
-            throw new AccessDeniedException(ONLY_BOOKING_OWNER_CAN_CANCEL_EVENT_BOOKING);
-        }
-
-        deleteEventBooking(eventBooking);
+        deleteEventBooking(loadOwnedBooking(authenticatedEmail, id));
     }
 
     private void deleteEventBooking(EventBooking eventBooking) {
@@ -214,15 +179,7 @@ public class EventBookingService implements EventBookingUseCase {
     @Override
     @Transactional(readOnly = true)
     public List<EventBooking> getEventBookingsByAuthenticatedEmail(String authenticatedEmail) {
-        if (authenticatedEmail == null || authenticatedEmail.isBlank()) {
-            throw new IllegalArgumentException(AUTHENTICATED_EMAIL_REQUIRED);
-        }
-
-        String normalizedEmail = authenticatedEmail.trim().toLowerCase(Locale.ROOT);
-        User user = userPersistencePort.findByEmail(normalizedEmail)
-                .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND_WITH_EMAIL + normalizedEmail));
-
-        return eventBookingPersistencePort.findByUserId(user.getId());
+        return eventBookingPersistencePort.findByUserId(loadAuthenticatedUser(authenticatedEmail).getId());
     }
 
     @Override
@@ -266,6 +223,41 @@ public class EventBookingService implements EventBookingUseCase {
     private EventBooking findEventBookingOrThrow(Long id) {
         return eventBookingPersistencePort.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(EVENT_BOOKING_NOT_FOUND_WITH_ID + id));
+    }
+
+    private User loadAuthenticatedUser(String authenticatedEmail) {
+        if (authenticatedEmail == null || authenticatedEmail.isBlank()) {
+            throw new IllegalArgumentException(AUTHENTICATED_EMAIL_REQUIRED);
+        }
+
+        String normalizedEmail = normalizeEmail(authenticatedEmail);
+        return userPersistencePort.findByEmail(normalizedEmail)
+                .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND_WITH_EMAIL + normalizedEmail));
+    }
+
+    private void ensureStandardUser(User user) {
+        if (user.getRole() == null
+                || user.getRole().getRoleName() == null
+                || !USER_ROLE_NAME.equalsIgnoreCase(user.getRole().getRoleName())) {
+            throw new AccessDeniedException(ONLY_STANDARD_USERS_CAN_BOOK_EVENTS);
+        }
+    }
+
+    private EventBooking loadOwnedBooking(String authenticatedEmail, Long bookingId) {
+        User currentUser = loadAuthenticatedUser(authenticatedEmail);
+        EventBooking eventBooking = findEventBookingOrThrow(bookingId);
+
+        if (eventBooking.getUser() == null
+                || eventBooking.getUser().getEmail() == null
+                || !normalizeEmail(currentUser.getEmail()).equals(normalizeEmail(eventBooking.getUser().getEmail()))) {
+            throw new AccessDeniedException(ONLY_BOOKING_OWNER_CAN_CANCEL_EVENT_BOOKING);
+        }
+
+        return eventBooking;
+    }
+
+    private String normalizeEmail(String email) {
+        return email.trim().toLowerCase(Locale.ROOT);
     }
 
     private void createEventBookingServiceForCheckout(EventBooking eventBooking, Long eventServiceId, Long eventId) {

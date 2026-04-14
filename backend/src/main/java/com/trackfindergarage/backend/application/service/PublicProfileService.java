@@ -40,22 +40,42 @@ public class PublicProfileService implements PublicProfileUseCase {
 
     @Override
     public PublicUserProfileView getPublicUserProfile(String displayName) {
+        User user = loadUserByDisplayName(displayName);
+        List<EventBooking> pastBookings = loadPastBookings(user.getId());
+        List<LapTime> userLapTimes = lapTimePersistencePort.findByUserId(user.getId());
+        Map<Long, List<LapTime>> rankingsByTrackId = buildRankingsByTrackId(userLapTimes);
+
+        return new PublicUserProfileView(
+                user.getId(),
+                user.getDisplayName(),
+                pastBookings.size(),
+                countVisitedCircuits(pastBookings),
+                countTopFiveLapTimes(userLapTimes, rankingsByTrackId),
+                countPoles(user.getId(), rankingsByTrackId)
+        );
+    }
+
+    private User loadUserByDisplayName(String displayName) {
         String normalizedDisplayName = normalizeDisplayName(displayName);
 
-        User user = userPersistencePort.findByDisplayName(normalizedDisplayName)
+        return userPersistencePort.findByDisplayName(normalizedDisplayName)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         USER_NOT_FOUND_WITH_DISPLAY_NAME + normalizedDisplayName
                 ));
+    }
 
-        List<EventBooking> allBookings = eventBookingPersistencePort.findByUserId(user.getId());
-        List<EventBooking> pastBookings = allBookings.stream()
+    private List<EventBooking> loadPastBookings(Long userId) {
+        LocalDate today = LocalDate.now();
+
+        return eventBookingPersistencePort.findByUserId(userId).stream()
                 .filter(booking -> booking.getEvent() != null
                         && booking.getEvent().getEventDate() != null
-                        && booking.getEvent().getEventDate().isBefore(LocalDate.now()))
+                        && booking.getEvent().getEventDate().isBefore(today))
                 .toList();
+    }
 
-        List<LapTime> userLapTimes = lapTimePersistencePort.findByUserId(user.getId());
-        Map<Long, List<LapTime>> rankingsByTrackId = userLapTimes.stream()
+    private Map<Long, List<LapTime>> buildRankingsByTrackId(List<LapTime> lapTimes) {
+        return lapTimes.stream()
                 .map(lapTime -> lapTime.getTrack() != null ? lapTime.getTrack().getId() : null)
                 .filter(Objects::nonNull)
                 .distinct()
@@ -66,34 +86,30 @@ public class PublicProfileService implements PublicProfileUseCase {
                                 .sorted(lapTimeComparator())
                                 .toList()
                 ));
+    }
 
-        long topFiveLapTimes = userLapTimes.stream()
+    private long countTopFiveLapTimes(List<LapTime> userLapTimes, Map<Long, List<LapTime>> rankingsByTrackId) {
+        return userLapTimes.stream()
                 .filter(lapTime -> isTopFiveLapTime(lapTime, rankingsByTrackId))
                 .count();
+    }
 
-        long poleCount = rankingsByTrackId.values()
-                .stream()
+    private long countPoles(Long userId, Map<Long, List<LapTime>> rankingsByTrackId) {
+        return rankingsByTrackId.values().stream()
                 .filter(ranking -> !ranking.isEmpty())
                 .filter(ranking -> ranking.get(0).getUser() != null
-                        && Objects.equals(ranking.get(0).getUser().getId(), user.getId()))
+                        && Objects.equals(ranking.get(0).getUser().getId(), userId))
                 .count();
+    }
 
-        long visitedCircuits = pastBookings.stream()
+    private long countVisitedCircuits(List<EventBooking> pastBookings) {
+        return pastBookings.stream()
                 .map(booking -> booking.getEvent() != null && booking.getEvent().getTrack() != null
                         ? booking.getEvent().getTrack().getId()
                         : null)
                 .filter(Objects::nonNull)
                 .distinct()
                 .count();
-
-        return new PublicUserProfileView(
-                user.getId(),
-                user.getDisplayName(),
-                pastBookings.size(),
-                visitedCircuits,
-                topFiveLapTimes,
-                poleCount
-        );
     }
 
     private boolean isTopFiveLapTime(LapTime lapTime, Map<Long, List<LapTime>> rankingsByTrackId) {
@@ -107,8 +123,7 @@ public class PublicProfileService implements PublicProfileUseCase {
         }
 
         for (int index = 0; index < ranking.size(); index++) {
-            LapTime rankedLapTime = ranking.get(index);
-            if (Objects.equals(rankedLapTime.getId(), lapTime.getId())) {
+            if (Objects.equals(ranking.get(index).getId(), lapTime.getId())) {
                 return index < 5;
             }
         }

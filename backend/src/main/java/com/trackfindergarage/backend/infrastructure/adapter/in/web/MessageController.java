@@ -14,7 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/messages")
-public class MessageController {
+public class MessageController extends AbstractWebController {
 
     private final MessageUseCase messageUseCase;
     private final MessageWebMapper messageWebMapper;
@@ -30,7 +30,7 @@ public class MessageController {
                                          @Valid @RequestBody CreateOwnMessageRequest request) {
         return messageWebMapper.toResponse(
                 messageUseCase.createOwnMessage(
-                        authentication != null ? authentication.getName() : null,
+                        authenticatedEmail(authentication),
                         request.getReceiverId(),
                         request.getSubject(),
                         request.getMessage()
@@ -40,43 +40,37 @@ public class MessageController {
 
     @GetMapping
     public List<MessageResponse> getOwnMessages(Authentication authentication) {
-        return messageUseCase.getOwnMessages(authentication != null ? authentication.getName() : null)
-                .stream()
-                .map(messageWebMapper::toResponse)
-                .toList();
+        return mapResponses(messageUseCase.getOwnMessages(authenticatedEmail(authentication)), messageWebMapper::toResponse);
     }
 
     @GetMapping("/contacts")
     public List<MessageContactResponse> getAvailableRecipients(Authentication authentication) {
-        return messageUseCase.getAvailableRecipients(authentication != null ? authentication.getName() : null)
-                .stream()
-                .map(messageWebMapper::toContactResponse)
-                .toList();
+        return mapResponses(
+                messageUseCase.getAvailableRecipients(authenticatedEmail(authentication)),
+                messageWebMapper::toContactResponse
+        );
     }
 
     @GetMapping("/conversation/{counterpartId}")
     public List<MessageResponse> getOwnConversation(@PathVariable Long counterpartId,
                                                     Authentication authentication) {
-        return messageUseCase.getOwnConversation(
-                        authentication != null ? authentication.getName() : null,
-                        counterpartId
-                )
-                .stream()
-                .map(messageWebMapper::toResponse)
-                .toList();
+        return mapResponses(
+                messageUseCase.getOwnConversation(authenticatedEmail(authentication), counterpartId),
+                messageWebMapper::toResponse
+        );
     }
 
     @PatchMapping("/{id}/read")
     public MessageResponse markAsRead(@PathVariable Long id, Authentication authentication) {
         return messageWebMapper.toResponse(
-                messageUseCase.markOwnMessageAsRead(authentication != null ? authentication.getName() : null, id)
+                messageUseCase.markOwnMessageAsRead(authenticatedEmail(authentication), id)
         );
     }
 
     @PatchMapping("/{id}/unread")
     public MessageResponse markAsUnread(@PathVariable Long id, Authentication authentication) {
         return messageWebMapper.toResponse(
-                messageUseCase.markOwnMessageAsUnread(authentication != null ? authentication.getName() : null, id)
+                messageUseCase.markOwnMessageAsUnread(authenticatedEmail(authentication), id)
         );
     }
 }

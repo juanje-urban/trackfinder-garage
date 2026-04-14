@@ -15,7 +15,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/track-services")
 @PreAuthorize("hasRole('ADMIN')")
-public class TrackServiceController {
+public class TrackServiceController extends AbstractWebController {
 
     private final TrackServiceUseCase trackServiceUseCase;
     private final TrackServiceWebMapper trackServiceWebMapper;
@@ -29,8 +29,7 @@ public class TrackServiceController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public TrackServiceResponse createTrackService(@Valid @RequestBody CreateTrackServiceRequest request) {
-        TrackService createdTrackService = trackServiceUseCase.createTrackService(trackServiceWebMapper.toDomain(request));
-        return trackServiceWebMapper.toResponse(createdTrackService);
+        return trackServiceWebMapper.toResponse(trackServiceUseCase.createTrackService(trackServiceWebMapper.toDomain(request)));
     }
 
     @DeleteMapping("/{id}")
@@ -41,10 +40,7 @@ public class TrackServiceController {
 
     @GetMapping
     public List<TrackServiceResponse> getAllTrackServices() {
-        return trackServiceUseCase.getAllTrackServices()
-                .stream()
-                .map(trackServiceWebMapper::toResponse)
-                .toList();
+        return mapResponses(trackServiceUseCase.getAllTrackServices(), trackServiceWebMapper::toResponse);
     }
 
     @GetMapping("/{id}")
@@ -54,17 +50,11 @@ public class TrackServiceController {
 
     @GetMapping("/track/{trackId}")
     public List<TrackServiceResponse> getTrackServicesByTrackId(@PathVariable Long trackId) {
-        return trackServiceUseCase.getTrackServicesByTrackId(trackId)
-                .stream()
-                .map(trackServiceWebMapper::toResponse)
-                .toList();
+        return mapResponses(trackServiceUseCase.getTrackServicesByTrackId(trackId), trackServiceWebMapper::toResponse);
     }
 
     @GetMapping("/service/{serviceId}")
     public List<TrackServiceResponse> getTrackServicesByServiceId(@PathVariable Long serviceId) {
-        return trackServiceUseCase.getTrackServicesByServiceId(serviceId)
-                .stream()
-                .map(trackServiceWebMapper::toResponse)
-                .toList();
+        return mapResponses(trackServiceUseCase.getTrackServicesByServiceId(serviceId), trackServiceWebMapper::toResponse);
     }
 }

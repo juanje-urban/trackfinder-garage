@@ -14,7 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/event-services")
-public class EventServiceController {
+public class EventServiceController extends AbstractWebController {
 
     private final EventServiceUseCase eventServiceUseCase;
     private final EventServiceWebMapper eventServiceWebMapper;
@@ -28,8 +28,7 @@ public class EventServiceController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public EventServiceResponse createEventService(@Valid @RequestBody CreateEventServiceRequest request) {
-        EventService createdEventService = eventServiceUseCase.createEventService(eventServiceWebMapper.toDomain(request));
-        return eventServiceWebMapper.toResponse(createdEventService);
+        return eventServiceWebMapper.toResponse(eventServiceUseCase.createEventService(eventServiceWebMapper.toDomain(request)));
     }
 
     @PutMapping("/{id}")
@@ -37,9 +36,7 @@ public class EventServiceController {
                                                    @Valid @RequestBody UpdateEventServiceRequest request) {
         EventService eventServiceToUpdate = new EventService();
         eventServiceWebMapper.updateDomain(eventServiceToUpdate, request);
-
-        EventService updatedEventService = eventServiceUseCase.updateEventService(id, eventServiceToUpdate);
-        return eventServiceWebMapper.toResponse(updatedEventService);
+        return eventServiceWebMapper.toResponse(eventServiceUseCase.updateEventService(id, eventServiceToUpdate));
     }
 
     @DeleteMapping("/{id}")
@@ -50,10 +47,7 @@ public class EventServiceController {
 
     @GetMapping
     public List<EventServiceResponse> getAllEventServices() {
-        return eventServiceUseCase.getAllEventServices()
-                .stream()
-                .map(eventServiceWebMapper::toResponse)
-                .toList();
+        return mapResponses(eventServiceUseCase.getAllEventServices(), eventServiceWebMapper::toResponse);
     }
 
     @GetMapping("/{id}")
@@ -63,9 +57,6 @@ public class EventServiceController {
 
     @GetMapping("/event/{eventId}")
     public List<EventServiceResponse> getEventServicesByEventId(@PathVariable Long eventId) {
-        return eventServiceUseCase.getEventServicesByEventId(eventId)
-                .stream()
-                .map(eventServiceWebMapper::toResponse)
-                .toList();
+        return mapResponses(eventServiceUseCase.getEventServicesByEventId(eventId), eventServiceWebMapper::toResponse);
     }
 }

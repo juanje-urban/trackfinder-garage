@@ -170,7 +170,6 @@ class MessageServiceTest {
         receiver.setEnabled(true);
 
         when(userPersistencePort.findByEmail("sender@example.com")).thenReturn(Optional.of(sender));
-        when(userPersistencePort.findById(1L)).thenReturn(Optional.of(sender));
         when(userPersistencePort.findById(2L)).thenReturn(Optional.of(receiver));
         when(messagePersistencePort.save(org.mockito.ArgumentMatchers.any(Message.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));

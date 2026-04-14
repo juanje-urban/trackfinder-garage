@@ -17,12 +17,15 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 @Service
 @Transactional
 public class OrganizerService implements OrganizerUseCase {
 
     private static final String ORGANIZER_NOT_FOUND_WITH_ID = "Organizer not found with id: ";
+    private static final String USER_NOT_FOUND_WITH_EMAIL = "User not found with email: ";
+    private static final String AUTHENTICATED_EMAIL_REQUIRED = "Authenticated user email is required";
     private static final String USER_DISPLAY_NAME_ALREADY_EXISTS = "User with display name '%s' already exists";
     private static final String USER_EMAIL_ALREADY_EXISTS = "User with email '%s' already exists";
     private static final String USER_PHONE_ALREADY_EXISTS = "User with phone '%s' already exists";
@@ -48,22 +51,39 @@ public class OrganizerService implements OrganizerUseCase {
     public Organizer createOrganizer(Organizer organizer, String rawPassword) {
         User user = organizer.getUser();
 
-        validateDisplayNameForCreate(user.getDisplayName());
-        validateEmailForCreate(user.getEmail());
-        validatePhoneForCreate(user.getPhone());
-        validateLegalNameForCreate(organizer.getLegalName());
-        validateCifForCreate(organizer.getCif());
+        String normalizedDisplayName = normalizeText(user.getDisplayName());
+        String normalizedEmail = normalizeEmail(user.getEmail());
+        String normalizedName = normalizeText(user.getName());
+        String normalizedSurname = normalizeText(user.getSurname());
+        String normalizedAddress = normalizeText(user.getAddress());
+        String normalizedPhone = normalizeText(user.getPhone());
+        String normalizedLegalName = normalizeText(organizer.getLegalName());
+        String normalizedCif = normalizeText(organizer.getCif());
 
-        Role organizerRole = getOrganizerRole();
+        validateDisplayNameForCreate(normalizedDisplayName);
+        validateEmailForCreate(normalizedEmail);
+        validatePhoneForCreate(normalizedPhone);
+        validateLegalNameForCreate(normalizedLegalName);
+        validateCifForCreate(normalizedCif);
 
-        user.setRole(organizerRole);
+        applyUserIdentity(
+                user,
+                normalizedDisplayName,
+                normalizedEmail,
+                normalizedName,
+                normalizedSurname,
+                normalizedAddress,
+                normalizedPhone
+        );
+        user.setRole(getOrganizerRole());
         user.setPasswordHash(passwordEncoder.encode(rawPassword));
         user.setCreated(LocalDateTime.now());
         user.setEnabled(true);
 
         User savedUser = userPersistencePort.save(user);
-
         organizer.setUser(savedUser);
+        organizer.setLegalName(normalizedLegalName);
+        organizer.setCif(normalizedCif);
         organizer.setEnabled(false);
 
         return organizerPersistencePort.save(organizer);
@@ -94,19 +114,12 @@ public class OrganizerService implements OrganizerUseCase {
         validateLegalNameForUpdate(existingOrganizer.getIdUser(), normalizedLegalName);
         validateCifForUpdate(existingOrganizer.getIdUser(), normalizedCif);
 
-        existingUser.setName(normalizedName);
-        existingUser.setSurname(normalizedSurname);
-        existingUser.setEmail(normalizedEmail);
-        existingUser.setAddress(normalizedAddress);
-        existingUser.setPhone(normalizedPhone);
-
+        applyUserProfile(existingUser, normalizedName, normalizedSurname, normalizedEmail, normalizedAddress, normalizedPhone);
         if (command.rawPassword() != null && !command.rawPassword().isBlank()) {
             existingUser.setPasswordHash(passwordEncoder.encode(command.rawPassword().trim()));
         }
 
-        existingOrganizer.setLegalName(normalizedLegalName);
-        existingOrganizer.setCif(normalizedCif);
-
+        applyOrganizerIdentity(existingOrganizer, normalizedLegalName, normalizedCif);
         userPersistencePort.save(existingUser);
         return organizerPersistencePort.save(existingOrganizer);
     }
@@ -117,21 +130,31 @@ public class OrganizerService implements OrganizerUseCase {
         User existingUser = existingOrganizer.getUser();
         User user = organizer.getUser();
 
-        validateDisplayNameForUpdate(id, user.getDisplayName());
-        validateEmailForUpdate(id, user.getEmail());
-        validatePhoneForUpdate(id, user.getPhone());
-        validateLegalNameForUpdate(id, organizer.getLegalName());
-        validateCifForUpdate(id, organizer.getCif());
+        String normalizedDisplayName = normalizeText(user.getDisplayName());
+        String normalizedEmail = normalizeEmail(user.getEmail());
+        String normalizedName = normalizeText(user.getName());
+        String normalizedSurname = normalizeText(user.getSurname());
+        String normalizedAddress = normalizeText(user.getAddress());
+        String normalizedPhone = normalizeText(user.getPhone());
+        String normalizedLegalName = normalizeText(organizer.getLegalName());
+        String normalizedCif = normalizeText(organizer.getCif());
 
-        existingUser.setDisplayName(user.getDisplayName());
-        existingUser.setEmail(user.getEmail());
-        existingUser.setName(user.getName());
-        existingUser.setSurname(user.getSurname());
-        existingUser.setAddress(user.getAddress());
-        existingUser.setPhone(user.getPhone());
+        validateDisplayNameForUpdate(id, normalizedDisplayName);
+        validateEmailForUpdate(id, normalizedEmail);
+        validatePhoneForUpdate(id, normalizedPhone);
+        validateLegalNameForUpdate(id, normalizedLegalName);
+        validateCifForUpdate(id, normalizedCif);
 
-        existingOrganizer.setLegalName(organizer.getLegalName());
-        existingOrganizer.setCif(organizer.getCif());
+        applyUserIdentity(
+                existingUser,
+                normalizedDisplayName,
+                normalizedEmail,
+                normalizedName,
+                normalizedSurname,
+                normalizedAddress,
+                normalizedPhone
+        );
+        applyOrganizerIdentity(existingOrganizer, normalizedLegalName, normalizedCif);
 
         userPersistencePort.save(existingUser);
         return organizerPersistencePort.save(existingOrganizer);
@@ -155,8 +178,7 @@ public class OrganizerService implements OrganizerUseCase {
     @Override
     @Transactional(readOnly = true)
     public Organizer getOrganizerById(Long id) {
-        return organizerPersistencePort.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(ORGANIZER_NOT_FOUND_WITH_ID + id));
+        return findOrganizerOrThrow(id);
     }
 
     @Override
@@ -179,99 +201,152 @@ public class OrganizerService implements OrganizerUseCase {
     }
 
     private void validateDisplayNameForCreate(String displayName) {
-        userPersistencePort.findByDisplayName(displayName)
-                .ifPresent(existingUser -> {
-                    throw new DuplicateResourceException(USER_DISPLAY_NAME_ALREADY_EXISTS.formatted(displayName));
-                });
+        validateUniqueUser(
+                userPersistencePort.findByDisplayName(displayName),
+                null,
+                USER_DISPLAY_NAME_ALREADY_EXISTS.formatted(displayName)
+        );
     }
 
     private void validateEmailForCreate(String email) {
-        userPersistencePort.findByEmail(email)
-                .ifPresent(existingUser -> {
-                    throw new DuplicateResourceException(USER_EMAIL_ALREADY_EXISTS.formatted(email));
-                });
-    }
-
-    private void validateLegalNameForCreate(String legalName) {
-        organizerPersistencePort.findByLegalName(legalName)
-                .ifPresent(existingOrganizer -> {
-                    throw new DuplicateResourceException(ORGANIZER_LEGAL_NAME_ALREADY_EXISTS.formatted(legalName));
-                });
+        validateUniqueUser(
+                userPersistencePort.findByEmail(email),
+                null,
+                USER_EMAIL_ALREADY_EXISTS.formatted(email)
+        );
     }
 
     private void validatePhoneForCreate(String phone) {
-        userPersistencePort.findByPhone(phone)
-                .ifPresent(existingUser -> {
-                    throw new DuplicateResourceException(USER_PHONE_ALREADY_EXISTS.formatted(phone));
-                });
+        validateUniqueUser(
+                userPersistencePort.findByPhone(phone),
+                null,
+                USER_PHONE_ALREADY_EXISTS.formatted(phone)
+        );
+    }
+
+    private void validateLegalNameForCreate(String legalName) {
+        validateUniqueOrganizer(
+                organizerPersistencePort.findByLegalName(legalName),
+                null,
+                ORGANIZER_LEGAL_NAME_ALREADY_EXISTS.formatted(legalName)
+        );
     }
 
     private void validateCifForCreate(String cif) {
-        organizerPersistencePort.findByCif(cif)
-                .ifPresent(existingOrganizer -> {
-                    throw new DuplicateResourceException(ORGANIZER_CIF_ALREADY_EXISTS.formatted(cif));
-                });
+        validateUniqueOrganizer(
+                organizerPersistencePort.findByCif(cif),
+                null,
+                ORGANIZER_CIF_ALREADY_EXISTS.formatted(cif)
+        );
     }
 
     private void validateDisplayNameForUpdate(Long organizerId, String displayName) {
-        userPersistencePort.findByDisplayName(displayName)
-                .ifPresent(existingUser -> {
-                    if (!existingUser.getId().equals(organizerId)) {
-                        throw new DuplicateResourceException(USER_DISPLAY_NAME_ALREADY_EXISTS.formatted(displayName));
-                    }
-                });
+        validateUniqueUser(
+                userPersistencePort.findByDisplayName(displayName),
+                organizerId,
+                USER_DISPLAY_NAME_ALREADY_EXISTS.formatted(displayName)
+        );
     }
 
     private void validateEmailForUpdate(Long organizerId, String email) {
-        userPersistencePort.findByEmail(email)
-                .ifPresent(existingUser -> {
-                    if (!existingUser.getId().equals(organizerId)) {
-                        throw new DuplicateResourceException(USER_EMAIL_ALREADY_EXISTS.formatted(email));
-                    }
-                });
-    }
-
-    private void validateLegalNameForUpdate(Long organizerId, String legalName) {
-        organizerPersistencePort.findByLegalName(legalName)
-                .ifPresent(existingOrganizer -> {
-                    if (!existingOrganizer.getIdUser().equals(organizerId)) {
-                        throw new DuplicateResourceException(ORGANIZER_LEGAL_NAME_ALREADY_EXISTS.formatted(legalName));
-                    }
-                });
+        validateUniqueUser(
+                userPersistencePort.findByEmail(email),
+                organizerId,
+                USER_EMAIL_ALREADY_EXISTS.formatted(email)
+        );
     }
 
     private void validatePhoneForUpdate(Long organizerId, String phone) {
-        userPersistencePort.findByPhone(phone)
-                .ifPresent(existingUser -> {
-                    if (!existingUser.getId().equals(organizerId)) {
-                        throw new DuplicateResourceException(USER_PHONE_ALREADY_EXISTS.formatted(phone));
-                    }
-                });
+        validateUniqueUser(
+                userPersistencePort.findByPhone(phone),
+                organizerId,
+                USER_PHONE_ALREADY_EXISTS.formatted(phone)
+        );
+    }
+
+    private void validateLegalNameForUpdate(Long organizerId, String legalName) {
+        validateUniqueOrganizer(
+                organizerPersistencePort.findByLegalName(legalName),
+                organizerId,
+                ORGANIZER_LEGAL_NAME_ALREADY_EXISTS.formatted(legalName)
+        );
     }
 
     private void validateCifForUpdate(Long organizerId, String cif) {
-        organizerPersistencePort.findByCif(cif)
-                .ifPresent(existingOrganizer -> {
-                    if (!existingOrganizer.getIdUser().equals(organizerId)) {
-                        throw new DuplicateResourceException(ORGANIZER_CIF_ALREADY_EXISTS.formatted(cif));
-                    }
-                });
+        validateUniqueOrganizer(
+                organizerPersistencePort.findByCif(cif),
+                organizerId,
+                ORGANIZER_CIF_ALREADY_EXISTS.formatted(cif)
+        );
     }
 
-    //Función privada que hace lo mismo que getOrganizerById. Los métodos con proxy de Spring no deben ser llamados desde dentro del propio bean. (Da error sonar)
+    private void validateUniqueUser(Optional<User> candidate,
+                                    Long excludedUserId,
+                                    String duplicateMessage) {
+        candidate.ifPresent(existingUser -> {
+            if (excludedUserId == null || !existingUser.getId().equals(excludedUserId)) {
+                throw new DuplicateResourceException(duplicateMessage);
+            }
+        });
+    }
+
+    private void validateUniqueOrganizer(Optional<Organizer> candidate,
+                                         Long excludedOrganizerId,
+                                         String duplicateMessage) {
+        candidate.ifPresent(existingOrganizer -> {
+            if (excludedOrganizerId == null || !existingOrganizer.getIdUser().equals(excludedOrganizerId)) {
+                throw new DuplicateResourceException(duplicateMessage);
+            }
+        });
+    }
+
     private Organizer findOrganizerOrThrow(Long id) {
         return organizerPersistencePort.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ORGANIZER_NOT_FOUND_WITH_ID + id));
     }
 
     private Organizer findOrganizerByAuthenticatedEmail(String authenticatedEmail) {
-        String normalizedEmail = normalizeEmail(authenticatedEmail);
+        if (authenticatedEmail == null || authenticatedEmail.isBlank()) {
+            throw new IllegalArgumentException(AUTHENTICATED_EMAIL_REQUIRED);
+        }
 
+        String normalizedEmail = normalizeEmail(authenticatedEmail);
         User user = userPersistencePort.findByEmail(normalizedEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + normalizedEmail));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        USER_NOT_FOUND_WITH_EMAIL + normalizedEmail
+                ));
 
         return organizerPersistencePort.findById(user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException(ORGANIZER_NOT_FOUND_WITH_ID + user.getId()));
+    }
+
+    private void applyUserIdentity(User user,
+                                   String displayName,
+                                   String email,
+                                   String name,
+                                   String surname,
+                                   String address,
+                                   String phone) {
+        user.setDisplayName(displayName);
+        applyUserProfile(user, name, surname, email, address, phone);
+    }
+
+    private void applyUserProfile(User user,
+                                  String name,
+                                  String surname,
+                                  String email,
+                                  String address,
+                                  String phone) {
+        user.setName(name);
+        user.setSurname(surname);
+        user.setEmail(email);
+        user.setAddress(address);
+        user.setPhone(phone);
+    }
+
+    private void applyOrganizerIdentity(Organizer organizer, String legalName, String cif) {
+        organizer.setLegalName(legalName);
+        organizer.setCif(cif);
     }
 
     private String normalizeText(String value) {

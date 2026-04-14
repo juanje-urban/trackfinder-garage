@@ -1,7 +1,10 @@
 <script setup lang="ts">
-import { MessageSquare, Send, SquarePen } from 'lucide-vue-next'
+import { MessageSquare } from 'lucide-vue-next'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import MessageComposePanel from '@/components/messages/MessageComposePanel.vue'
+import MessageConversationPanel from '@/components/messages/MessageConversationPanel.vue'
+import MessageThreadSidebar from '@/components/messages/MessageThreadSidebar.vue'
 import PageHero from '@/components/PageHero.vue'
 import { useAuth } from '@/composables/useAuth'
 import { useMessageInbox } from '@/composables/useMessageInbox'
@@ -14,17 +17,8 @@ import {
 } from '@/services/messageService'
 import type { MessageContact, MessageItem } from '@/types/message'
 import { resolveApiErrorMessage } from '@/utils/apiErrors'
-
-type MessageThread = {
-  key: string
-  counterpartId: number
-  counterpartDisplayName: string
-  roleName: string | null
-  subject: string
-  lastMessageAt: string
-  unreadCount: number
-  messages: MessageItem[]
-}
+import { formatMessageRoleLabel, formatMessageTimestamp } from '@/utils/messageFormatting'
+import { buildMessageThreadKey, buildMessageThreads } from '@/utils/messageThreads'
 
 const auth = useAuth()
 const messageInbox = useMessageInbox()
@@ -56,62 +50,13 @@ const contactsById = computed<Record<number, MessageContact>>(() =>
   Object.fromEntries(contacts.value.map((contact) => [contact.id, contact])),
 )
 
-const threads = computed<MessageThread[]>(() => {
-  if (currentUserId.value === null) {
-    return []
-  }
-
-  const threadsByKey = new Map<string, MessageThread>()
-
-  for (const message of messages.value) {
-    const isOutgoing = message.senderId === currentUserId.value
-    const counterpartId = isOutgoing ? message.receiverId : message.senderId
-    const counterpartDisplayName = isOutgoing
-      ? message.receiverDisplayName
-      : message.senderDisplayName
-    const key = buildThreadKey(counterpartId, message.subject)
-
-    const existingThread = threadsByKey.get(key)
-    if (!existingThread) {
-      threadsByKey.set(key, {
-        key,
-        counterpartId,
-        counterpartDisplayName,
-        roleName: contactsById.value[counterpartId]?.roleName ?? null,
-        subject: message.subject,
-        lastMessageAt: message.sentAt,
-        unreadCount: !isOutgoing && !message.isRead ? 1 : 0,
-        messages: [message],
-      })
-      continue
-    }
-
-    existingThread.messages.push(message)
-
-    if (!isOutgoing && !message.isRead) {
-      existingThread.unreadCount += 1
-    }
-
-    if (message.sentAt > existingThread.lastMessageAt) {
-      existingThread.lastMessageAt = message.sentAt
-      existingThread.counterpartDisplayName = counterpartDisplayName
-      existingThread.roleName = contactsById.value[counterpartId]?.roleName ?? existingThread.roleName
-    }
-  }
-
-  return [...threadsByKey.values()]
-    .map((thread) => ({
-      ...thread,
-      messages: [...thread.messages].sort((left, right) => left.sentAt.localeCompare(right.sentAt)),
-    }))
-    .sort((left, right) => right.lastMessageAt.localeCompare(left.lastMessageAt))
-})
+const threads = computed(() =>
+  buildMessageThreads(messages.value, currentUserId.value, contactsById.value),
+)
 
 const activeThread = computed(
   () => threads.value.find((thread) => thread.key === selectedThreadKey.value) ?? null,
 )
-
-const activeMessages = computed(() => activeThread.value?.messages ?? [])
 
 onMounted(async () => {
   if (!isAuthenticated.value) {
@@ -163,14 +108,8 @@ async function loadMessagesPage() {
   }
 }
 
-function buildThreadKey(counterpartId: number, subject: string): string {
-  return `${counterpartId}::${subject.trim()}`
-}
-
 function syncSelectedThread() {
-  const threadStillExists = threads.value.some((thread) => thread.key === selectedThreadKey.value)
-
-  if (threadStillExists) {
+  if (threads.value.some((thread) => thread.key === selectedThreadKey.value)) {
     return
   }
 
@@ -178,18 +117,20 @@ function syncSelectedThread() {
 }
 
 function openCompose() {
-  openComposeForReceiver('')
+  startCompose('')
 }
 
-function openComposeForReceiver(receiverId: string) {
+function startCompose(receiverId: string) {
   isComposeMode.value = true
+  selectedThreadKey.value = null
+  replyBody.value = ''
   sendError.value = ''
   composeForm.receiverId = receiverId
   composeForm.subject = ''
   composeForm.message = ''
 }
 
-function openThread(thread: MessageThread) {
+function openThread(thread: { key: string }) {
   isComposeMode.value = false
   selectedThreadKey.value = thread.key
   replyBody.value = ''
@@ -204,17 +145,18 @@ function cancelCompose() {
   composeForm.message = ''
   sendError.value = ''
   void clearComposeIntent()
+  syncSelectedThread()
 }
 
 function applyComposeIntentFromRoute() {
   const receiverIdRaw = route.query.receiverId
-  const receiverId = typeof receiverIdRaw === 'string' ? Number(receiverIdRaw) : NaN
-  const hasValidReceiver = Number.isFinite(receiverId) && contacts.value.some((contact) => contact.id === receiverId)
+  const receiverId = typeof receiverIdRaw === 'string' ? Number(receiverIdRaw) : Number.NaN
+  const hasValidReceiver =
+    Number.isFinite(receiverId) &&
+    contacts.value.some((contact) => contact.id === receiverId)
 
   if (hasValidReceiver) {
-    selectedThreadKey.value = null
-    replyBody.value = ''
-    openComposeForReceiver(String(receiverId))
+    startCompose(String(receiverId))
     return
   }
 
@@ -322,7 +264,7 @@ async function submitMessage(payload: { receiverId: number; subject: string; mes
           },
         ]
 
-    selectedThreadKey.value = buildThreadKey(payload.receiverId, createdMessage.subject)
+    selectedThreadKey.value = buildMessageThreadKey(payload.receiverId, createdMessage.subject)
     isComposeMode.value = false
     composeForm.receiverId = ''
     composeForm.subject = ''
@@ -358,34 +300,6 @@ async function submitMessage(payload: { receiverId: number; subject: string; mes
     sending.value = false
   }
 }
-
-function formatThreadTimestamp(value: string): string {
-  const date = new Date(value)
-  return date.toLocaleString('es-ES', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
-
-function formatRoleLabel(roleName: string | null): string {
-  switch ((roleName ?? '').trim().toUpperCase()) {
-    case 'ADMIN':
-      return 'Administrador'
-    case 'ORGANIZER':
-      return 'Organizador'
-    case 'USER':
-      return 'Usuario'
-    default:
-      return ''
-  }
-}
-
-function isOutgoingMessage(message: MessageItem): boolean {
-  return message.senderId === currentUserId.value
-}
 </script>
 
 <template>
@@ -411,42 +325,13 @@ function isOutgoingMessage(message: MessageItem): boolean {
       />
 
       <section class="messages-layout panel panel-pad-lg">
-        <aside class="messages-sidebar panel-stack-md">
-          <button class="action-button messages-sidebar__compose" type="button" @click="openCompose">
-            <SquarePen :size="16" aria-hidden="true" />
-            Nuevo mensaje
-          </button>
-
-          <p v-if="threads.length === 0" class="ui-copy-muted">
-            Todavia no tienes hilos iniciados.
-          </p>
-
-          <div v-else class="messages-thread-list">
-            <button
-              v-for="thread in threads"
-              :key="thread.key"
-              class="messages-thread-card"
-              :class="{
-                'messages-thread-card--active': !isComposeMode && selectedThreadKey === thread.key,
-                'messages-thread-card--unread': thread.unreadCount > 0,
-              }"
-              type="button"
-              @click="openThread(thread)"
-            >
-              <div class="messages-thread-card__header">
-                <strong class="messages-thread-card__subject">{{ thread.subject }}</strong>
-                <span v-if="thread.unreadCount > 0" class="messages-thread-card__badge">
-                  {{ thread.unreadCount }}
-                </span>
-              </div>
-
-              <div class="messages-thread-card__meta">
-                <span class="messages-thread-card__name">{{ thread.counterpartDisplayName }}</span>
-                <span class="messages-thread-card__time">{{ formatThreadTimestamp(thread.lastMessageAt) }}</span>
-              </div>
-            </button>
-          </div>
-        </aside>
+        <MessageThreadSidebar
+          :threads="threads"
+          :selected-thread-key="selectedThreadKey"
+          :is-compose-mode="isComposeMode"
+          @compose="openCompose"
+          @open-thread="openThread"
+        />
 
         <section class="messages-main panel-stack-lg">
           <div v-if="isComposeMode" class="panel-copy">
@@ -457,110 +342,51 @@ function isOutgoingMessage(message: MessageItem): boolean {
 
           <div v-else-if="activeThread" class="panel-copy">
             <p class="ui-eyebrow">
-              {{ formatRoleLabel(activeThread.roleName) || 'Conversacion' }}
+              {{ formatMessageRoleLabel(activeThread.roleName) || 'Conversacion' }}
             </p>
             <h2 class="ui-title-card">{{ activeThread.subject }}</h2>
             <p class="ui-copy-muted">
               {{ activeThread.counterpartDisplayName }} · Ultimo mensaje el
-              {{ formatThreadTimestamp(activeThread.lastMessageAt) }}
+              {{ formatMessageTimestamp(activeThread.lastMessageAt) }}
             </p>
           </div>
 
           <div v-else class="panel-copy">
             <p class="ui-eyebrow">Mensajes</p>
             <h2 class="ui-title-card">Selecciona un hilo</h2>
-            <p class="ui-copy-muted">O pulsa en “Nuevo mensaje” para empezar una conversacion.</p>
+            <p class="ui-copy-muted">O pulsa en "Nuevo mensaje" para empezar una conversacion.</p>
           </div>
 
-          <p v-if="sendError" class="status-message status-message--error">{{ sendError }}</p>
-
-          <form
+          <MessageComposePanel
             v-if="isComposeMode"
-            class="messages-composer panel panel-pad-lg panel-stack-md"
-            @submit.prevent="sendNewMessage"
-          >
-            <label class="messages-field">
-              <span>Destinatario</span>
-              <select v-model="composeForm.receiverId">
-                <option value="">Selecciona un usuario</option>
-                <option v-for="contact in contacts" :key="contact.id" :value="String(contact.id)">
-                  {{ contact.displayName }}
-                  {{ formatRoleLabel(contact.roleName) ? ` · ${formatRoleLabel(contact.roleName)}` : '' }}
-                </option>
-              </select>
-            </label>
+            :contacts="contacts"
+            :receiver-id="composeForm.receiverId"
+            :subject="composeForm.subject"
+            :message="composeForm.message"
+            :send-error="sendError"
+            :sending="sending"
+            @update:receiver-id="composeForm.receiverId = $event"
+            @update:subject="composeForm.subject = $event"
+            @update:message="composeForm.message = $event"
+            @cancel="cancelCompose"
+            @submit="sendNewMessage"
+          />
 
-            <label class="messages-field">
-              <span>Asunto</span>
-              <input
-                v-model="composeForm.subject"
-                type="text"
-                maxlength="255"
-                placeholder="Asunto del mensaje"
-              />
-            </label>
-
-            <label class="messages-field">
-              <span>Mensaje</span>
-              <textarea
-                v-model="composeForm.message"
-                rows="8"
-                maxlength="500"
-                placeholder="Escribe tu mensaje"
-              ></textarea>
-            </label>
-
-            <div class="messages-composer__actions">
-              <button class="action-button action-button--ghost" type="button" @click="cancelCompose">
-                Cancelar
-              </button>
-              <button class="action-button" type="submit" :disabled="sending">
-                <Send :size="16" aria-hidden="true" />
-                {{ sending ? 'Enviando...' : 'Enviar mensaje' }}
-              </button>
-            </div>
-          </form>
-
-          <template v-else-if="activeThread">
-            <div class="messages-conversation panel panel-pad-lg panel-stack-md">
-              <article
-                v-for="message in activeMessages"
-                :key="message.id"
-                class="messages-bubble"
-                :class="{ 'messages-bubble--outgoing': isOutgoingMessage(message) }"
-              >
-                <div class="messages-bubble__meta">
-                  <strong>{{ isOutgoingMessage(message) ? 'Tú' : message.senderDisplayName }}</strong>
-                  <span>{{ formatThreadTimestamp(message.sentAt) }}</span>
-                </div>
-                <p class="messages-bubble__body">{{ message.message }}</p>
-              </article>
-            </div>
-
-            <form class="messages-reply panel panel-pad-lg panel-stack-md" @submit.prevent="sendReply">
-              <label class="messages-field">
-                <span>Responder</span>
-                <textarea
-                  v-model="replyBody"
-                  rows="5"
-                  maxlength="500"
-                  placeholder="Escribe tu respuesta"
-                ></textarea>
-              </label>
-
-              <div class="messages-composer__actions">
-                <button class="action-button" type="submit" :disabled="sending">
-                  <Send :size="16" aria-hidden="true" />
-                  {{ sending ? 'Enviando...' : 'Enviar respuesta' }}
-                </button>
-              </div>
-            </form>
-          </template>
+          <MessageConversationPanel
+            v-else-if="activeThread"
+            :thread="activeThread"
+            :current-user-id="currentUserId"
+            :reply-body="replyBody"
+            :send-error="sendError"
+            :sending="sending"
+            @update:reply-body="replyBody = $event"
+            @submit="sendReply"
+          />
 
           <div v-else class="messages-empty panel panel-pad-lg panel-stack-sm">
             <MessageSquare :size="20" aria-hidden="true" />
             <p class="ui-copy-muted">
-              No tienes ningun hilo seleccionado. Pulsa en “Nuevo mensaje” para empezar uno.
+              No tienes ningun hilo seleccionado. Pulsa en "Nuevo mensaje" para empezar uno.
             </p>
           </div>
         </section>
@@ -577,211 +403,9 @@ function isOutgoingMessage(message: MessageItem): boolean {
   grid-template-columns: minmax(240px, 280px) minmax(0, 1fr);
 }
 
-.messages-sidebar {
-  align-content: start;
-}
-
-.messages-sidebar__compose {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-xs);
-  min-height: 42px;
-  padding: 0 16px;
-  align-self: start;
-  background: linear-gradient(180deg, #2f8f47 0%, #216835 100%);
-  border-color: rgba(121, 231, 155, 0.24);
-  box-shadow: 0 18px 32px rgba(14, 44, 19, 0.22);
-}
-
-.messages-sidebar__compose:hover {
-  filter: brightness(1.04);
-}
-
-.messages-composer__actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--space-xs);
-}
-
-.messages-thread-list {
-  display: grid;
-  align-content: start;
-  grid-auto-rows: min-content;
-  gap: var(--space-sm);
-}
-
-.messages-thread-card {
-  width: 100%;
-  display: grid;
-  gap: 6px;
-  padding: 10px 12px;
-  border: 1px solid var(--line-soft);
-  border-radius: var(--radius-sm);
-  background: var(--surface-glass-subtle);
-  text-align: left;
-}
-
-.messages-thread-card--active {
-  border-color: rgba(255, 76, 58, 0.42);
-  background: rgba(255, 76, 58, 0.09);
-}
-
-.messages-thread-card--unread {
-  box-shadow: inset 3px 0 0 rgba(255, 76, 58, 0.82);
-}
-
-.messages-thread-card__header,
-.messages-thread-card__meta,
-.messages-bubble__meta {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--space-sm);
-}
-
-.messages-thread-card__subject {
-  color: var(--text-strong);
-  font-size: var(--fs-body-sm);
-  line-height: 1.4;
-}
-
-.messages-thread-card__meta {
-  color: var(--text-muted);
-  font-size: var(--fs-caption);
-}
-
-.messages-thread-card__name {
-  font-weight: 600;
-}
-
-.messages-thread-card__time,
-.messages-bubble__meta span {
-  white-space: nowrap;
-}
-
-.messages-thread-card__badge {
-  min-width: 24px;
-  height: 24px;
-  padding: 0 8px;
-  border-radius: var(--radius-pill);
-  background: var(--accent);
-  color: var(--text-on-light);
-  display: inline-grid;
-  place-items: center;
-  font-size: var(--fs-caption);
-  font-weight: 800;
-}
-
-.messages-conversation,
-.messages-empty,
-.messages-composer,
-.messages-reply {
-  min-height: 220px;
-}
-
-.messages-reply {
-  border-color: rgba(255, 76, 58, 0.3);
-  background:
-    linear-gradient(180deg, rgba(255, 76, 58, 0.08) 0%, rgba(255, 76, 58, 0.02) 100%),
-    var(--surface-panel-gradient);
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 76, 58, 0.06),
-    var(--shadow-panel);
-}
-
-.messages-bubble {
-  max-width: min(88%, 720px);
-  display: grid;
-  gap: var(--space-xs);
-  padding: var(--space-md);
-  border: 1px solid var(--line-soft);
-  border-radius: var(--radius-sm);
-  background: var(--surface-glass-subtle);
-}
-
-.messages-bubble--outgoing {
-  margin-left: auto;
-  border-color: rgba(255, 76, 58, 0.32);
-  background: rgba(255, 76, 58, 0.08);
-}
-
-.messages-bubble__body {
-  margin: 0;
-  color: var(--text-body);
-  line-height: 1.6;
-  white-space: pre-wrap;
-}
-
-.messages-field {
-  display: grid;
-  gap: var(--space-xs);
-}
-
-.messages-field span {
-  color: var(--text-muted);
-  font-size: var(--fs-caption);
-  font-weight: 700;
-}
-
-.messages-field input,
-.messages-field select,
-.messages-field textarea {
-  width: 100%;
-  min-height: 50px;
-  padding: 12px 14px;
-  border: 1px solid var(--line-soft);
-  border-radius: var(--radius-control);
-  color: var(--text-body);
-  background: var(--surface-glass);
-}
-
-.messages-field select {
-  appearance: none;
-  background:
-    linear-gradient(180deg, rgba(39, 16, 16, 0.98) 0%, rgba(24, 10, 10, 0.98) 100%);
-}
-
-.messages-field select option {
-  color: var(--text-strong);
-  background: #1b0c0c;
-}
-
-.messages-field textarea {
-  resize: vertical;
-  min-height: 160px;
-}
-
-.messages-field input:focus,
-.messages-field select:focus,
-.messages-field textarea:focus {
-  outline: none;
-  border-color: var(--line-strong);
-  box-shadow: 0 0 0 3px rgba(255, 45, 32, 0.12);
-}
-
 @media (max-width: 980px) {
   .messages-layout {
     grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 720px) {
-  .messages-thread-card__header,
-  .messages-thread-card__meta,
-  .messages-bubble__meta,
-  .messages-composer__actions {
-    flex-direction: column;
-    align-items: start;
-  }
-
-  .messages-bubble {
-    max-width: 100%;
-  }
-
-  .messages-composer__actions .action-button {
-    width: 100%;
   }
 }
 </style>

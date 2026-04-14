@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/organizer-workspace")
 @PreAuthorize("hasRole('ORGANIZER')")
-public class OrganizerWorkspaceController {
+public class OrganizerWorkspaceController extends AbstractWebController {
 
     private final OrganizerWorkspaceUseCase organizerWorkspaceUseCase;
     private final OrganizerWorkspaceWebMapper organizerWorkspaceWebMapper;
@@ -34,7 +34,7 @@ public class OrganizerWorkspaceController {
     @GetMapping
     public OrganizerWorkspaceResponse getWorkspace(Authentication authentication) {
         return organizerWorkspaceWebMapper.toResponse(
-                organizerWorkspaceUseCase.getWorkspace(authentication != null ? authentication.getName() : null)
+                organizerWorkspaceUseCase.getWorkspace(authenticatedEmail(authentication))
         );
     }
 
@@ -43,7 +43,7 @@ public class OrganizerWorkspaceController {
                                                           Authentication authentication) {
         return organizerWorkspaceWebMapper.toResponse(
                 organizerWorkspaceUseCase.addOrganizerService(
-                        authentication != null ? authentication.getName() : null,
+                        authenticatedEmail(authentication),
                         request.getServiceId()
                 )
         );
@@ -54,7 +54,7 @@ public class OrganizerWorkspaceController {
                                                              Authentication authentication) {
         return organizerWorkspaceWebMapper.toResponse(
                 organizerWorkspaceUseCase.removeOrganizerService(
-                        authentication != null ? authentication.getName() : null,
+                        authenticatedEmail(authentication),
                         organizerServiceId
                 )
         );
@@ -65,7 +65,7 @@ public class OrganizerWorkspaceController {
                                                   Authentication authentication) {
         return organizerWorkspaceWebMapper.toResponse(
                 organizerWorkspaceUseCase.createEvent(
-                        authentication != null ? authentication.getName() : null,
+                        authenticatedEmail(authentication),
                         organizerWorkspaceWebMapper.toDraft(request)
                 )
         );
@@ -77,7 +77,7 @@ public class OrganizerWorkspaceController {
                                                   Authentication authentication) {
         return organizerWorkspaceWebMapper.toResponse(
                 organizerWorkspaceUseCase.updateEvent(
-                        authentication != null ? authentication.getName() : null,
+                        authenticatedEmail(authentication),
                         eventId,
                         organizerWorkspaceWebMapper.toDraft(request)
                 )
@@ -89,7 +89,7 @@ public class OrganizerWorkspaceController {
                                                   Authentication authentication) {
         return organizerWorkspaceWebMapper.toResponse(
                 organizerWorkspaceUseCase.deleteEvent(
-                        authentication != null ? authentication.getName() : null,
+                        authenticatedEmail(authentication),
                         eventId
                 )
         );

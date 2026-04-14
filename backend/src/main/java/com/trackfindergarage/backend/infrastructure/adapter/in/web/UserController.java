@@ -19,7 +19,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/users")
-public class UserController {
+public class UserController extends AbstractWebController {
 
     private final UserUseCase userUseCase;
     private final PublicProfileUseCase publicProfileUseCase;
@@ -38,20 +38,12 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN')")
     public UserResponse createUser(@Valid @RequestBody CreateUserRequest request) {
         User userToCreate = userWebMapper.toDomain(request);
-
-        User createdUser = userUseCase.createUser(
-                userToCreate,
-                request.getPassword()
-        );
-
-        return userWebMapper.toResponse(createdUser);
+        return userWebMapper.toResponse(userUseCase.createUser(userToCreate, request.getPassword()));
     }
 
     @GetMapping("/me")
     public UserResponse getCurrentUser(Authentication authentication) {
-        return userWebMapper.toResponse(
-                userUseCase.getCurrentUser(authentication != null ? authentication.getName() : null)
-        );
+        return userWebMapper.toResponse(userUseCase.getCurrentUser(authenticatedEmail(authentication)));
     }
 
     @GetMapping("/public/{displayName}")
@@ -73,7 +65,7 @@ public class UserController {
                                           @Valid @RequestBody UpdateCurrentUserProfileRequest request) {
         return userWebMapper.toResponse(
                 userUseCase.updateCurrentUserProfile(
-                        authentication != null ? authentication.getName() : null,
+                        authenticatedEmail(authentication),
                         request.getName(),
                         request.getSurname(),
                         request.getEmail(),
@@ -90,13 +82,7 @@ public class UserController {
                                    @Valid @RequestBody UpdateUserRequest request) {
         User userToUpdate = new User();
         userWebMapper.updateDomain(userToUpdate, request);
-
-        User updatedUser = userUseCase.updateUser(
-                id,
-                userToUpdate
-        );
-
-        return userWebMapper.toResponse(updatedUser);
+        return userWebMapper.toResponse(userUseCase.updateUser(id, userToUpdate));
     }
 
     @DeleteMapping("/{id}")
@@ -109,10 +95,7 @@ public class UserController {
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public List<UserResponse> getAllUsers() {
-        return userUseCase.getAllUsers()
-                .stream()
-                .map(userWebMapper::toResponse)
-                .toList();
+        return mapResponses(userUseCase.getAllUsers(), userWebMapper::toResponse);
     }
 
     @GetMapping("/{id}")

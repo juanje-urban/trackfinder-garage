@@ -16,7 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/organizers")
 @PreAuthorize("hasRole('ADMIN')")
-public class OrganizerController {
+public class OrganizerController extends AbstractWebController {
 
     private final OrganizerUseCase organizerUseCase;
     private final OrganizerWebMapper organizerWebMapper;
@@ -30,13 +30,7 @@ public class OrganizerController {
     @ResponseStatus(HttpStatus.CREATED)
     public OrganizerResponse createOrganizer(@Valid @RequestBody CreateOrganizerRequest request) {
         Organizer organizerToCreate = organizerWebMapper.toDomain(request);
-
-        Organizer createdOrganizer = organizerUseCase.createOrganizer(
-                organizerToCreate,
-                request.getPassword()
-        );
-
-        return organizerWebMapper.toResponse(createdOrganizer);
+        return organizerWebMapper.toResponse(organizerUseCase.createOrganizer(organizerToCreate, request.getPassword()));
     }
 
     @PutMapping("/{id}")
@@ -44,9 +38,7 @@ public class OrganizerController {
                                              @Valid @RequestBody UpdateOrganizerRequest request) {
         Organizer organizerToUpdate = new Organizer();
         organizerWebMapper.updateDomain(organizerToUpdate, request);
-
-        Organizer updatedOrganizer = organizerUseCase.updateOrganizer(id, organizerToUpdate);
-        return organizerWebMapper.toResponse(updatedOrganizer);
+        return organizerWebMapper.toResponse(organizerUseCase.updateOrganizer(id, organizerToUpdate));
     }
 
     @DeleteMapping("/{id}")
@@ -57,10 +49,7 @@ public class OrganizerController {
 
     @GetMapping
     public List<OrganizerResponse> getAllOrganizers() {
-        return organizerUseCase.getAllOrganizers()
-                .stream()
-                .map(organizerWebMapper::toResponse)
-                .toList();
+        return mapResponses(organizerUseCase.getAllOrganizers(), organizerWebMapper::toResponse);
     }
 
     @GetMapping("/{id}")

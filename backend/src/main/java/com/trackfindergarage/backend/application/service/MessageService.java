@@ -55,17 +55,7 @@ public class MessageService implements MessageUseCase {
             throw new IllegalArgumentException(USER_CANNOT_MESSAGE_SELF);
         }
 
-        User sender = userPersistencePort.findById(senderId)
-                .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND_WITH_ID + senderId));
-        User receiver = userPersistencePort.findById(receiverId)
-                .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND_WITH_ID + receiverId));
-
-        message.setSender(sender);
-        message.setReceiver(receiver);
-        message.setSentAt(LocalDateTime.now());
-        message.setIsRead(false);
-
-        return messagePersistencePort.save(message);
+        return saveNewMessage(message, loadUserById(senderId), loadUserById(receiverId));
     }
 
     @Override
@@ -83,18 +73,14 @@ public class MessageService implements MessageUseCase {
     @Override
     @Transactional(readOnly = true)
     public List<Message> getMessagesBySenderId(Long senderId) {
-        userPersistencePort.findById(senderId)
-                .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND_WITH_ID + senderId));
-
+        loadUserById(senderId);
         return messagePersistencePort.findBySenderIdOrderBySentAtAsc(senderId);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<Message> getMessagesByReceiverId(Long receiverId) {
-        userPersistencePort.findById(receiverId)
-                .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND_WITH_ID + receiverId));
-
+        loadUserById(receiverId);
         return messagePersistencePort.findByReceiverIdOrderBySentAtAsc(receiverId);
     }
 
@@ -102,12 +88,8 @@ public class MessageService implements MessageUseCase {
     @Transactional(readOnly = true)
     public List<Message> getConversation(Long userId1, Long userId2) {
         validateConversationUsers(userId1, userId2);
-
-        userPersistencePort.findById(userId1)
-                .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND_WITH_ID + userId1));
-        userPersistencePort.findById(userId2)
-                .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND_WITH_ID + userId2));
-
+        loadUserById(userId1);
+        loadUserById(userId2);
         return messagePersistencePort.findConversation(userId1, userId2);
     }
 
@@ -141,17 +123,14 @@ public class MessageService implements MessageUseCase {
     public List<Message> getOwnConversation(String authenticatedEmail, Long counterpartUserId) {
         User currentUser = loadAuthenticatedUser(authenticatedEmail);
         validateConversationUsers(currentUser.getId(), counterpartUserId);
-        userPersistencePort.findById(counterpartUserId)
-                .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND_WITH_ID + counterpartUserId));
-
+        loadUserById(counterpartUserId);
         return messagePersistencePort.findConversation(currentUser.getId(), counterpartUserId);
     }
 
     @Override
     public Message createOwnMessage(String authenticatedEmail, Long receiverId, String subject, String content) {
         User sender = loadAuthenticatedUser(authenticatedEmail);
-        User receiver = userPersistencePort.findById(receiverId)
-                .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND_WITH_ID + receiverId));
+        User receiver = loadUserById(receiverId);
 
         if (!Boolean.TRUE.equals(receiver.getEnabled())) {
             throw new IllegalArgumentException(RECEIVER_ACCOUNT_IS_DISABLED);
@@ -163,7 +142,7 @@ public class MessageService implements MessageUseCase {
         message.setSubject(subject);
         message.setContent(content);
 
-        return createMessage(message);
+        return saveNewMessage(message, sender, receiver);
     }
 
     @Override
@@ -225,9 +204,7 @@ public class MessageService implements MessageUseCase {
     }
 
     private void validateReceiverAccess(Message message, Long userId) {
-        userPersistencePort.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND_WITH_ID + userId));
-
+        loadUserById(userId);
         if (!message.getReceiver().getId().equals(userId)) {
             throw new IllegalArgumentException(ONLY_RECEIVER_CAN_CHANGE_READ_STATUS);
         }
@@ -238,9 +215,26 @@ public class MessageService implements MessageUseCase {
             throw new IllegalArgumentException(AUTHENTICATED_EMAIL_REQUIRED);
         }
 
-        String normalizedEmail = authenticatedEmail.trim().toLowerCase(Locale.ROOT);
+        String normalizedEmail = normalizeEmail(authenticatedEmail);
         return userPersistencePort.findByEmail(normalizedEmail)
                 .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND_WITH_EMAIL + normalizedEmail));
+    }
+
+    private User loadUserById(Long userId) {
+        return userPersistencePort.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND_WITH_ID + userId));
+    }
+
+    private String normalizeEmail(String authenticatedEmail) {
+        return authenticatedEmail.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private Message saveNewMessage(Message message, User sender, User receiver) {
+        message.setSender(sender);
+        message.setReceiver(receiver);
+        message.setSentAt(LocalDateTime.now());
+        message.setIsRead(false);
+        return messagePersistencePort.save(message);
     }
 
     private Long extractSenderId(Message message) {

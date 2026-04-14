@@ -19,7 +19,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/tracks")
-public class TrackController {
+public class TrackController extends AbstractWebController {
 
     private final TrackUseCase trackUseCase;
     private final LapTimeUseCase lapTimeUseCase;
@@ -40,8 +40,7 @@ public class TrackController {
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasRole('ADMIN')")
     public TrackResponse createTrack(@Valid @RequestBody CreateTrackRequest request) {
-        Track createdTrack = trackUseCase.createTrack(trackWebMapper.toDomain(request));
-        return trackWebMapper.toResponse(createdTrack);
+        return trackWebMapper.toResponse(trackUseCase.createTrack(trackWebMapper.toDomain(request)));
     }
 
     @PutMapping("/{id}")
@@ -50,9 +49,7 @@ public class TrackController {
                                      @Valid @RequestBody UpdateTrackRequest request) {
         Track trackToUpdate = new Track();
         trackWebMapper.updateDomain(trackToUpdate, request);
-
-        Track updatedTrack = trackUseCase.updateTrack(id, trackToUpdate);
-        return trackWebMapper.toResponse(updatedTrack);
+        return trackWebMapper.toResponse(trackUseCase.updateTrack(id, trackToUpdate));
     }
 
     @DeleteMapping("/{id}")
@@ -64,10 +61,7 @@ public class TrackController {
 
     @GetMapping
     public List<TrackResponse> getAllTracks() {
-        return trackUseCase.getAllTracks()
-                .stream()
-                .map(trackWebMapper::toResponse)
-                .toList();
+        return mapResponses(trackUseCase.getAllTracks(), trackWebMapper::toResponse);
     }
 
     @GetMapping("/{id}")
@@ -77,8 +71,7 @@ public class TrackController {
 
     @GetMapping("/{id}/record")
     public TrackRecordResponse getTrackRecord(@PathVariable Long id) {
-        LapTime bestLapTime = lapTimeUseCase.getBestLapTimeByTrackId(id);
-        return trackRecordWebMapper.toResponse(bestLapTime);
+        return trackRecordWebMapper.toResponse(lapTimeUseCase.getBestLapTimeByTrackId(id));
     }
 
     @GetMapping("/{id}/ranking")
@@ -88,10 +81,9 @@ public class TrackController {
             throw new IllegalArgumentException("Limit must be greater than 0");
         }
 
-        return lapTimeUseCase.getRankingByTrackId(id)
+        return mapResponses(lapTimeUseCase.getRankingByTrackId(id)
                 .stream()
                 .limit(limit)
-                .map(trackRecordWebMapper::toResponse)
-                .toList();
+                .toList(), trackRecordWebMapper::toResponse);
     }
 }

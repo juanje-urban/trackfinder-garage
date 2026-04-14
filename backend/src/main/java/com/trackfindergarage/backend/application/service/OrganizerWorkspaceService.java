@@ -206,73 +206,13 @@ public class OrganizerWorkspaceService implements OrganizerWorkspaceUseCase {
     }
 
     private OrganizerWorkspaceSnapshot buildWorkspaceSnapshot(Organizer organizer) {
-        List<Service> availableServices = serviceUseCase.getAllServicesAllowedForOrganizer()
-                .stream()
-                .filter(service -> Boolean.TRUE.equals(service.getEnabled()))
-                .sorted(Comparator.comparing(Service::getName, String.CASE_INSENSITIVE_ORDER))
-                .toList();
-
+        List<Service> availableServices = loadAvailableServices();
         List<com.trackfindergarage.backend.domain.model.OrganizerService> organizerServices =
-                organizerServiceUseCase.getOrganizerServicesByOrganizerId(organizer.getIdUser())
-                        .stream()
-                        .sorted(Comparator.comparing(
-                                assignment -> assignment.getService().getName(),
-                                String.CASE_INSENSITIVE_ORDER
-                        ))
-                        .toList();
-
-        List<Track> tracks = trackPersistencePort.findAll()
-                .stream()
-                .sorted(Comparator.comparing(Track::getName, String.CASE_INSENSITIVE_ORDER))
-                .toList();
-
-        List<TrackService> trackServices = trackServiceUseCase.getAllTrackServices()
-                .stream()
-                .sorted(Comparator
-                        .comparing((TrackService assignment) -> assignment.getTrack().getName(), String.CASE_INSENSITIVE_ORDER)
-                        .thenComparing(assignment -> assignment.getService().getName(), String.CASE_INSENSITIVE_ORDER))
-                .toList();
-
-        List<Event> events = eventUseCase.getEventsByOrganizerId(organizer.getIdUser())
-                .stream()
-                .sorted(Comparator.comparing(Event::getEventDate))
-                .toList();
-
-        Map<Long, List<EventService>> eventServicesByEventId = new HashMap<>();
-        Map<Long, Set<Long>> bookedEventServiceIdsByEventId = new HashMap<>();
-        List<OrganizerWorkspaceEventStatsView> eventStats = new ArrayList<>();
-        BigDecimal totalBaseRevenue = BigDecimal.ZERO;
-        BigDecimal totalServiceRevenue = BigDecimal.ZERO;
-        BigDecimal totalGrossRevenue = BigDecimal.ZERO;
-        long totalBookings = 0L;
-        long totalSoldServices = 0L;
-        long futureEvents = 0L;
-        long pastEvents = 0L;
-        int totalCapacity = 0;
-        int totalRemainingCapacity = 0;
-
-        for (Event event : events) {
-            List<EventService> eventServices = eventServiceUseCase.getEventServicesByEventId(event.getId());
-            eventServicesByEventId.put(event.getId(), eventServices);
-            bookedEventServiceIdsByEventId.put(event.getId(), findBookedEventServiceIds(event.getId()));
-
-            OrganizerWorkspaceEventStatsView eventStat = buildEventStats(event);
-            eventStats.add(eventStat);
-
-            totalBaseRevenue = totalBaseRevenue.add(eventStat.baseRevenue());
-            totalServiceRevenue = totalServiceRevenue.add(eventStat.serviceRevenue());
-            totalGrossRevenue = totalGrossRevenue.add(eventStat.grossRevenue());
-            totalBookings += eventStat.bookings();
-            totalSoldServices += eventStat.soldServices();
-            totalCapacity += eventStat.totalCapacity();
-            totalRemainingCapacity += eventStat.remainingCapacity();
-
-            if (event.getEventDate() != null && event.getEventDate().isAfter(LocalDate.now())) {
-                futureEvents++;
-            } else {
-                pastEvents++;
-            }
-        }
+                loadOrganizerServices(organizer.getIdUser());
+        List<Track> tracks = loadTracks();
+        List<TrackService> trackServices = loadTrackServices();
+        List<Event> events = loadOrganizerEvents(organizer.getIdUser());
+        WorkspaceEventData workspaceEventData = collectWorkspaceEventData(events);
 
         return new OrganizerWorkspaceSnapshot(
                 organizer,
@@ -281,20 +221,68 @@ public class OrganizerWorkspaceService implements OrganizerWorkspaceUseCase {
                 tracks,
                 trackServices,
                 events,
+                workspaceEventData.eventServicesByEventId(),
+                workspaceEventData.bookedEventServiceIdsByEventId(),
+                workspaceEventData.stats()
+        );
+    }
+
+    private List<Service> loadAvailableServices() {
+        return serviceUseCase.getAllServicesAllowedForOrganizer()
+                .stream()
+                .filter(service -> Boolean.TRUE.equals(service.getEnabled()))
+                .sorted(Comparator.comparing(Service::getName, String.CASE_INSENSITIVE_ORDER))
+                .toList();
+    }
+
+    private List<com.trackfindergarage.backend.domain.model.OrganizerService> loadOrganizerServices(Long organizerId) {
+        return organizerServiceUseCase.getOrganizerServicesByOrganizerId(organizerId)
+                .stream()
+                .sorted(Comparator.comparing(
+                        assignment -> assignment.getService().getName(),
+                        String.CASE_INSENSITIVE_ORDER
+                ))
+                .toList();
+    }
+
+    private List<Track> loadTracks() {
+        return trackPersistencePort.findAll()
+                .stream()
+                .sorted(Comparator.comparing(Track::getName, String.CASE_INSENSITIVE_ORDER))
+                .toList();
+    }
+
+    private List<TrackService> loadTrackServices() {
+        return trackServiceUseCase.getAllTrackServices()
+                .stream()
+                .sorted(Comparator
+                        .comparing((TrackService assignment) -> assignment.getTrack().getName(), String.CASE_INSENSITIVE_ORDER)
+                        .thenComparing(assignment -> assignment.getService().getName(), String.CASE_INSENSITIVE_ORDER))
+                .toList();
+    }
+
+    private List<Event> loadOrganizerEvents(Long organizerId) {
+        return eventUseCase.getEventsByOrganizerId(organizerId)
+                .stream()
+                .sorted(Comparator.comparing(Event::getEventDate))
+                .toList();
+    }
+
+    private WorkspaceEventData collectWorkspaceEventData(List<Event> events) {
+        Map<Long, List<EventService>> eventServicesByEventId = new HashMap<>();
+        Map<Long, Set<Long>> bookedEventServiceIdsByEventId = new HashMap<>();
+        WorkspaceStatsAccumulator statsAccumulator = new WorkspaceStatsAccumulator(LocalDate.now());
+
+        for (Event event : events) {
+            eventServicesByEventId.put(event.getId(), eventServiceUseCase.getEventServicesByEventId(event.getId()));
+            bookedEventServiceIdsByEventId.put(event.getId(), findBookedEventServiceIds(event.getId()));
+            statsAccumulator.add(buildEventStats(event));
+        }
+
+        return new WorkspaceEventData(
                 eventServicesByEventId,
                 bookedEventServiceIdsByEventId,
-                new OrganizerWorkspaceStatsView(
-                        totalBaseRevenue,
-                        totalServiceRevenue,
-                        totalGrossRevenue,
-                        totalBookings,
-                        totalSoldServices,
-                        futureEvents,
-                        pastEvents,
-                        totalCapacity,
-                        totalRemainingCapacity,
-                        eventStats
-                )
+                statsAccumulator.toView()
         );
     }
 
@@ -327,6 +315,63 @@ public class OrganizerWorkspaceService implements OrganizerWorkspaceUseCase {
                 serviceRevenue,
                 baseRevenue.add(serviceRevenue)
         );
+    }
+
+    private record WorkspaceEventData(
+            Map<Long, List<EventService>> eventServicesByEventId,
+            Map<Long, Set<Long>> bookedEventServiceIdsByEventId,
+            OrganizerWorkspaceStatsView stats
+    ) {
+    }
+
+    private static final class WorkspaceStatsAccumulator {
+        private final LocalDate today;
+        private final List<OrganizerWorkspaceEventStatsView> eventStats = new ArrayList<>();
+        private BigDecimal totalBaseRevenue = BigDecimal.ZERO;
+        private BigDecimal totalServiceRevenue = BigDecimal.ZERO;
+        private BigDecimal totalGrossRevenue = BigDecimal.ZERO;
+        private long totalBookings = 0L;
+        private long totalSoldServices = 0L;
+        private long futureEvents = 0L;
+        private long pastEvents = 0L;
+        private int totalCapacity = 0;
+        private int totalRemainingCapacity = 0;
+
+        private WorkspaceStatsAccumulator(LocalDate today) {
+            this.today = today;
+        }
+
+        private void add(OrganizerWorkspaceEventStatsView eventStat) {
+            eventStats.add(eventStat);
+            totalBaseRevenue = totalBaseRevenue.add(eventStat.baseRevenue());
+            totalServiceRevenue = totalServiceRevenue.add(eventStat.serviceRevenue());
+            totalGrossRevenue = totalGrossRevenue.add(eventStat.grossRevenue());
+            totalBookings += eventStat.bookings();
+            totalSoldServices += eventStat.soldServices();
+            totalCapacity += eventStat.totalCapacity();
+            totalRemainingCapacity += eventStat.remainingCapacity();
+
+            if (eventStat.eventDate() != null && eventStat.eventDate().isAfter(today)) {
+                futureEvents++;
+            } else {
+                pastEvents++;
+            }
+        }
+
+        private OrganizerWorkspaceStatsView toView() {
+            return new OrganizerWorkspaceStatsView(
+                    totalBaseRevenue,
+                    totalServiceRevenue,
+                    totalGrossRevenue,
+                    totalBookings,
+                    totalSoldServices,
+                    futureEvents,
+                    pastEvents,
+                    totalCapacity,
+                    totalRemainingCapacity,
+                    eventStats
+            );
+        }
     }
 
     private Organizer loadEnabledOrganizer(String authenticatedEmail) {

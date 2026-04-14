@@ -16,7 +16,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/events")
-public class EventController {
+public class EventController extends AbstractWebController {
 
     private final EventUseCase eventUseCase;
     private final EventWebMapper eventWebMapper;
@@ -29,17 +29,14 @@ public class EventController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public EventResponse createEvent(@Valid @RequestBody CreateEventRequest request) {
-        Event createdEvent = eventUseCase.createEvent(eventWebMapper.toDomain(request));
-        return toResponse(createdEvent);
+        return toResponse(eventUseCase.createEvent(eventWebMapper.toDomain(request)));
     }
 
     @PutMapping("/{id}")
     public EventResponse updateEvent(@PathVariable Long id, @Valid @RequestBody UpdateEventRequest request) {
         Event eventToUpdate = new Event();
         eventWebMapper.updateDomain(eventToUpdate, request);
-
-        Event updatedEvent = eventUseCase.updateEvent(id, eventToUpdate);
-        return toResponse(updatedEvent);
+        return toResponse(eventUseCase.updateEvent(id, eventToUpdate));
     }
 
     @DeleteMapping("/{id}")
@@ -50,18 +47,12 @@ public class EventController {
 
     @GetMapping
     public List<EventResponse> getAllEvents() {
-        return eventUseCase.getAllEvents()
-                .stream()
-                .map(this::toResponse)
-                .toList();
+        return mapResponses(eventUseCase.getAllEvents(), this::toResponse);
     }
 
     @GetMapping("/future")
     public List<EventResponse> getFutureEvents() {
-        return eventUseCase.getFutureEvents()
-                .stream()
-                .map(this::toResponse)
-                .toList();
+        return mapResponses(eventUseCase.getFutureEvents(), this::toResponse);
     }
 
     @GetMapping("/{id}")
@@ -71,18 +62,12 @@ public class EventController {
 
     @GetMapping("/organizer/{organizerId}")
     public List<EventResponse> getEventsByOrganizerId(@PathVariable Long organizerId) {
-        return eventUseCase.getEventsByOrganizerId(organizerId)
-                .stream()
-                .map(this::toResponse)
-                .toList();
+        return mapResponses(eventUseCase.getEventsByOrganizerId(organizerId), this::toResponse);
     }
 
     @GetMapping("/track/{trackId}")
     public List<EventResponse> getEventsByTrackId(@PathVariable Long trackId) {
-        return eventUseCase.getEventsByTrackId(trackId)
-                .stream()
-                .map(this::toResponse)
-                .toList();
+        return mapResponses(eventUseCase.getEventsByTrackId(trackId), this::toResponse);
     }
 
     @GetMapping("/range")
@@ -90,10 +75,7 @@ public class EventController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
     ) {
-        return eventUseCase.getEventsByDateRange(startDate, endDate)
-                .stream()
-                .map(this::toResponse)
-                .toList();
+        return mapResponses(eventUseCase.getEventsByDateRange(startDate, endDate), this::toResponse);
     }
 
     private EventResponse toResponse(Event event) {

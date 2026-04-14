@@ -379,78 +379,7 @@ public class DemoDataSeeder implements CommandLineRunner {
     }
 
     private void seedServices() {
-        createServiceIfMissing(
-                BOX_RENTAL_SERVICE_NAME,
-                "Reserva de box privado para el evento.",
-                true,
-                false
-        );
-        createServiceIfMissing(
-                COVERED_PADDOCK_SERVICE_NAME,
-                "Uso de plaza en paddock cubierto durante la jornada.",
-                true,
-                false
-        );
-        createServiceIfMissing(
-                NOISE_CONTROL_SERVICE_NAME,
-                "Supervision y medicion del nivel sonoro del vehiculo en pista.",
-                true,
-                false
-        );
-        createServiceIfMissing(
-                SKIDPAD_SERVICE_NAME,
-                "Acceso a ejercicios en superficie deslizante dentro del circuito.",
-                true,
-                false
-        );
-        createServiceIfMissing(
-                EVENT_PHOTOGRAPHY_SERVICE_NAME,
-                "Cobertura fotografica profesional de la jornada.",
-                false,
-                true
-        );
-        createServiceIfMissing(
-                EVENT_VIDEO_SERVICE_NAME,
-                "Edicion de video con los mejores momentos del evento.",
-                false,
-                true
-        );
-        createServiceIfMissing(
-                CATERING_SERVICE_NAME,
-                "Servicio de comida y bebida para asistentes y participantes.",
-                false,
-                true
-        );
-        createServiceIfMissing(
-                WELCOME_PACK_SERVICE_NAME,
-                "Pack de bienvenida con acreditacion y material del evento.",
-                false,
-                true
-        );
-        createServiceIfMissing(
-                INSTRUCTOR_SERVICE_NAME,
-                "Sesion de asesoramiento y acompanamiento con instructor.",
-                false,
-                true
-        );
-        createServiceIfMissing(
-                SECOND_DRIVER_INSURANCE_SERVICE_NAME,
-                "Cobertura adicional para incluir un segundo conductor autorizado.",
-                false,
-                true
-        );
-        createServiceIfMissing(
-                COPILOT_INSURANCE_SERVICE_NAME,
-                "Cobertura adicional para incluir copiloto durante la actividad.",
-                false,
-                true
-        );
-        createServiceIfMissing(
-                TRANSPONDER_TIMING_SERVICE_NAME,
-                "Sistema de cronometraje con transponder para registrar tiempos por vuelta.",
-                true,
-                true
-        );
+        serviceSeeds().forEach(this::createServiceIfMissing);
     }
 
     private void createTrackIfMissing(String name, String location, String description) {
@@ -465,19 +394,16 @@ public class DemoDataSeeder implements CommandLineRunner {
         trackRepository.save(track);
     }
 
-    private void createServiceIfMissing(String name,
-                                        String description,
-                                        boolean allowedForTrack,
-                                        boolean allowedForOrganizer) {
-        if (serviceRepository.findByName(name).isPresent()) {
+    private void createServiceIfMissing(ServiceSeed serviceSeed) {
+        if (serviceRepository.findByName(serviceSeed.name()).isPresent()) {
             return;
         }
 
         Service service = new Service();
-        service.setName(name);
-        service.setDescription(description);
-        service.setAllowedForTrack(allowedForTrack);
-        service.setAllowedForOrganizer(allowedForOrganizer);
+        service.setName(serviceSeed.name());
+        service.setDescription(serviceSeed.description());
+        service.setAllowedForTrack(serviceSeed.allowedForTrack());
+        service.setAllowedForOrganizer(serviceSeed.allowedForOrganizer());
         service.setEnabled(true);
         serviceRepository.save(service);
     }
@@ -1107,6 +1033,83 @@ public class DemoDataSeeder implements CommandLineRunner {
                         PAUL_RICARD_TRACK_NAME,
                         "Le Castellet, Provenza-Alpes-Costa Azul, Francia",
                         "Circuito frances moderno y versatil, frecuentemente utilizado para entrenamientos privados y eventos internacionales."
+                )
+        );
+    }
+
+    private List<ServiceSeed> serviceSeeds() {
+        return List.of(
+                new ServiceSeed(
+                        BOX_RENTAL_SERVICE_NAME,
+                        "Reserva de box privado para el evento.",
+                        true,
+                        false
+                ),
+                new ServiceSeed(
+                        COVERED_PADDOCK_SERVICE_NAME,
+                        "Uso de plaza en paddock cubierto durante la jornada.",
+                        true,
+                        false
+                ),
+                new ServiceSeed(
+                        NOISE_CONTROL_SERVICE_NAME,
+                        "Supervision y medicion del nivel sonoro del vehiculo en pista.",
+                        true,
+                        false
+                ),
+                new ServiceSeed(
+                        SKIDPAD_SERVICE_NAME,
+                        "Acceso a ejercicios en superficie deslizante dentro del circuito.",
+                        true,
+                        false
+                ),
+                new ServiceSeed(
+                        EVENT_PHOTOGRAPHY_SERVICE_NAME,
+                        "Cobertura fotografica profesional de la jornada.",
+                        false,
+                        true
+                ),
+                new ServiceSeed(
+                        EVENT_VIDEO_SERVICE_NAME,
+                        "Edicion de video con los mejores momentos del evento.",
+                        false,
+                        true
+                ),
+                new ServiceSeed(
+                        CATERING_SERVICE_NAME,
+                        "Servicio de comida y bebida para asistentes y participantes.",
+                        false,
+                        true
+                ),
+                new ServiceSeed(
+                        WELCOME_PACK_SERVICE_NAME,
+                        "Pack de bienvenida con acreditacion y material del evento.",
+                        false,
+                        true
+                ),
+                new ServiceSeed(
+                        INSTRUCTOR_SERVICE_NAME,
+                        "Sesion de asesoramiento y acompanamiento con instructor.",
+                        false,
+                        true
+                ),
+                new ServiceSeed(
+                        SECOND_DRIVER_INSURANCE_SERVICE_NAME,
+                        "Cobertura adicional para incluir un segundo conductor autorizado.",
+                        false,
+                        true
+                ),
+                new ServiceSeed(
+                        COPILOT_INSURANCE_SERVICE_NAME,
+                        "Cobertura adicional para incluir copiloto durante la actividad.",
+                        false,
+                        true
+                ),
+                new ServiceSeed(
+                        TRANSPONDER_TIMING_SERVICE_NAME,
+                        "Sistema de cronometraje con transponder para registrar tiempos por vuelta.",
+                        true,
+                        true
                 )
         );
     }
@@ -2197,6 +2200,12 @@ public class DemoDataSeeder implements CommandLineRunner {
     }
 
     private record TrackSeed(String name, String location, String description) {
+    }
+
+    private record ServiceSeed(String name,
+                               String description,
+                               boolean allowedForTrack,
+                               boolean allowedForOrganizer) {
     }
 
     private record EventSeed(String organizerLegalName,

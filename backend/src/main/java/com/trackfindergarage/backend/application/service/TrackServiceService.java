@@ -44,29 +44,18 @@ public class TrackServiceService implements TrackServiceUseCase {
         Long trackId = extractTrackId(trackService);
         Long serviceId = extractServiceId(trackService);
 
-        trackServicePersistencePort.findByTrackIdAndServiceId(trackId, serviceId)
-                .ifPresent(existingAssignment -> {
-                    throw new DuplicateResourceException(TRACK_SERVICE_ALREADY_EXISTS.formatted(trackId, serviceId));
-                });
-
-        Track track = trackPersistencePort.findById(trackId)
-                .orElseThrow(() -> new ResourceNotFoundException(TRACK_NOT_FOUND_WITH_ID + trackId));
-
-        Service service = servicePersistencePort.findById(serviceId)
-                .orElseThrow(() -> new ResourceNotFoundException(SERVICE_NOT_FOUND_WITH_ID + serviceId));
-
-        validateServiceAllowedForTrack(service);
+        ensureTrackServiceDoesNotExist(trackId, serviceId);
+        Track track = loadTrack(trackId);
+        Service service = loadTrackAllowedService(serviceId);
 
         trackService.setTrack(track);
         trackService.setService(service);
-
         return trackServicePersistencePort.save(trackService);
     }
 
     @Override
     public void deleteTrackService(Long id) {
-        TrackService trackService = findTrackServiceOrThrow(id);
-        trackServicePersistencePort.delete(trackService);
+        trackServicePersistencePort.delete(findTrackServiceOrThrow(id));
     }
 
     @Override
@@ -78,26 +67,48 @@ public class TrackServiceService implements TrackServiceUseCase {
     @Override
     @Transactional(readOnly = true)
     public TrackService getTrackServiceById(Long id) {
-        return trackServicePersistencePort.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(TRACK_SERVICE_NOT_FOUND_WITH_ID + id));
+        return findTrackServiceOrThrow(id);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<TrackService> getTrackServicesByTrackId(Long trackId) {
-        trackPersistencePort.findById(trackId)
-                .orElseThrow(() -> new ResourceNotFoundException(TRACK_NOT_FOUND_WITH_ID + trackId));
-
+        loadTrack(trackId);
         return trackServicePersistencePort.findByTrackId(trackId);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<TrackService> getTrackServicesByServiceId(Long serviceId) {
-        servicePersistencePort.findById(serviceId)
-                .orElseThrow(() -> new ResourceNotFoundException(SERVICE_NOT_FOUND_WITH_ID + serviceId));
-
+        loadService(serviceId);
         return trackServicePersistencePort.findByServiceId(serviceId);
+    }
+
+    private void ensureTrackServiceDoesNotExist(Long trackId, Long serviceId) {
+        trackServicePersistencePort.findByTrackIdAndServiceId(trackId, serviceId)
+                .ifPresent(existingAssignment -> {
+                    throw new DuplicateResourceException(TRACK_SERVICE_ALREADY_EXISTS.formatted(trackId, serviceId));
+                });
+    }
+
+    private Track loadTrack(Long trackId) {
+        return trackPersistencePort.findById(trackId)
+                .orElseThrow(() -> new ResourceNotFoundException(TRACK_NOT_FOUND_WITH_ID + trackId));
+    }
+
+    private Service loadService(Long serviceId) {
+        return servicePersistencePort.findById(serviceId)
+                .orElseThrow(() -> new ResourceNotFoundException(SERVICE_NOT_FOUND_WITH_ID + serviceId));
+    }
+
+    private Service loadTrackAllowedService(Long serviceId) {
+        Service service = loadService(serviceId);
+
+        if (!Boolean.TRUE.equals(service.getAllowedForTrack())) {
+            throw new IllegalArgumentException(SERVICE_NOT_ALLOWED_FOR_TRACKS.formatted(service.getId()));
+        }
+
+        return service;
     }
 
     private Long extractTrackId(TrackService trackService) {
@@ -112,12 +123,6 @@ public class TrackServiceService implements TrackServiceUseCase {
             throw new IllegalArgumentException(SERVICE_ID_REQUIRED);
         }
         return trackService.getService().getId();
-    }
-
-    private void validateServiceAllowedForTrack(Service service) {
-        if (!Boolean.TRUE.equals(service.getAllowedForTrack())) {
-            throw new IllegalArgumentException(SERVICE_NOT_ALLOWED_FOR_TRACKS.formatted(service.getId()));
-        }
     }
 
     private TrackService findTrackServiceOrThrow(Long id) {

@@ -16,7 +16,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/event-bookings")
-public class EventBookingController {
+public class EventBookingController extends AbstractWebController {
 
     private final EventBookingUseCase eventBookingUseCase;
     private final EventBookingWebMapper eventBookingWebMapper;
@@ -30,21 +30,21 @@ public class EventBookingController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public EventBookingResponse createEventBooking(@Valid @RequestBody CreateEventBookingRequest request) {
-        EventBooking createdEventBooking = eventBookingUseCase.createEventBooking(eventBookingWebMapper.toDomain(request));
-        return eventBookingWebMapper.toResponse(createdEventBooking);
+        return eventBookingWebMapper.toResponse(eventBookingUseCase.createEventBooking(eventBookingWebMapper.toDomain(request)));
     }
 
     @PostMapping("/checkout")
     @ResponseStatus(HttpStatus.CREATED)
     public EventBookingResponse checkoutEventBooking(@Valid @RequestBody CheckoutEventBookingRequest request,
                                                      Authentication authentication) {
-        EventBooking createdEventBooking = eventBookingUseCase.checkoutEventBooking(
-                authentication != null ? authentication.getName() : null,
-                request.getEventId(),
-                request.getEventServiceIds(),
-                Boolean.TRUE.equals(request.getVisible())
+        return eventBookingWebMapper.toResponse(
+                eventBookingUseCase.checkoutEventBooking(
+                        authenticatedEmail(authentication),
+                        request.getEventId(),
+                        request.getEventServiceIds(),
+                        Boolean.TRUE.equals(request.getVisible())
+                )
         );
-        return eventBookingWebMapper.toResponse(createdEventBooking);
     }
 
     @PatchMapping("/{id}/visibility")
@@ -53,7 +53,7 @@ public class EventBookingController {
                                                                Authentication authentication) {
         return eventBookingWebMapper.toResponse(
                 eventBookingUseCase.updateOwnEventBookingVisibility(
-                        authentication != null ? authentication.getName() : null,
+                        authenticatedEmail(authentication),
                         id,
                         Boolean.TRUE.equals(request.getVisible())
                 )
@@ -63,18 +63,12 @@ public class EventBookingController {
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteEventBooking(@PathVariable Long id, Authentication authentication) {
-        eventBookingUseCase.deleteOwnEventBooking(
-                authentication != null ? authentication.getName() : null,
-                id
-        );
+        eventBookingUseCase.deleteOwnEventBooking(authenticatedEmail(authentication), id);
     }
 
     @GetMapping
     public List<EventBookingResponse> getAllEventBookings() {
-        return eventBookingUseCase.getAllEventBookings()
-                .stream()
-                .map(eventBookingWebMapper::toResponse)
-                .toList();
+        return mapResponses(eventBookingUseCase.getAllEventBookings(), eventBookingWebMapper::toResponse);
     }
 
     @GetMapping("/{id}")
@@ -84,35 +78,27 @@ public class EventBookingController {
 
     @GetMapping("/me")
     public List<EventBookingResponse> getCurrentUserEventBookings(Authentication authentication) {
-        return eventBookingUseCase.getEventBookingsByAuthenticatedEmail(
-                        authentication != null ? authentication.getName() : null
-                ).stream()
-                .map(eventBookingWebMapper::toResponse)
-                .toList();
+        return mapResponses(
+                eventBookingUseCase.getEventBookingsByAuthenticatedEmail(authenticatedEmail(authentication)),
+                eventBookingWebMapper::toResponse
+        );
     }
 
     @GetMapping("/user/{userId}")
     public List<EventBookingResponse> getEventBookingsByUserId(@PathVariable Long userId) {
-        return eventBookingUseCase.getEventBookingsByUserId(userId)
-                .stream()
-                .map(eventBookingWebMapper::toResponse)
-                .toList();
+        return mapResponses(eventBookingUseCase.getEventBookingsByUserId(userId), eventBookingWebMapper::toResponse);
     }
 
     @GetMapping("/event/{eventId}/visible")
     public List<EventBookingResponse> getVisibleEventBookingsByEventId(@PathVariable Long eventId) {
-        return eventBookingUseCase.getEventBookingsByEventId(eventId)
+        return mapResponses(eventBookingUseCase.getEventBookingsByEventId(eventId)
                 .stream()
                 .filter(EventBooking::isVisible)
-                .map(eventBookingWebMapper::toResponse)
-                .toList();
+                .toList(), eventBookingWebMapper::toResponse);
     }
 
     @GetMapping("/event/{eventId}")
     public List<EventBookingResponse> getEventBookingsByEventId(@PathVariable Long eventId) {
-        return eventBookingUseCase.getEventBookingsByEventId(eventId)
-                .stream()
-                .map(eventBookingWebMapper::toResponse)
-                .toList();
+        return mapResponses(eventBookingUseCase.getEventBookingsByEventId(eventId), eventBookingWebMapper::toResponse);
     }
 }

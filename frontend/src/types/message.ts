@@ -16,6 +16,17 @@ export interface MessageContact {
   roleName: string | null
 }
 
+export interface MessageThread {
+  key: string
+  counterpartId: number
+  counterpartDisplayName: string
+  roleName: string | null
+  subject: string
+  lastMessageAt: string
+  unreadCount: number
+  messages: MessageItem[]
+}
+
 export interface CreateMessagePayload {
   receiverId: number
   subject: string

@@ -1,9 +1,9 @@
 package com.trackfindergarage.backend.application.service;
 
-import com.trackfindergarage.backend.application.port.in.AuthUseCase;
 import com.trackfindergarage.backend.application.port.in.AuthRegistrationCommand;
-import com.trackfindergarage.backend.application.port.in.OrganizerUseCase;
+import com.trackfindergarage.backend.application.port.in.AuthUseCase;
 import com.trackfindergarage.backend.application.port.in.OrganizerRegistrationCommand;
+import com.trackfindergarage.backend.application.port.in.OrganizerUseCase;
 import com.trackfindergarage.backend.application.port.in.UserUseCase;
 import com.trackfindergarage.backend.application.port.out.UserPersistencePort;
 import com.trackfindergarage.backend.common.exception.InvalidCredentialsException;
@@ -43,48 +43,26 @@ public class AuthService implements AuthUseCase {
     @Transactional(readOnly = true)
     public AuthResponse login(String email, String rawPassword) {
         String normalizedEmail = normalizeEmail(email);
+        User user = loadActiveUserByEmail(normalizedEmail);
 
-        User user = userPersistencePort.findByEmail(normalizedEmail)
-                .filter(existingUser -> Boolean.TRUE.equals(existingUser.getEnabled()))
-                .filter(existingUser -> passwordEncoder.matches(rawPassword, existingUser.getPasswordHash()))
-                .orElseThrow(() -> new InvalidCredentialsException(INVALID_CREDENTIALS_MESSAGE));
+        if (!passwordEncoder.matches(rawPassword, user.getPasswordHash())) {
+            throw new InvalidCredentialsException(INVALID_CREDENTIALS_MESSAGE);
+        }
 
-        return buildAuthResponse(user, normalizedEmail, rawPassword);
+        return buildAuthResponse(user, buildAuthorizationHeader(normalizedEmail, rawPassword));
     }
 
     @Override
     @Transactional(readOnly = true)
     public AuthResponse getCurrentSession(String authenticatedEmail, String authorizationHeader) {
-        String normalizedEmail = normalizeEmail(authenticatedEmail);
-
-        User user = userPersistencePort.findByEmail(normalizedEmail)
-                .filter(existingUser -> Boolean.TRUE.equals(existingUser.getEnabled()))
-                .orElseThrow(() -> new InvalidCredentialsException(INVALID_CREDENTIALS_MESSAGE));
-
-        AuthResponse response = new AuthResponse();
-        response.setUserId(user.getId());
-        response.setDisplayName(user.getDisplayName());
-        response.setEmail(user.getEmail());
-        response.setRoleName(user.getRole() != null ? user.getRole().getRoleName() : null);
-        response.setAuthorizationHeader(authorizationHeader);
-        return response;
+        return buildAuthResponse(loadActiveUserByEmail(normalizeEmail(authenticatedEmail)), authorizationHeader);
     }
 
     @Override
     public AuthResponse register(AuthRegistrationCommand command) {
         String normalizedEmail = normalizeEmail(command.email());
-        String normalizedDisplayName = normalizeText(command.displayName());
-
-        User user = new User();
-        user.setDisplayName(normalizedDisplayName);
-        user.setEmail(normalizedEmail);
-        user.setName(normalizeText(command.name()));
-        user.setSurname(normalizeText(command.surname()));
-        user.setAddress(normalizeText(command.address()));
-        user.setPhone(normalizeText(command.phone()));
-
-        User createdUser = userUseCase.createUser(user, command.rawPassword());
-        return buildAuthResponse(createdUser, normalizedEmail, command.rawPassword());
+        User createdUser = userUseCase.createUser(buildUser(command, normalizedEmail), command.rawPassword());
+        return buildAuthResponse(createdUser, buildAuthorizationHeader(normalizedEmail, command.rawPassword()));
     }
 
     @Override
@@ -92,30 +70,42 @@ public class AuthService implements AuthUseCase {
         AuthRegistrationCommand authRegistration = command.authRegistration();
         String normalizedEmail = normalizeEmail(authRegistration.email());
 
-        User user = new User();
-        user.setDisplayName(normalizeText(authRegistration.displayName()));
-        user.setEmail(normalizedEmail);
-        user.setName(normalizeText(authRegistration.name()));
-        user.setSurname(normalizeText(authRegistration.surname()));
-        user.setAddress(normalizeText(authRegistration.address()));
-        user.setPhone(normalizeText(authRegistration.phone()));
-
         Organizer organizer = new Organizer();
-        organizer.setUser(user);
+        organizer.setUser(buildUser(authRegistration, normalizedEmail));
         organizer.setLegalName(normalizeText(command.legalName()));
         organizer.setCif(normalizeText(command.cif()));
 
         Organizer createdOrganizer = organizerUseCase.createOrganizer(organizer, authRegistration.rawPassword());
-        return buildAuthResponse(createdOrganizer.getUser(), normalizedEmail, authRegistration.rawPassword());
+        return buildAuthResponse(
+                createdOrganizer.getUser(),
+                buildAuthorizationHeader(normalizedEmail, authRegistration.rawPassword())
+        );
     }
 
-    private AuthResponse buildAuthResponse(User user, String normalizedEmail, String rawPassword) {
+    private User loadActiveUserByEmail(String normalizedEmail) {
+        return userPersistencePort.findByEmail(normalizedEmail)
+                .filter(existingUser -> Boolean.TRUE.equals(existingUser.getEnabled()))
+                .orElseThrow(() -> new InvalidCredentialsException(INVALID_CREDENTIALS_MESSAGE));
+    }
+
+    private User buildUser(AuthRegistrationCommand command, String normalizedEmail) {
+        User user = new User();
+        user.setDisplayName(normalizeText(command.displayName()));
+        user.setEmail(normalizedEmail);
+        user.setName(normalizeText(command.name()));
+        user.setSurname(normalizeText(command.surname()));
+        user.setAddress(normalizeText(command.address()));
+        user.setPhone(normalizeText(command.phone()));
+        return user;
+    }
+
+    private AuthResponse buildAuthResponse(User user, String authorizationHeader) {
         AuthResponse response = new AuthResponse();
         response.setUserId(user.getId());
         response.setDisplayName(user.getDisplayName());
         response.setEmail(user.getEmail());
         response.setRoleName(user.getRole() != null ? user.getRole().getRoleName() : null);
-        response.setAuthorizationHeader(buildAuthorizationHeader(normalizedEmail, rawPassword));
+        response.setAuthorizationHeader(authorizationHeader);
         return response;
     }
 

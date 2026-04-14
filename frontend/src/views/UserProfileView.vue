@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { Eye, EyeOff, Pencil, Trash2 } from 'lucide-vue-next'
 import { computed, onMounted, reactive, ref } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import EventBookingDialog from '@/components/EventBookingDialog.vue'
 import UserProfileHero from '@/components/UserProfileHero.vue'
+import OrganizerAccountDetailsPanel from '@/components/profile/OrganizerAccountDetailsPanel.vue'
+import ProfileBookingsPanel from '@/components/profile/ProfileBookingsPanel.vue'
+import ProfileLapTimesPanel from '@/components/profile/ProfileLapTimesPanel.vue'
+import UserAccountDetailsPanel from '@/components/profile/UserAccountDetailsPanel.vue'
 import { useAuth } from '@/composables/useAuth'
 import { useToast } from '@/composables/useToast'
 import {
@@ -25,23 +28,16 @@ import { getCurrentUserProfile, updateCurrentUserProfile } from '@/services/user
 import type { EventBooking } from '@/types/eventBooking'
 import type { LapTime } from '@/types/lapTime'
 import type { OrganizerProfile } from '@/types/organizer'
-import type { TrackRecord } from '@/types/trackRecord'
+import type { LapTimeFormState, ProfileFormState } from '@/types/profile'
 import type { Track } from '@/types/track'
+import type { TrackRecord } from '@/types/trackRecord'
 import type { UserProfile } from '@/types/user'
 import { resolveApiErrorMessage } from '@/utils/apiErrors'
 import { isOrganizerRole, isUserRole } from '@/utils/authRoles'
 import { toIsoDate } from '@/utils/date'
-import { formatCurrency, formatDisplayDate, formatLapTime } from '@/utils/format'
+import { formatCurrency, formatDisplayDate } from '@/utils/format'
 
 type ProfileTab = 'reservas' | 'perfil' | 'vueltas'
-
-type BookingSection = {
-  id: 'future'
-  title: string
-  emptyMessage: string
-  bookings: EventBooking[]
-  allowCancellation: boolean
-}
 
 const auth = useAuth()
 const router = useRouter()
@@ -69,7 +65,7 @@ const bookingVisibilityUpdatingId = ref<number | null>(null)
 const bookingPendingCancellation = ref<EventBooking | null>(null)
 const profileEditMode = ref(false)
 
-const profileForm = reactive({
+const profileForm = reactive<ProfileFormState>({
   name: '',
   surname: '',
   email: '',
@@ -81,7 +77,7 @@ const profileForm = reactive({
   passwordConfirmation: '',
 })
 
-const lapForm = reactive({
+const lapForm = reactive<LapTimeFormState>({
   trackId: '',
   lapDate: '',
   lapTimeText: '',
@@ -159,16 +155,6 @@ const tabItems = computed<Array<{ id: ProfileTab; label: string }>>(() =>
       ],
 )
 
-const bookingSections = computed<BookingSection[]>(() => [
-  {
-    id: 'future',
-    title: 'Reservas activas',
-    emptyMessage: 'Todavia no tienes reservas futuras.',
-    bookings: futureBookings.value,
-    allowCancellation: true,
-  },
-])
-
 onMounted(async () => {
   if (!isStandardUser.value && !isOrganizerAccount.value) {
     loading.value = false
@@ -231,7 +217,10 @@ async function refreshTrackRankings(sourceLapTimes: LapTime[]) {
 
   trackRankings.value = Object.fromEntries(
     rankingResults
-      .filter((result): result is PromiseFulfilledResult<readonly [number, TrackRecord[]]> => result.status === 'fulfilled')
+      .filter(
+        (result): result is PromiseFulfilledResult<readonly [number, TrackRecord[]]> =>
+          result.status === 'fulfilled',
+      )
       .map((result) => result.value),
   )
 }
@@ -288,10 +277,6 @@ function cancelProfileEdit() {
 
   profileError.value = ''
   profileEditMode.value = false
-}
-
-function getBookingVisibilityToneClass(isVisible: boolean): string {
-  return isVisible ? 'icon-button--danger' : 'icon-button--success'
 }
 
 function canCancelBooking(booking: EventBooking): boolean {
@@ -353,8 +338,8 @@ async function toggleBookingVisibility(booking: EventBooking) {
     )
     toast.showToast(
       updatedBooking.isVisible
-        ? 'La reserva vuelve a mostrarse en tu perfil p\u00fablico.'
-        : 'La reserva se ha ocultado de tu perfil p\u00fablico.',
+        ? 'La reserva vuelve a mostrarse en tu perfil publico.'
+        : 'La reserva se ha ocultado de tu perfil publico.',
     )
   } catch (requestError) {
     bookingError.value = resolveBookingVisibilityError(requestError)
@@ -379,7 +364,10 @@ async function saveProfile() {
   const nextPassword = profileForm.password.trim()
   const nextPasswordConfirmation = profileForm.passwordConfirmation.trim()
 
-  if ((nextPassword !== '' || nextPasswordConfirmation !== '') && nextPassword !== nextPasswordConfirmation) {
+  if (
+    (nextPassword !== '' || nextPasswordConfirmation !== '') &&
+    nextPassword !== nextPasswordConfirmation
+  ) {
     profileSaving.value = false
     profileError.value = 'La confirmacion de la contrasena no coincide.'
     return
@@ -432,7 +420,10 @@ async function saveOrganizerProfile() {
   const nextPassword = profileForm.password.trim()
   const nextPasswordConfirmation = profileForm.passwordConfirmation.trim()
 
-  if ((nextPassword !== '' || nextPasswordConfirmation !== '') && nextPassword !== nextPasswordConfirmation) {
+  if (
+    (nextPassword !== '' || nextPasswordConfirmation !== '') &&
+    nextPassword !== nextPasswordConfirmation
+  ) {
     profileSaving.value = false
     profileError.value = 'La confirmacion de la contrasena no coincide.'
     return
@@ -642,12 +633,12 @@ function resolveLapTimeDeleteError(requestError: unknown): string {
         <p class="ui-eyebrow">Mi perfil</p>
         <h1 class="ui-title-section">{{ organizerProfile.legalName }}</h1>
         <p class="ui-copy-muted">
-          {{ organizerProfile.displayName }} ·
+          {{ organizerProfile.displayName }} &middot;
           {{ organizerProfile.organizerEnabled ? 'Organizador validado' : 'Pendiente de validacion' }}
         </p>
       </section>
 
-      <section class="profile-tabs panel panel-pad-lg panel-stack-lg">
+      <section class="panel panel-pad-lg panel-stack-lg">
         <div class="pill-tabs" role="tablist" aria-label="Navegacion del perfil">
           <button
             v-for="tab in tabItems"
@@ -661,494 +652,52 @@ function resolveLapTimeDeleteError(requestError: unknown): string {
           </button>
         </div>
 
-        <section v-if="activeTab === 'reservas'" class="panel-stack-lg">
-          <p v-if="bookingError" class="status-message status-message--error">{{ bookingError }}</p>
+        <ProfileBookingsPanel
+          v-if="activeTab === 'reservas'"
+          :booking-error="bookingError"
+          :active-bookings="futureBookings"
+          :past-bookings="pastBookings"
+          :booking-cancelling-id="bookingCancellingId"
+          :booking-visibility-updating-id="bookingVisibilityUpdatingId"
+          :cancellation-cutoff-iso="cancellationCutoffIso"
+          @request-cancel="cancelBooking"
+          @toggle-visibility="toggleBookingVisibility"
+        />
 
-          <div class="profile-grid">
-            <article
-              v-for="section in bookingSections"
-              :key="section.id"
-              class="panel panel-pad-lg panel-stack-sm"
-            >
-              <h3 class="ui-title-card">{{ section.title }}</h3>
+        <UserAccountDetailsPanel
+          v-else-if="activeTab === 'perfil' && profile"
+          :profile="profile"
+          :profile-form="profileForm"
+          :edit-mode="profileEditMode"
+          :saving="profileSaving"
+          :error-message="profileError"
+          @edit="startProfileEdit"
+          @cancel="cancelProfileEdit"
+          @save="saveProfile"
+        />
 
-              <p v-if="section.bookings.length === 0" class="ui-copy-muted">
-                {{ section.emptyMessage }}
-              </p>
+        <OrganizerAccountDetailsPanel
+          v-else-if="activeTab === 'perfil' && organizerProfile"
+          :organizer-profile="organizerProfile"
+          :profile-form="profileForm"
+          :edit-mode="profileEditMode"
+          :saving="profileSaving"
+          :error-message="profileError"
+          @edit="startProfileEdit"
+          @cancel="cancelProfileEdit"
+          @save="saveProfile"
+        />
 
-              <div v-else class="profile-booking-list">
-                <article
-                  v-for="booking in section.bookings"
-                  :key="booking.id"
-                  class="profile-booking-card"
-                >
-                  <RouterLink class="profile-booking-card__main" :to="`/events/${booking.eventId}`">
-                    <div class="panel-copy">
-                      <p class="ui-eyebrow">{{ formatDisplayDate(booking.eventDate) }}</p>
-                      <strong class="profile-booking-card__title">{{ booking.trackName }}</strong>
-                      <p class="ui-copy-muted">{{ booking.organizerLegalName }}</p>
-                    </div>
-                  </RouterLink>
-
-                  <div class="profile-booking-card__actions">
-                    <div class="profile-booking-card__action-row">
-                      <button
-                        class="icon-button"
-                        :class="getBookingVisibilityToneClass(booking.isVisible)"
-                        type="button"
-                        :disabled="bookingVisibilityUpdatingId === booking.id"
-                        :aria-label="
-                          booking.isVisible
-                            ? 'Ocultar en perfil público'
-                            : 'Mostrar en perfil público'
-                        "
-                        :title="
-                          booking.isVisible
-                            ? 'Ocultar en perfil público'
-                            : 'Mostrar en perfil público'
-                        "
-                        @click="toggleBookingVisibility(booking)"
-                      >
-                        <EyeOff
-                          v-if="bookingVisibilityUpdatingId !== booking.id && booking.isVisible"
-                          :size="16"
-                          aria-hidden="true"
-                        />
-                        <Eye
-                          v-else-if="bookingVisibilityUpdatingId !== booking.id"
-                          :size="16"
-                          aria-hidden="true"
-                        />
-                        <span v-else class="profile-booking-card__visibility-waiting">...</span>
-                      </button>
-                      <template v-if="section.allowCancellation">
-                        <button
-                          v-if="canCancelBooking(booking)"
-                          class="action-button profile-booking-card__cancel"
-                          type="button"
-                          :disabled="bookingCancellingId === booking.id"
-                          @click="cancelBooking(booking)"
-                        >
-                          {{ bookingCancellingId === booking.id ? 'Anulando...' : 'Anular reserva' }}
-                        </button>
-                        <span v-else class="subtle-note profile-booking-card__note">
-                          La anulacion se cierra 14 dias antes.
-                        </span>
-                      </template>
-                    </div>
-                  </div>
-                </article>
-              </div>
-            </article>
-
-            <article class="panel panel-pad-lg panel-stack-sm">
-              <h3 class="ui-title-card">Historial</h3>
-
-              <p v-if="pastBookings.length === 0" class="ui-copy-muted">
-                Tu historial todavia no muestra asistencias pasadas.
-              </p>
-
-              <div v-else class="profile-booking-list">
-                <article
-                  v-for="booking in pastBookings"
-                  :key="booking.id"
-                  class="profile-booking-card"
-                >
-                  <RouterLink class="profile-booking-card__main" :to="`/events/${booking.eventId}`">
-                    <p class="ui-eyebrow">{{ formatDisplayDate(booking.eventDate) }}</p>
-                    <strong class="profile-booking-card__title">{{ booking.trackName }}</strong>
-                    <p class="ui-copy-muted">{{ booking.organizerLegalName }}</p>
-                  </RouterLink>
-
-                  <div class="profile-booking-card__actions">
-                    <button
-                      class="icon-button"
-                      :class="getBookingVisibilityToneClass(booking.isVisible)"
-                      type="button"
-                      :disabled="bookingVisibilityUpdatingId === booking.id"
-                      :aria-label="
-                        booking.isVisible
-                          ? 'Ocultar en perfil público'
-                          : 'Mostrar en perfil público'
-                      "
-                      :title="
-                        booking.isVisible
-                          ? 'Ocultar en perfil público'
-                          : 'Mostrar en perfil público'
-                      "
-                      @click="toggleBookingVisibility(booking)"
-                    >
-                      <EyeOff
-                        v-if="bookingVisibilityUpdatingId !== booking.id && booking.isVisible"
-                        :size="16"
-                        aria-hidden="true"
-                      />
-                      <Eye
-                        v-else-if="bookingVisibilityUpdatingId !== booking.id"
-                        :size="16"
-                        aria-hidden="true"
-                      />
-                      <span v-else class="profile-booking-card__visibility-waiting">...</span>
-                    </button>
-                  </div>
-                </article>
-              </div>
-            </article>
-          </div>
-        </section>
-
-        <section v-else-if="activeTab === 'perfil'" class="panel-stack-lg">
-          <p v-if="profileError" class="status-message status-message--error">{{ profileError }}</p>
-
-          <article class="panel panel-pad-lg panel-stack-lg">
-            <div class="profile-detail-header">
-              <div class="panel-copy">
-                <h3 class="ui-title-card">Datos personales</h3>
-              </div>
-
-              <div class="profile-detail-header__actions">
-                <button
-                  v-if="!profileEditMode"
-                  class="icon-button icon-button--danger"
-                  type="button"
-                  aria-label="Editar perfil"
-                  title="Editar perfil"
-                  @click="startProfileEdit"
-                >
-                  <Pencil :size="16" aria-hidden="true" />
-                </button>
-
-                <template v-else>
-                  <button
-                    class="action-button action-button--ghost"
-                    type="button"
-                    @click="cancelProfileEdit"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    class="action-button"
-                    type="button"
-                    :disabled="profileSaving"
-                    @click="saveProfile"
-                  >
-                    {{ profileSaving ? 'Guardando...' : 'Guardar cambios' }}
-                  </button>
-                </template>
-              </div>
-            </div>
-
-            <div v-if="profile" class="profile-detail-grid">
-              <div class="profile-detail-item">
-                <span class="profile-detail-item__label">Alias</span>
-                <strong class="profile-detail-item__value">{{ profile.displayName }}</strong>
-              </div>
-
-              <label v-if="profileEditMode" class="profile-detail-item">
-                <span class="profile-detail-item__label">Nombre</span>
-                <input v-model="profileForm.name" type="text" autocomplete="given-name" />
-              </label>
-              <div v-else class="profile-detail-item">
-                <span class="profile-detail-item__label">Nombre</span>
-                <strong class="profile-detail-item__value">{{ profile.name }}</strong>
-              </div>
-
-              <label v-if="profileEditMode" class="profile-detail-item">
-                <span class="profile-detail-item__label">Apellidos</span>
-                <input v-model="profileForm.surname" type="text" autocomplete="family-name" />
-              </label>
-              <div v-else class="profile-detail-item">
-                <span class="profile-detail-item__label">Apellidos</span>
-                <strong class="profile-detail-item__value">{{ profile.surname }}</strong>
-              </div>
-
-              <label v-if="profileEditMode" class="profile-detail-item">
-                <span class="profile-detail-item__label">Correo electr&oacute;nico</span>
-                <input v-model="profileForm.email" type="email" autocomplete="email" />
-              </label>
-              <div v-else class="profile-detail-item">
-                <span class="profile-detail-item__label">Correo electr&oacute;nico</span>
-                <strong class="profile-detail-item__value">{{ profile.email }}</strong>
-              </div>
-
-              <label v-if="profileEditMode" class="profile-detail-item">
-                <span class="profile-detail-item__label">Telefono</span>
-                <input v-model="profileForm.phone" type="tel" autocomplete="tel" />
-              </label>
-              <div v-else class="profile-detail-item">
-                <span class="profile-detail-item__label">Telefono</span>
-                <strong class="profile-detail-item__value">{{ profile.phone }}</strong>
-              </div>
-
-              <div class="profile-detail-item">
-                <span class="profile-detail-item__label">Alta</span>
-                <strong class="profile-detail-item__value">
-                  {{ formatDisplayDate(profile.created.slice(0, 10)) }}
-                </strong>
-              </div>
-
-              <div class="profile-detail-item">
-                <span class="profile-detail-item__label">Estado</span>
-                <strong class="profile-detail-item__value">
-                  {{ profile.enabled ? 'Activa' : 'Inactiva' }}
-                </strong>
-              </div>
-
-              <label v-if="profileEditMode" class="profile-detail-item profile-detail-item--full">
-                <span class="profile-detail-item__label">Direccion</span>
-                <input
-                  v-model="profileForm.address"
-                  type="text"
-                  autocomplete="street-address"
-                />
-              </label>
-              <div v-else class="profile-detail-item profile-detail-item--full">
-                <span class="profile-detail-item__label">Direccion</span>
-                <strong class="profile-detail-item__value">{{ profile.address }}</strong>
-              </div>
-
-              <label v-if="profileEditMode" class="profile-detail-item profile-detail-item--full">
-                <span class="profile-detail-item__label">Nueva contrasena</span>
-                <input
-                  v-model="profileForm.password"
-                  type="password"
-                  autocomplete="new-password"
-                  placeholder="D&eacute;jala en blanco si no quieres cambiarla"
-                />
-              </label>
-              <label v-if="profileEditMode" class="profile-detail-item profile-detail-item--full">
-                <span class="profile-detail-item__label">Confirmar nueva contrasena</span>
-                <input
-                  v-model="profileForm.passwordConfirmation"
-                  type="password"
-                  autocomplete="new-password"
-                  placeholder="Repite la nueva contrasena"
-                />
-              </label>
-              <div v-else class="profile-detail-item profile-detail-item--full">
-                <span class="profile-detail-item__label">Contrasena</span>
-                <strong class="profile-detail-item__value">************</strong>
-              </div>
-            </div>
-
-            <div v-else-if="organizerProfile" class="profile-detail-grid">
-              <div class="profile-detail-item">
-                <span class="profile-detail-item__label">Alias</span>
-                <strong class="profile-detail-item__value">{{ organizerProfile.displayName }}</strong>
-              </div>
-
-              <label v-if="profileEditMode" class="profile-detail-item">
-                <span class="profile-detail-item__label">Nombre</span>
-                <input v-model="profileForm.name" type="text" autocomplete="given-name" />
-              </label>
-              <div v-else class="profile-detail-item">
-                <span class="profile-detail-item__label">Nombre</span>
-                <strong class="profile-detail-item__value">{{ organizerProfile.name }}</strong>
-              </div>
-
-              <label v-if="profileEditMode" class="profile-detail-item">
-                <span class="profile-detail-item__label">Apellidos</span>
-                <input v-model="profileForm.surname" type="text" autocomplete="family-name" />
-              </label>
-              <div v-else class="profile-detail-item">
-                <span class="profile-detail-item__label">Apellidos</span>
-                <strong class="profile-detail-item__value">{{ organizerProfile.surname }}</strong>
-              </div>
-
-              <label v-if="profileEditMode" class="profile-detail-item">
-                <span class="profile-detail-item__label">Correo electr&oacute;nico</span>
-                <input v-model="profileForm.email" type="email" autocomplete="email" />
-              </label>
-              <div v-else class="profile-detail-item">
-                <span class="profile-detail-item__label">Correo electr&oacute;nico</span>
-                <strong class="profile-detail-item__value">{{ organizerProfile.email }}</strong>
-              </div>
-
-              <label v-if="profileEditMode" class="profile-detail-item">
-                <span class="profile-detail-item__label">Telefono</span>
-                <input v-model="profileForm.phone" type="tel" autocomplete="tel" />
-              </label>
-              <div v-else class="profile-detail-item">
-                <span class="profile-detail-item__label">Telefono</span>
-                <strong class="profile-detail-item__value">{{ organizerProfile.phone }}</strong>
-              </div>
-
-              <div class="profile-detail-item">
-                <span class="profile-detail-item__label">Alta</span>
-                <strong class="profile-detail-item__value">
-                  {{ organizerProfile.created ? formatDisplayDate(organizerProfile.created.slice(0, 10)) : 'Sin fecha' }}
-                </strong>
-              </div>
-
-              <div class="profile-detail-item">
-                <span class="profile-detail-item__label">Estado de cuenta</span>
-                <strong class="profile-detail-item__value">
-                  {{ organizerProfile.userEnabled ? 'Activa' : 'Inactiva' }}
-                </strong>
-              </div>
-
-              <label v-if="profileEditMode" class="profile-detail-item profile-detail-item--full">
-                <span class="profile-detail-item__label">Direccion</span>
-                <input
-                  v-model="profileForm.address"
-                  type="text"
-                  autocomplete="street-address"
-                />
-              </label>
-              <div v-else class="profile-detail-item profile-detail-item--full">
-                <span class="profile-detail-item__label">Direccion</span>
-                <strong class="profile-detail-item__value">{{ organizerProfile.address }}</strong>
-              </div>
-
-              <label v-if="profileEditMode" class="profile-detail-item">
-                <span class="profile-detail-item__label">Razon social</span>
-                <input v-model="profileForm.legalName" type="text" />
-              </label>
-              <div v-else class="profile-detail-item">
-                <span class="profile-detail-item__label">Razon social</span>
-                <strong class="profile-detail-item__value">{{ organizerProfile.legalName }}</strong>
-              </div>
-
-              <label v-if="profileEditMode" class="profile-detail-item">
-                <span class="profile-detail-item__label">CIF</span>
-                <input v-model="profileForm.cif" type="text" />
-              </label>
-              <div v-else class="profile-detail-item">
-                <span class="profile-detail-item__label">CIF</span>
-                <strong class="profile-detail-item__value">{{ organizerProfile.cif }}</strong>
-              </div>
-
-              <div class="profile-detail-item profile-detail-item--full">
-                <span class="profile-detail-item__label">Estado de organizador</span>
-                <strong class="profile-detail-item__value">
-                  {{ organizerProfile.organizerEnabled ? 'Validado' : 'Pendiente de validacion' }}
-                </strong>
-              </div>
-
-              <label v-if="profileEditMode" class="profile-detail-item profile-detail-item--full">
-                <span class="profile-detail-item__label">Nueva contrasena</span>
-                <input
-                  v-model="profileForm.password"
-                  type="password"
-                  autocomplete="new-password"
-                  placeholder="D&eacute;jala en blanco si no quieres cambiarla"
-                />
-              </label>
-              <label v-if="profileEditMode" class="profile-detail-item profile-detail-item--full">
-                <span class="profile-detail-item__label">Confirmar nueva contrasena</span>
-                <input
-                  v-model="profileForm.passwordConfirmation"
-                  type="password"
-                  autocomplete="new-password"
-                  placeholder="Repite la nueva contrasena"
-                />
-              </label>
-              <div v-else class="profile-detail-item profile-detail-item--full">
-                <span class="profile-detail-item__label">Contrasena</span>
-                <strong class="profile-detail-item__value">************</strong>
-              </div>
-            </div>
-          </article>
-        </section>
-
-        <section v-else-if="activeTab === 'vueltas'" class="panel-stack-lg">
-          <div class="panel-copy">
-            <p class="ui-eyebrow">Vueltas</p>
-            <h2 class="ui-title-section">Tus tiempos por vuelta</h2>
-            <p class="ui-copy-muted">
-              Registra nuevas vueltas y elimina las que ya no quieras conservar en tu historial.
-            </p>
-          </div>
-
-          <p v-if="lapError" class="status-message status-message--error">{{ lapError }}</p>
-
-          <div class="profile-grid">
-            <article class="panel panel-pad-lg panel-stack-md">
-              <div class="panel-copy">
-                <p class="ui-eyebrow">Anadir</p>
-                <h3 class="ui-title-card">Nueva vuelta</h3>
-              </div>
-
-              <form class="profile-form" @submit.prevent="addLapTime">
-                <label class="profile-field">
-                  <span>Circuito</span>
-                  <select v-model="lapForm.trackId">
-                    <option value="">Selecciona un circuito</option>
-                    <option
-                      v-for="trackOption in tracks"
-                      :key="trackOption.id"
-                      :value="String(trackOption.id)"
-                    >
-                      {{ trackOption.name }}
-                    </option>
-                  </select>
-                </label>
-
-                <label class="profile-field">
-                  <span>Fecha</span>
-                  <input v-model="lapForm.lapDate" type="date" />
-                </label>
-
-                <label class="profile-field">
-                  <span>Tiempo</span>
-                  <input v-model="lapForm.lapTimeText" type="text" placeholder="1:52.340" />
-                </label>
-
-                <label class="profile-field">
-                  <span>Coche</span>
-                  <input
-                    v-model="lapForm.vehicle"
-                    type="text"
-                    maxlength="30"
-                    placeholder="BMW M2"
-                  />
-                </label>
-
-                <button
-                  class="action-button profile-form__submit"
-                  type="submit"
-                  :disabled="lapSaving"
-                >
-                  {{ lapSaving ? 'Guardando...' : 'Registrar vuelta' }}
-                </button>
-              </form>
-            </article>
-
-            <article class="panel panel-pad-lg panel-stack-md">
-              <div class="panel-copy">
-                <p class="ui-eyebrow">Historial</p>
-                <h3 class="ui-title-card">Vueltas registradas</h3>
-              </div>
-
-              <p v-if="sortedLapTimes.length === 0" class="ui-copy-muted">
-                Todavia no has registrado tiempos por vuelta.
-              </p>
-
-              <div v-else class="profile-lap-list">
-                <article v-for="lapTime in sortedLapTimes" :key="lapTime.id" class="profile-lap-card">
-                  <div class="panel-copy">
-                    <p class="ui-eyebrow">{{ formatDisplayDate(lapTime.lapDate) }}</p>
-                    <strong class="profile-lap-card__time">{{ formatLapTime(lapTime.lapTimeMs) }}</strong>
-                    <p class="ui-copy-muted">
-                      {{ lapTime.trackName }}<span v-if="lapTime.vehicle"> · {{ lapTime.vehicle }}</span>
-                    </p>
-                  </div>
-
-                  <button
-                    class="icon-button icon-button--danger"
-                    type="button"
-                    aria-label="Eliminar vuelta"
-                    title="Eliminar vuelta"
-                    @click="removeLapTime(lapTime)"
-                  >
-                    <Trash2 :size="16" aria-hidden="true" />
-                  </button>
-                </article>
-              </div>
-            </article>
-          </div>
-        </section>
-
+        <ProfileLapTimesPanel
+          v-else-if="activeTab === 'vueltas'"
+          :lap-error="lapError"
+          :lap-saving="lapSaving"
+          :lap-form="lapForm"
+          :tracks="tracks"
+          :sorted-lap-times="sortedLapTimes"
+          @submit="addLapTime"
+          @remove="removeLapTime"
+        />
       </section>
     </template>
 
@@ -1181,245 +730,3 @@ function resolveLapTimeDeleteError(requestError: unknown): string {
     />
   </main>
 </template>
-
-<style scoped>
-.profile-grid {
-  display: grid;
-  align-items: start;
-  gap: var(--space-lg);
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.profile-booking-list,
-.profile-lap-list {
-  display: grid;
-  gap: var(--space-md);
-}
-
-.profile-booking-card,
-.profile-lap-card {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-lg);
-  padding: var(--space-lg);
-  border: 1px solid var(--line-soft);
-  border-radius: var(--radius-sm);
-  background: var(--surface-glass-subtle);
-}
-
-.profile-booking-card__title {
-  color: var(--text-strong);
-  font-size: var(--fs-title-sm);
-  font-weight: 800;
-  text-decoration: none;
-}
-
-.profile-booking-card__main {
-  display: block;
-  flex: 1 1 auto;
-  min-width: 0;
-  color: inherit;
-  text-decoration: none;
-}
-
-.profile-booking-card__actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--space-sm);
-  flex: none;
-}
-
-.profile-booking-card__action-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--space-sm);
-}
-
-.profile-booking-card__cancel {
-  background: linear-gradient(135deg, rgba(190, 34, 34, 0.92), rgba(126, 10, 10, 0.92));
-}
-
-.profile-booking-card__visibility-waiting {
-  font-size: var(--fs-caption);
-  font-weight: 700;
-  letter-spacing: 0.08em;
-}
-
-.profile-booking-card__note {
-  text-align: right;
-}
-
-.profile-detail-header {
-  display: flex;
-  align-items: start;
-  justify-content: space-between;
-  gap: var(--space-lg);
-}
-
-.profile-detail-header__actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: end;
-  gap: var(--space-sm);
-}
-
-.profile-detail-grid {
-  display: grid;
-  gap: var(--space-md);
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.profile-detail-item {
-  display: grid;
-  gap: var(--space-xs);
-  padding: var(--space-lg);
-  border: 1px solid var(--line-soft);
-  border-radius: var(--radius-sm);
-  background: var(--surface-glass-subtle);
-}
-
-.profile-detail-item--full {
-  grid-column: 1 / -1;
-}
-
-.profile-detail-item__label {
-  color: var(--text-muted);
-  font-size: var(--fs-caption);
-  font-weight: 700;
-}
-
-.profile-detail-item__value {
-  color: var(--text-strong);
-  font-weight: 700;
-  line-height: 1.45;
-  word-break: break-word;
-}
-
-.profile-detail-item input {
-  min-height: 50px;
-  padding: 0 14px;
-  border: 1px solid var(--line-soft);
-  border-radius: var(--radius-control);
-  color: var(--text-body);
-  background: var(--surface-glass);
-}
-
-.profile-detail-item input:focus {
-  outline: none;
-  border-color: var(--line-strong);
-  box-shadow: 0 0 0 3px rgba(255, 45, 32, 0.12);
-}
-
-.profile-form {
-  display: grid;
-  gap: var(--space-md);
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.profile-field {
-  display: grid;
-  gap: var(--space-xs);
-}
-
-.profile-field--full,
-.profile-form__submit {
-  grid-column: 1 / -1;
-}
-
-.profile-field span {
-  color: var(--text-muted);
-  font-size: var(--fs-caption);
-  font-weight: 700;
-}
-
-.profile-field input,
-.profile-field select {
-  min-height: 50px;
-  padding: 0 14px;
-  border: 1px solid var(--line-soft);
-  border-radius: var(--radius-control);
-  color: var(--text-body);
-  background: var(--surface-glass);
-}
-
-.profile-field select {
-  appearance: none;
-  background:
-    linear-gradient(180deg, rgba(39, 16, 16, 0.98) 0%, rgba(24, 10, 10, 0.98) 100%);
-}
-
-.profile-field select option {
-  color: var(--text-strong);
-  background: #1b0c0c;
-}
-
-.profile-field input:focus,
-.profile-field select:focus {
-  outline: none;
-  border-color: var(--line-strong);
-  box-shadow: 0 0 0 3px rgba(255, 45, 32, 0.12);
-}
-
-.profile-lap-card__time {
-  color: var(--text-strong);
-  font-size: var(--fs-title-sm);
-}
-
-@media (max-width: 980px) {
-  .profile-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .profile-detail-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .profile-detail-item--full {
-    grid-column: auto;
-  }
-}
-
-@media (max-width: 720px) {
-  .profile-booking-card,
-  .profile-lap-card {
-    flex-direction: column;
-    align-items: start;
-  }
-
-  .profile-booking-card__actions {
-    width: 100%;
-    justify-content: flex-start;
-  }
-
-  .profile-booking-card__action-row {
-    width: 100%;
-    justify-content: flex-start;
-  }
-
-  .profile-detail-header {
-    flex-direction: column;
-  }
-
-  .profile-detail-header__actions {
-    width: 100%;
-    justify-content: stretch;
-  }
-
-  .profile-detail-header__actions .action-button {
-    width: 100%;
-  }
-
-  .profile-form {
-    grid-template-columns: 1fr;
-  }
-
-  .profile-field--full,
-  .profile-form__submit {
-    grid-column: auto;
-  }
-}
-</style>

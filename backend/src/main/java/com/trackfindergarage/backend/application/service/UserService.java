@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -49,13 +50,27 @@ public class UserService implements UserUseCase {
 
     @Override
     public User createUser(User user, String rawPassword) {
-        validateDisplayNameForCreate(user.getDisplayName());
-        validateEmailForCreate(user.getEmail());
-        validatePhoneForCreate(user.getPhone());
+        String normalizedDisplayName = normalizeText(user.getDisplayName());
+        String normalizedEmail = normalizeEmail(user.getEmail());
+        String normalizedName = normalizeText(user.getName());
+        String normalizedSurname = normalizeText(user.getSurname());
+        String normalizedAddress = normalizeText(user.getAddress());
+        String normalizedPhone = normalizeText(user.getPhone());
 
-        Role role = getUserRole();
+        validateDisplayNameForCreate(normalizedDisplayName);
+        validateEmailForCreate(normalizedEmail);
+        validatePhoneForCreate(normalizedPhone);
 
-        user.setRole(role);
+        applyUserIdentity(
+                user,
+                normalizedDisplayName,
+                normalizedEmail,
+                normalizedName,
+                normalizedSurname,
+                normalizedAddress,
+                normalizedPhone
+        );
+        user.setRole(getUserRole());
         user.setPasswordHash(passwordEncoder.encode(rawPassword));
         user.setCreated(LocalDateTime.now());
         user.setEnabled(true);
@@ -78,10 +93,7 @@ public class UserService implements UserUseCase {
                                          String phone,
                                          String rawPassword) {
         User existingUser = findUserByAuthenticatedEmail(authenticatedEmail);
-
-        if (isOrganizerUser(existingUser)) {
-            throw new IllegalArgumentException(ORGANIZER_USERS_MANAGED_THROUGH_ORGANIZER_SERVICE);
-        }
+        requireNonOrganizerUser(existingUser);
 
         String normalizedName = normalizeText(name);
         String normalizedSurname = normalizeText(surname);
@@ -91,12 +103,7 @@ public class UserService implements UserUseCase {
 
         validateEmailForUpdate(existingUser.getId(), normalizedEmail);
         validatePhoneForUpdate(existingUser.getId(), normalizedPhone);
-
-        existingUser.setName(normalizedName);
-        existingUser.setSurname(normalizedSurname);
-        existingUser.setEmail(normalizedEmail);
-        existingUser.setAddress(normalizedAddress);
-        existingUser.setPhone(normalizedPhone);
+        applyUserProfile(existingUser, normalizedName, normalizedSurname, normalizedEmail, normalizedAddress, normalizedPhone);
 
         if (rawPassword != null && !rawPassword.isBlank()) {
             existingUser.setPasswordHash(passwordEncoder.encode(rawPassword.trim()));
@@ -108,21 +115,27 @@ public class UserService implements UserUseCase {
     @Override
     public User updateUser(Long id, User user) {
         User existingUser = findUserOrThrow(id);
+        requireNonOrganizerUser(existingUser);
 
-        if (isOrganizerUser(existingUser)) {
-            throw new IllegalArgumentException(ORGANIZER_USERS_MANAGED_THROUGH_ORGANIZER_SERVICE);
-        }
+        String normalizedDisplayName = normalizeText(user.getDisplayName());
+        String normalizedEmail = normalizeEmail(user.getEmail());
+        String normalizedName = normalizeText(user.getName());
+        String normalizedSurname = normalizeText(user.getSurname());
+        String normalizedAddress = normalizeText(user.getAddress());
+        String normalizedPhone = normalizeText(user.getPhone());
 
-        validateDisplayNameForUpdate(id, user.getDisplayName());
-        validateEmailForUpdate(id, user.getEmail());
-        validatePhoneForUpdate(id, user.getPhone());
-
-        existingUser.setDisplayName(user.getDisplayName());
-        existingUser.setEmail(user.getEmail());
-        existingUser.setName(user.getName());
-        existingUser.setSurname(user.getSurname());
-        existingUser.setAddress(user.getAddress());
-        existingUser.setPhone(user.getPhone());
+        validateDisplayNameForUpdate(id, normalizedDisplayName);
+        validateEmailForUpdate(id, normalizedEmail);
+        validatePhoneForUpdate(id, normalizedPhone);
+        applyUserIdentity(
+                existingUser,
+                normalizedDisplayName,
+                normalizedEmail,
+                normalizedName,
+                normalizedSurname,
+                normalizedAddress,
+                normalizedPhone
+        );
 
         return userPersistencePort.save(existingUser);
     }
@@ -146,8 +159,7 @@ public class UserService implements UserUseCase {
     @Override
     @Transactional(readOnly = true)
     public User getUserById(Long id) {
-        return userPersistencePort.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND_WITH_ID + id));
+        return findUserOrThrow(id);
     }
 
     @Override
@@ -166,19 +178,19 @@ public class UserService implements UserUseCase {
         }
 
         existingUser.setEnabled(false);
-
-        organizerPersistencePort.findById(id)
-                .ifPresent(organizer -> {
-                    organizer.setEnabled(false);
-                    organizerPersistencePort.save(organizer);
-                });
-
+        disableOrganizerIfPresent(id);
         return userPersistencePort.save(existingUser);
     }
 
     private Role getUserRole() {
         return rolePersistencePort.findByRoleName("USER")
                 .orElseThrow(() -> new ResourceNotFoundException("Role not found: USER"));
+    }
+
+    private void requireNonOrganizerUser(User user) {
+        if (isOrganizerUser(user)) {
+            throw new IllegalArgumentException(ORGANIZER_USERS_MANAGED_THROUGH_ORGANIZER_SERVICE);
+        }
     }
 
     private boolean isOrganizerUser(User user) {
@@ -197,54 +209,63 @@ public class UserService implements UserUseCase {
     }
 
     private void validateDisplayNameForCreate(String displayName) {
-        userPersistencePort.findByDisplayName(displayName)
-                .ifPresent(existingUser -> {
-                    throw new DuplicateResourceException(USER_DISPLAY_NAME_ALREADY_EXISTS.formatted(displayName));
-                });
+        validateUniqueUser(
+                userPersistencePort.findByDisplayName(displayName),
+                null,
+                USER_DISPLAY_NAME_ALREADY_EXISTS.formatted(displayName)
+        );
     }
 
     private void validateEmailForCreate(String email) {
-        userPersistencePort.findByEmail(email)
-                .ifPresent(existingUser -> {
-                    throw new DuplicateResourceException(USER_EMAIL_ALREADY_EXISTS.formatted(email));
-                });
-    }
-
-    private void validateDisplayNameForUpdate(Long userId, String displayName) {
-        userPersistencePort.findByDisplayName(displayName)
-                .ifPresent(existingUser -> {
-                    if (!existingUser.getId().equals(userId)) {
-                        throw new DuplicateResourceException(USER_DISPLAY_NAME_ALREADY_EXISTS.formatted(displayName));
-                    }
-                });
+        validateUniqueUser(
+                userPersistencePort.findByEmail(email),
+                null,
+                USER_EMAIL_ALREADY_EXISTS.formatted(email)
+        );
     }
 
     private void validatePhoneForCreate(String phone) {
-        userPersistencePort.findByPhone(phone)
-                .ifPresent(existingUser -> {
-                    throw new DuplicateResourceException(USER_PHONE_ALREADY_EXISTS.formatted(phone));
-                });
+        validateUniqueUser(
+                userPersistencePort.findByPhone(phone),
+                null,
+                USER_PHONE_ALREADY_EXISTS.formatted(phone)
+        );
+    }
+
+    private void validateDisplayNameForUpdate(Long userId, String displayName) {
+        validateUniqueUser(
+                userPersistencePort.findByDisplayName(displayName),
+                userId,
+                USER_DISPLAY_NAME_ALREADY_EXISTS.formatted(displayName)
+        );
     }
 
     private void validateEmailForUpdate(Long userId, String email) {
-        userPersistencePort.findByEmail(email)
-                .ifPresent(existingUser -> {
-                    if (!existingUser.getId().equals(userId)) {
-                        throw new DuplicateResourceException(USER_EMAIL_ALREADY_EXISTS.formatted(email));
-                    }
-                });
+        validateUniqueUser(
+                userPersistencePort.findByEmail(email),
+                userId,
+                USER_EMAIL_ALREADY_EXISTS.formatted(email)
+        );
     }
 
     private void validatePhoneForUpdate(Long userId, String phone) {
-        userPersistencePort.findByPhone(phone)
-                .ifPresent(existingUser -> {
-                    if (!existingUser.getId().equals(userId)) {
-                        throw new DuplicateResourceException(USER_PHONE_ALREADY_EXISTS.formatted(phone));
-                    }
-                });
+        validateUniqueUser(
+                userPersistencePort.findByPhone(phone),
+                userId,
+                USER_PHONE_ALREADY_EXISTS.formatted(phone)
+        );
     }
 
-    //Función privada que hace lo mismo que getUserById. Los métodos con proxy de Spring no deben ser llamados desde dentro del propio bean. (Da error sonar)
+    private void validateUniqueUser(Optional<User> candidate,
+                                    Long excludedUserId,
+                                    String duplicateMessage) {
+        candidate.ifPresent(existingUser -> {
+            if (excludedUserId == null || !existingUser.getId().equals(excludedUserId)) {
+                throw new DuplicateResourceException(duplicateMessage);
+            }
+        });
+    }
+
     private User findUserOrThrow(Long id) {
         return userPersistencePort.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND_WITH_ID + id));
@@ -258,6 +279,38 @@ public class UserService implements UserUseCase {
         String normalizedEmail = normalizeEmail(authenticatedEmail);
         return userPersistencePort.findByEmail(normalizedEmail)
                 .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND_WITH_EMAIL + normalizedEmail));
+    }
+
+    private void applyUserIdentity(User user,
+                                   String displayName,
+                                   String email,
+                                   String name,
+                                   String surname,
+                                   String address,
+                                   String phone) {
+        user.setDisplayName(displayName);
+        applyUserProfile(user, name, surname, email, address, phone);
+    }
+
+    private void applyUserProfile(User user,
+                                  String name,
+                                  String surname,
+                                  String email,
+                                  String address,
+                                  String phone) {
+        user.setName(name);
+        user.setSurname(surname);
+        user.setEmail(email);
+        user.setAddress(address);
+        user.setPhone(phone);
+    }
+
+    private void disableOrganizerIfPresent(Long userId) {
+        organizerPersistencePort.findById(userId)
+                .ifPresent(organizer -> {
+                    organizer.setEnabled(false);
+                    organizerPersistencePort.save(organizer);
+                });
     }
 
     private String normalizeEmail(String email) {

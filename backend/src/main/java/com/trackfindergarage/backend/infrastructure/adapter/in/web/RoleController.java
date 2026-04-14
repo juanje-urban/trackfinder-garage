@@ -14,7 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/roles")
-public class RoleController {
+public class RoleController extends AbstractWebController {
 
     private final RoleUseCase roleUseCase;
     private final RoleWebMapper roleWebMapper;
@@ -27,8 +27,7 @@ public class RoleController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public RoleResponse createRole(@Valid @RequestBody CreateRoleRequest request) {
-        Role createdRole = roleUseCase.createRole(roleWebMapper.toDomain(request));
-        return roleWebMapper.toResponse(createdRole);
+        return roleWebMapper.toResponse(roleUseCase.createRole(roleWebMapper.toDomain(request)));
     }
 
     @PutMapping("/{id}")
@@ -36,9 +35,7 @@ public class RoleController {
                                    @Valid @RequestBody UpdateRoleRequest request) {
         Role roleToUpdate = new Role();
         roleWebMapper.updateDomain(roleToUpdate, request);
-
-        Role updatedRole = roleUseCase.updateRole(id, roleToUpdate);
-        return roleWebMapper.toResponse(updatedRole);
+        return roleWebMapper.toResponse(roleUseCase.updateRole(id, roleToUpdate));
     }
 
     @DeleteMapping("/{id}")
@@ -49,10 +46,7 @@ public class RoleController {
 
     @GetMapping
     public List<RoleResponse> getAllRoles() {
-        return roleUseCase.getAllRoles()
-                .stream()
-                .map(roleWebMapper::toResponse)
-                .toList();
+        return mapResponses(roleUseCase.getAllRoles(), roleWebMapper::toResponse);
     }
 
     @GetMapping("/{id}")

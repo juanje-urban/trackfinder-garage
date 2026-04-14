@@ -16,7 +16,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/lap-times")
-public class LapTimeController {
+public class LapTimeController extends AbstractWebController {
 
     private final LapTimeUseCase lapTimeUseCase;
     private final LapTimeWebMapper lapTimeWebMapper;
@@ -29,22 +29,22 @@ public class LapTimeController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public LapTimeResponse createLapTime(@Valid @RequestBody CreateLapTimeRequest request) {
-        LapTime createdLapTime = lapTimeUseCase.createLapTime(lapTimeWebMapper.toDomain(request));
-        return lapTimeWebMapper.toResponse(createdLapTime);
+        return lapTimeWebMapper.toResponse(lapTimeUseCase.createLapTime(lapTimeWebMapper.toDomain(request)));
     }
 
     @PostMapping("/me")
     @ResponseStatus(HttpStatus.CREATED)
     public LapTimeResponse createCurrentUserLapTime(@Valid @RequestBody CreateOwnLapTimeRequest request,
                                                     Authentication authentication) {
-        LapTime createdLapTime = lapTimeUseCase.createLapTimeForAuthenticatedUser(
-                authentication != null ? authentication.getName() : null,
-                request.getTrackId(),
-                request.getLapDate(),
-                request.getLapTimeMs(),
-                request.getVehicle()
+        return lapTimeWebMapper.toResponse(
+                lapTimeUseCase.createLapTimeForAuthenticatedUser(
+                        authenticatedEmail(authentication),
+                        request.getTrackId(),
+                        request.getLapDate(),
+                        request.getLapTimeMs(),
+                        request.getVehicle()
+                )
         );
-        return lapTimeWebMapper.toResponse(createdLapTime);
     }
 
     @PutMapping("/{id}")
@@ -52,9 +52,7 @@ public class LapTimeController {
                                          @Valid @RequestBody UpdateLapTimeRequest request) {
         LapTime lapTimeToUpdate = new LapTime();
         lapTimeWebMapper.updateDomain(lapTimeToUpdate, request);
-
-        LapTime updatedLapTime = lapTimeUseCase.updateLapTime(id, lapTimeToUpdate);
-        return lapTimeWebMapper.toResponse(updatedLapTime);
+        return lapTimeWebMapper.toResponse(lapTimeUseCase.updateLapTime(id, lapTimeToUpdate));
     }
 
     @DeleteMapping("/{id}")
@@ -66,15 +64,12 @@ public class LapTimeController {
     @DeleteMapping("/me/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteCurrentUserLapTime(@PathVariable Long id, Authentication authentication) {
-        lapTimeUseCase.deleteOwnLapTime(authentication != null ? authentication.getName() : null, id);
+        lapTimeUseCase.deleteOwnLapTime(authenticatedEmail(authentication), id);
     }
 
     @GetMapping
     public List<LapTimeResponse> getAllLapTimes() {
-        return lapTimeUseCase.getAllLapTimes()
-                .stream()
-                .map(lapTimeWebMapper::toResponse)
-                .toList();
+        return mapResponses(lapTimeUseCase.getAllLapTimes(), lapTimeWebMapper::toResponse);
     }
 
     @GetMapping("/{id}")
@@ -84,26 +79,20 @@ public class LapTimeController {
 
     @GetMapping("/me")
     public List<LapTimeResponse> getCurrentUserLapTimes(Authentication authentication) {
-        return lapTimeUseCase.getLapTimesByAuthenticatedEmail(authentication != null ? authentication.getName() : null)
-                .stream()
-                .map(lapTimeWebMapper::toResponse)
-                .toList();
+        return mapResponses(
+                lapTimeUseCase.getLapTimesByAuthenticatedEmail(authenticatedEmail(authentication)),
+                lapTimeWebMapper::toResponse
+        );
     }
 
     @GetMapping("/user/{userId}")
     public List<LapTimeResponse> getLapTimesByUserId(@PathVariable Long userId) {
-        return lapTimeUseCase.getLapTimesByUserId(userId)
-                .stream()
-                .map(lapTimeWebMapper::toResponse)
-                .toList();
+        return mapResponses(lapTimeUseCase.getLapTimesByUserId(userId), lapTimeWebMapper::toResponse);
     }
 
     @GetMapping("/track/{trackId}")
     public List<LapTimeResponse> getLapTimesByTrackId(@PathVariable Long trackId) {
-        return lapTimeUseCase.getLapTimesByTrackId(trackId)
-                .stream()
-                .map(lapTimeWebMapper::toResponse)
-                .toList();
+        return mapResponses(lapTimeUseCase.getLapTimesByTrackId(trackId), lapTimeWebMapper::toResponse);
     }
 
     @GetMapping("/track/{trackId}/best")
@@ -119,9 +108,6 @@ public class LapTimeController {
 
     @GetMapping("/track/{trackId}/ranking")
     public List<LapTimeResponse> getRankingByTrackId(@PathVariable Long trackId) {
-        return lapTimeUseCase.getRankingByTrackId(trackId)
-                .stream()
-                .map(lapTimeWebMapper::toResponse)
-                .toList();
+        return mapResponses(lapTimeUseCase.getRankingByTrackId(trackId), lapTimeWebMapper::toResponse);
     }
 }

@@ -16,7 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/services")
 @PreAuthorize("hasRole('ADMIN')")
-public class ServiceController {
+public class ServiceController extends AbstractWebController {
 
     private final ServiceUseCase serviceUseCase;
     private final ServiceWebMapper serviceWebMapper;
@@ -29,8 +29,7 @@ public class ServiceController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ServiceResponse createService(@Valid @RequestBody CreateServiceRequest request) {
-        Service createdService = serviceUseCase.createService(serviceWebMapper.toDomain(request));
-        return serviceWebMapper.toResponse(createdService);
+        return serviceWebMapper.toResponse(serviceUseCase.createService(serviceWebMapper.toDomain(request)));
     }
 
     @PutMapping("/{id}")
@@ -38,9 +37,7 @@ public class ServiceController {
                                          @Valid @RequestBody UpdateServiceRequest request) {
         Service serviceToUpdate = new Service();
         serviceWebMapper.updateDomain(serviceToUpdate, request);
-
-        Service updatedService = serviceUseCase.updateService(id, serviceToUpdate);
-        return serviceWebMapper.toResponse(updatedService);
+        return serviceWebMapper.toResponse(serviceUseCase.updateService(id, serviceToUpdate));
     }
 
     @DeleteMapping("/{id}")
@@ -51,26 +48,17 @@ public class ServiceController {
 
     @GetMapping
     public List<ServiceResponse> getAllServices() {
-        return serviceUseCase.getAllServices()
-                .stream()
-                .map(serviceWebMapper::toResponse)
-                .toList();
+        return mapResponses(serviceUseCase.getAllServices(), serviceWebMapper::toResponse);
     }
 
     @GetMapping("/allowed-for-track")
     public List<ServiceResponse> getAllServicesAllowedForTrack() {
-        return serviceUseCase.getAllServicesAllowedForTrack()
-                .stream()
-                .map(serviceWebMapper::toResponse)
-                .toList();
+        return mapResponses(serviceUseCase.getAllServicesAllowedForTrack(), serviceWebMapper::toResponse);
     }
 
     @GetMapping("/allowed-for-organizer")
     public List<ServiceResponse> getAllServicesAllowedForOrganizer() {
-        return serviceUseCase.getAllServicesAllowedForOrganizer()
-                .stream()
-                .map(serviceWebMapper::toResponse)
-                .toList();
+        return mapResponses(serviceUseCase.getAllServicesAllowedForOrganizer(), serviceWebMapper::toResponse);
     }
 
     @GetMapping("/{id}")

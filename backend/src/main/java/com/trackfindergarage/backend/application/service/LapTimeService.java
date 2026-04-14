@@ -49,16 +49,7 @@ public class LapTimeService implements LapTimeUseCase {
     @Override
     public LapTime createLapTime(LapTime lapTime) {
         validateLapTime(lapTime);
-
-        User user = userPersistencePort.findById(extractUserId(lapTime))
-                .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND_WITH_ID + extractUserId(lapTime)));
-
-        Track track = trackPersistencePort.findById(extractTrackId(lapTime))
-                .orElseThrow(() -> new ResourceNotFoundException(TRACK_NOT_FOUND_WITH_ID + extractTrackId(lapTime)));
-
-        lapTime.setUser(user);
-        lapTime.setTrack(track);
-
+        attachLapTimeReferences(lapTime, extractUserId(lapTime), extractTrackId(lapTime));
         return lapTimePersistencePort.save(lapTime);
     }
 
@@ -72,10 +63,7 @@ public class LapTimeService implements LapTimeUseCase {
 
         LapTime lapTime = new LapTime();
         lapTime.setUser(user);
-
-        Track track = new Track();
-        track.setId(trackId);
-        lapTime.setTrack(track);
+        lapTime.setTrack(trackReference(trackId));
         lapTime.setLapDate(lapDate);
         lapTime.setLapTimeMs(lapTimeMs);
         lapTime.setVehicle(vehicle);
@@ -88,18 +76,8 @@ public class LapTimeService implements LapTimeUseCase {
         validateLapTime(lapTime);
 
         LapTime existingLapTime = findLapTimeOrThrow(id);
-
-        User user = userPersistencePort.findById(extractUserId(lapTime))
-                .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND_WITH_ID + extractUserId(lapTime)));
-
-        Track track = trackPersistencePort.findById(extractTrackId(lapTime))
-                .orElseThrow(() -> new ResourceNotFoundException(TRACK_NOT_FOUND_WITH_ID + extractTrackId(lapTime)));
-
-        existingLapTime.setUser(user);
-        existingLapTime.setTrack(track);
-        existingLapTime.setLapDate(lapTime.getLapDate());
-        existingLapTime.setLapTimeMs(lapTime.getLapTimeMs());
-        existingLapTime.setVehicle(lapTime.getVehicle());
+        attachLapTimeReferences(existingLapTime, extractUserId(lapTime), extractTrackId(lapTime));
+        copyLapTimeValues(existingLapTime, lapTime);
 
         return lapTimePersistencePort.save(existingLapTime);
     }
@@ -118,8 +96,7 @@ public class LapTimeService implements LapTimeUseCase {
 
     @Override
     public void deleteLapTime(Long id) {
-        LapTime lapTime = findLapTimeOrThrow(id);
-        lapTimePersistencePort.delete(lapTime);
+        lapTimePersistencePort.delete(findLapTimeOrThrow(id));
     }
 
     @Override
@@ -131,40 +108,33 @@ public class LapTimeService implements LapTimeUseCase {
     @Override
     @Transactional(readOnly = true)
     public LapTime getLapTimeById(Long id) {
-        return lapTimePersistencePort.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(LAP_TIME_NOT_FOUND_WITH_ID + id));
+        return findLapTimeOrThrow(id);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<LapTime> getLapTimesByAuthenticatedEmail(String authenticatedEmail) {
-        User user = findUserByAuthenticatedEmail(authenticatedEmail);
-        return lapTimePersistencePort.findByUserId(user.getId());
+        return lapTimePersistencePort.findByUserId(findUserByAuthenticatedEmail(authenticatedEmail).getId());
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<LapTime> getLapTimesByUserId(Long userId) {
-        userPersistencePort.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND_WITH_ID + userId));
-
+        requireUserExists(userId);
         return lapTimePersistencePort.findByUserId(userId);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<LapTime> getLapTimesByTrackId(Long trackId) {
-        trackPersistencePort.findById(trackId)
-                .orElseThrow(() -> new ResourceNotFoundException(TRACK_NOT_FOUND_WITH_ID + trackId));
-
+        requireTrackExists(trackId);
         return lapTimePersistencePort.findByTrackId(trackId);
     }
 
     @Override
     @Transactional(readOnly = true)
     public LapTime getBestLapTimeByTrackId(Long trackId) {
-        trackPersistencePort.findById(trackId)
-                .orElseThrow(() -> new ResourceNotFoundException(TRACK_NOT_FOUND_WITH_ID + trackId));
+        requireTrackExists(trackId);
 
         return lapTimePersistencePort.findByTrackId(trackId)
                 .stream()
@@ -175,10 +145,8 @@ public class LapTimeService implements LapTimeUseCase {
     @Override
     @Transactional(readOnly = true)
     public LapTime getBestLapTimeByUserIdAndTrackId(Long userId, Long trackId) {
-        userPersistencePort.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND_WITH_ID + userId));
-        trackPersistencePort.findById(trackId)
-                .orElseThrow(() -> new ResourceNotFoundException(TRACK_NOT_FOUND_WITH_ID + trackId));
+        requireUserExists(userId);
+        requireTrackExists(trackId);
 
         return lapTimePersistencePort.findByUserIdAndTrackId(userId, trackId)
                 .stream()
@@ -191,8 +159,7 @@ public class LapTimeService implements LapTimeUseCase {
     @Override
     @Transactional(readOnly = true)
     public List<LapTime> getRankingByTrackId(Long trackId) {
-        trackPersistencePort.findById(trackId)
-                .orElseThrow(() -> new ResourceNotFoundException(TRACK_NOT_FOUND_WITH_ID + trackId));
+        requireTrackExists(trackId);
 
         return lapTimePersistencePort.findByTrackId(trackId)
                 .stream()
@@ -218,6 +185,23 @@ public class LapTimeService implements LapTimeUseCase {
         }
     }
 
+    private void attachLapTimeReferences(LapTime lapTime, Long userId, Long trackId) {
+        lapTime.setUser(loadUserById(userId));
+        lapTime.setTrack(loadTrackById(trackId));
+    }
+
+    private void copyLapTimeValues(LapTime target, LapTime source) {
+        target.setLapDate(source.getLapDate());
+        target.setLapTimeMs(source.getLapTimeMs());
+        target.setVehicle(source.getVehicle());
+    }
+
+    private Track trackReference(Long trackId) {
+        Track track = new Track();
+        track.setId(trackId);
+        return track;
+    }
+
     private Long extractUserId(LapTime lapTime) {
         return lapTime.getUser().getId();
     }
@@ -230,6 +214,24 @@ public class LapTimeService implements LapTimeUseCase {
         return Comparator.comparing(LapTime::getLapTimeMs)
                 .thenComparing(LapTime::getLapDate)
                 .thenComparing(lapTime -> lapTime.getId() == null ? Long.MAX_VALUE : lapTime.getId());
+    }
+
+    private User loadUserById(Long userId) {
+        return userPersistencePort.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND_WITH_ID + userId));
+    }
+
+    private Track loadTrackById(Long trackId) {
+        return trackPersistencePort.findById(trackId)
+                .orElseThrow(() -> new ResourceNotFoundException(TRACK_NOT_FOUND_WITH_ID + trackId));
+    }
+
+    private void requireUserExists(Long userId) {
+        loadUserById(userId);
+    }
+
+    private void requireTrackExists(Long trackId) {
+        loadTrackById(trackId);
     }
 
     private LapTime findLapTimeOrThrow(Long id) {

@@ -14,7 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/event-booking-services")
-public class EventBookingServiceController {
+public class EventBookingServiceController extends AbstractWebController {
 
     private final EventBookingServiceUseCase eventBookingServiceUseCase;
     private final EventBookingServiceWebMapper eventBookingServiceWebMapper;
@@ -29,9 +29,9 @@ public class EventBookingServiceController {
     @ResponseStatus(HttpStatus.CREATED)
     public EventBookingServiceResponse createEventBookingService(
             @Valid @RequestBody CreateEventBookingServiceRequest request) {
-        EventBookingService createdEventBookingService =
-                eventBookingServiceUseCase.createEventBookingService(eventBookingServiceWebMapper.toDomain(request));
-        return eventBookingServiceWebMapper.toResponse(createdEventBookingService);
+        return eventBookingServiceWebMapper.toResponse(
+                eventBookingServiceUseCase.createEventBookingService(eventBookingServiceWebMapper.toDomain(request))
+        );
     }
 
     @DeleteMapping("/{id}")
@@ -42,10 +42,10 @@ public class EventBookingServiceController {
 
     @GetMapping
     public List<EventBookingServiceResponse> getAllEventBookingServices() {
-        return eventBookingServiceUseCase.getAllEventBookingServices()
-                .stream()
-                .map(eventBookingServiceWebMapper::toResponse)
-                .toList();
+        return mapResponses(
+                eventBookingServiceUseCase.getAllEventBookingServices(),
+                eventBookingServiceWebMapper::toResponse
+        );
     }
 
     @GetMapping("/{id}")
@@ -55,45 +55,46 @@ public class EventBookingServiceController {
 
     @GetMapping("/booking/{eventBookingId}")
     public List<EventBookingServiceResponse> getEventBookingServicesByEventBookingId(@PathVariable Long eventBookingId) {
-        return eventBookingServiceUseCase.getEventBookingServicesByEventBookingId(eventBookingId)
-                .stream()
-                .map(eventBookingServiceWebMapper::toResponse)
-                .toList();
+        return mapResponses(
+                eventBookingServiceUseCase.getEventBookingServicesByEventBookingId(eventBookingId),
+                eventBookingServiceWebMapper::toResponse
+        );
     }
 
     @GetMapping("/event/{eventId}")
     public List<EventBookingServiceResponse> getEventBookingServicesByEventId(@PathVariable Long eventId) {
-        return eventBookingServiceUseCase.getEventBookingServicesByEventId(eventId)
-                .stream()
-                .map(eventBookingServiceWebMapper::toResponse)
-                .toList();
+        return mapResponses(
+                eventBookingServiceUseCase.getEventBookingServicesByEventId(eventId),
+                eventBookingServiceWebMapper::toResponse
+        );
     }
 
     @GetMapping("/event/{eventId}/me")
     public List<EventBookingServiceResponse> getCurrentUserEventBookingServicesByEventId(@PathVariable Long eventId,
                                                                                          Authentication authentication) {
-        return eventBookingServiceUseCase.getEventBookingServicesByEventIdAndAuthenticatedEmail(
+        return mapResponses(
+                eventBookingServiceUseCase.getEventBookingServicesByEventIdAndAuthenticatedEmail(
                         eventId,
-                        authentication != null ? authentication.getName() : null
-                ).stream()
-                .map(eventBookingServiceWebMapper::toResponse)
-                .toList();
+                        authenticatedEmail(authentication)
+                ),
+                eventBookingServiceWebMapper::toResponse
+        );
     }
 
     @GetMapping("/user/{userId}")
     public List<EventBookingServiceResponse> getEventBookingServicesByUserId(@PathVariable Long userId) {
-        return eventBookingServiceUseCase.getEventBookingServicesByUserId(userId)
-                .stream()
-                .map(eventBookingServiceWebMapper::toResponse)
-                .toList();
+        return mapResponses(
+                eventBookingServiceUseCase.getEventBookingServicesByUserId(userId),
+                eventBookingServiceWebMapper::toResponse
+        );
     }
 
     @GetMapping("/event/{eventId}/user/{userId}")
     public List<EventBookingServiceResponse> getEventBookingServicesByEventIdAndUserId(@PathVariable Long eventId,
                                                                                         @PathVariable Long userId) {
-        return eventBookingServiceUseCase.getEventBookingServicesByEventIdAndUserId(eventId, userId)
-                .stream()
-                .map(eventBookingServiceWebMapper::toResponse)
-                .toList();
+        return mapResponses(
+                eventBookingServiceUseCase.getEventBookingServicesByEventIdAndUserId(eventId, userId),
+                eventBookingServiceWebMapper::toResponse
+        );
     }
 }

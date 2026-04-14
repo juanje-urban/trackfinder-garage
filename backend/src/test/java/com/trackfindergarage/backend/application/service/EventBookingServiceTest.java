@@ -187,6 +187,7 @@ class EventBookingServiceTest {
         eventBooking.setId(9L);
         eventBooking.getUser().setEmail("user@example.com");
 
+        when(userPersistencePort.findByEmail("user@example.com")).thenReturn(Optional.of(eventBooking.getUser()));
         when(eventBookingPersistencePort.findById(9L)).thenReturn(Optional.of(eventBooking));
         when(eventBookingPersistencePort.save(eventBooking)).thenReturn(eventBooking);
 
@@ -222,6 +223,7 @@ class EventBookingServiceTest {
         eventBooking.setId(9L);
         eventBooking.getUser().setEmail("other@example.com");
 
+        when(userPersistencePort.findByEmail("user@example.com")).thenReturn(Optional.of(userWithId(1L)));
         when(eventBookingPersistencePort.findById(9L)).thenReturn(Optional.of(eventBooking));
 
         assertThrows(

@@ -13,7 +13,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/organizer-services")
-public class OrganizerServiceController {
+public class OrganizerServiceController extends AbstractWebController {
 
     private final OrganizerServiceUseCase organizerServiceUseCase;
     private final OrganizerServiceWebMapper organizerServiceWebMapper;
@@ -27,10 +27,9 @@ public class OrganizerServiceController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public OrganizerServiceResponse createOrganizerService(@Valid @RequestBody CreateOrganizerServiceRequest request) {
-        OrganizerService createdOrganizerService = organizerServiceUseCase.createOrganizerService(
-                organizerServiceWebMapper.toDomain(request)
+        return organizerServiceWebMapper.toResponse(
+                organizerServiceUseCase.createOrganizerService(organizerServiceWebMapper.toDomain(request))
         );
-        return organizerServiceWebMapper.toResponse(createdOrganizerService);
     }
 
     @DeleteMapping("/{id}")
@@ -41,10 +40,7 @@ public class OrganizerServiceController {
 
     @GetMapping
     public List<OrganizerServiceResponse> getAllOrganizerServices() {
-        return organizerServiceUseCase.getAllOrganizerServices()
-                .stream()
-                .map(organizerServiceWebMapper::toResponse)
-                .toList();
+        return mapResponses(organizerServiceUseCase.getAllOrganizerServices(), organizerServiceWebMapper::toResponse);
     }
 
     @GetMapping("/{id}")
@@ -54,17 +50,17 @@ public class OrganizerServiceController {
 
     @GetMapping("/organizer/{organizerId}")
     public List<OrganizerServiceResponse> getOrganizerServicesByOrganizerId(@PathVariable Long organizerId) {
-        return organizerServiceUseCase.getOrganizerServicesByOrganizerId(organizerId)
-                .stream()
-                .map(organizerServiceWebMapper::toResponse)
-                .toList();
+        return mapResponses(
+                organizerServiceUseCase.getOrganizerServicesByOrganizerId(organizerId),
+                organizerServiceWebMapper::toResponse
+        );
     }
 
     @GetMapping("/service/{serviceId}")
     public List<OrganizerServiceResponse> getOrganizerServicesByServiceId(@PathVariable Long serviceId) {
-        return organizerServiceUseCase.getOrganizerServicesByServiceId(serviceId)
-                .stream()
-                .map(organizerServiceWebMapper::toResponse)
-                .toList();
+        return mapResponses(
+                organizerServiceUseCase.getOrganizerServicesByServiceId(serviceId),
+                organizerServiceWebMapper::toResponse
+        );
     }
 }

@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/organizers")
-public class CurrentOrganizerController {
+public class CurrentOrganizerController extends AbstractWebController {
 
     private final OrganizerUseCase organizerUseCase;
     private final OrganizerWebMapper organizerWebMapper;
@@ -30,9 +30,7 @@ public class CurrentOrganizerController {
     @GetMapping("/me")
     @PreAuthorize("hasRole('ORGANIZER')")
     public OrganizerResponse getCurrentOrganizer(Authentication authentication) {
-        return organizerWebMapper.toResponse(
-                organizerUseCase.getCurrentOrganizer(authentication != null ? authentication.getName() : null)
-        );
+        return organizerWebMapper.toResponse(organizerUseCase.getCurrentOrganizer(authenticatedEmail(authentication)));
     }
 
     @PutMapping("/me")
@@ -41,7 +39,7 @@ public class CurrentOrganizerController {
                                                     @Valid @RequestBody UpdateCurrentOrganizerProfileRequest request) {
         return organizerWebMapper.toResponse(
                 organizerUseCase.updateCurrentOrganizerProfile(
-                        authentication != null ? authentication.getName() : null,
+                        authenticatedEmail(authentication),
                         new UpdateCurrentOrganizerProfileCommand(
                                 request.getName(),
                                 request.getSurname(),
