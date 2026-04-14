@@ -927,7 +927,7 @@ function resolveLapTimeDeleteError(requestError: unknown): string {
               </label>
               <div v-else class="profile-detail-item profile-detail-item--full">
                 <span class="profile-detail-item__label">Contrasena</span>
-                <strong class="profile-detail-item__value">••••••••••••</strong>
+                <strong class="profile-detail-item__value">************</strong>
               </div>
             </div>
 
@@ -1045,7 +1045,7 @@ function resolveLapTimeDeleteError(requestError: unknown): string {
               </label>
               <div v-else class="profile-detail-item profile-detail-item--full">
                 <span class="profile-detail-item__label">Contrasena</span>
-                <strong class="profile-detail-item__value">â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢</strong>
+                <strong class="profile-detail-item__value">************</strong>
               </div>
             </div>
           </article>
