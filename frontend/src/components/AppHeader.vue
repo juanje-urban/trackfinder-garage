@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, watch } from 'vue'
-import { RouterLink } from 'vue-router'
+import { computed, onBeforeUnmount, onMounted, watch } from 'vue'
+import { RouterLink, useRoute } from 'vue-router'
 import { Bell, User } from 'lucide-vue-next'
 import { useAuth } from '@/composables/useAuth'
 import { useMessageInbox } from '@/composables/useMessageInbox'
@@ -10,6 +10,7 @@ import { getDisplayNameMonogram } from '@/utils/identity'
 
 const auth = useAuth()
 const messageInbox = useMessageInbox()
+const route = useRoute()
 
 const profileMonogram = computed(() =>
   getDisplayNameMonogram(auth.session.value?.displayName ?? ''),
@@ -40,17 +41,41 @@ const unreadCountLabel = computed(() =>
 )
 
 watch(
-  () => auth.session.value?.userId ?? null,
-  async (userId) => {
-    if (!userId) {
-      messageInbox.clearUnreadCount()
-      return
-    }
-
-    await messageInbox.refreshUnreadCount(userId)
+  () => [auth.session.value?.userId ?? null, route.fullPath] as const,
+  async ([userId]) => {
+    await refreshUnreadCount(userId)
   },
   { immediate: true },
 )
+
+onMounted(() => {
+  window.addEventListener('focus', handleWindowFocus)
+  document.addEventListener('visibilitychange', handleVisibilityChange)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('focus', handleWindowFocus)
+  document.removeEventListener('visibilitychange', handleVisibilityChange)
+})
+
+async function refreshUnreadCount(userId: number | null) {
+  if (!userId) {
+    messageInbox.clearUnreadCount()
+    return
+  }
+
+  await messageInbox.refreshUnreadCount(userId)
+}
+
+function handleWindowFocus() {
+  void refreshUnreadCount(auth.session.value?.userId ?? null)
+}
+
+function handleVisibilityChange() {
+  if (document.visibilityState === 'visible') {
+    void refreshUnreadCount(auth.session.value?.userId ?? null)
+  }
+}
 </script>
 
 <template>

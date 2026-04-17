@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
-import EventBookingDialog from '@/components/EventBookingDialog.vue'
 import UserProfileHero from '@/components/UserProfileHero.vue'
+import ProfileBookingDetailDialog from '@/components/profile/ProfileBookingDetailDialog.vue'
 import OrganizerAccountDetailsPanel from '@/components/profile/OrganizerAccountDetailsPanel.vue'
 import ProfileBookingsPanel from '@/components/profile/ProfileBookingsPanel.vue'
 import ProfileLapTimesPanel from '@/components/profile/ProfileLapTimesPanel.vue'
@@ -11,9 +11,11 @@ import { useAuth } from '@/composables/useAuth'
 import { useToast } from '@/composables/useToast'
 import {
   cancelEventBooking,
+  getCurrentUserBookedServicesByEventId,
   getCurrentUserEventBookings,
   updateOwnEventBookingVisibility,
 } from '@/services/eventBookingService'
+import { getEventServicesByEventId } from '@/services/eventService'
 import {
   getCurrentOrganizerProfile,
   updateCurrentOrganizerProfile,
@@ -35,9 +37,13 @@ import type { UserProfile } from '@/types/user'
 import { resolveApiErrorMessage } from '@/utils/apiErrors'
 import { isOrganizerRole, isUserRole } from '@/utils/authRoles'
 import { toIsoDate } from '@/utils/date'
-import { formatCurrency, formatDisplayDate } from '@/utils/format'
 
 type ProfileTab = 'reservas' | 'perfil' | 'vueltas'
+type BookingDetailServiceLine = {
+  id: number
+  name: string
+  price: number
+}
 
 const auth = useAuth()
 const router = useRouter()
@@ -62,7 +68,10 @@ const profileSaving = ref(false)
 const lapSaving = ref(false)
 const bookingCancellingId = ref<number | null>(null)
 const bookingVisibilityUpdatingId = ref<number | null>(null)
-const bookingPendingCancellation = ref<EventBooking | null>(null)
+const bookingDetailBooking = ref<EventBooking | null>(null)
+const bookingDetailServices = ref<BookingDetailServiceLine[]>([])
+const bookingDetailLoading = ref(false)
+const bookingDetailLoadingError = ref('')
 const profileEditMode = ref(false)
 
 const profileForm = reactive<ProfileFormState>({
@@ -283,14 +292,36 @@ function canCancelBooking(booking: EventBooking): boolean {
   return booking.eventDate >= cancellationCutoffIso.value
 }
 
-async function cancelBooking(booking: EventBooking) {
-  if (!canCancelBooking(booking)) {
-    bookingError.value = 'La anulacion solo esta disponible hasta 14 dias antes del evento.'
-    return
-  }
-
-  bookingPendingCancellation.value = booking
+async function openBookingDetail(booking: EventBooking) {
   bookingError.value = ''
+  bookingDetailLoadingError.value = ''
+  bookingDetailBooking.value = booking
+  bookingDetailServices.value = []
+  bookingDetailLoading.value = true
+
+  try {
+    const [bookedServices, eventServices] = await Promise.all([
+      getCurrentUserBookedServicesByEventId(booking.eventId),
+      getEventServicesByEventId(booking.eventId),
+    ])
+
+    const eventServiceNames = new Map(
+      eventServices.map((service) => [
+        service.id,
+        service.trackServiceName ?? service.organizerServiceName ?? 'Servicio adicional',
+      ]),
+    )
+
+    bookingDetailServices.value = bookedServices.map((service) => ({
+      id: service.id,
+      name: eventServiceNames.get(service.eventServiceId) ?? 'Servicio adicional',
+      price: service.priceAtPurchase,
+    }))
+  } catch {
+    bookingDetailLoadingError.value = 'No se pudieron cargar los servicios contratados.'
+  } finally {
+    bookingDetailLoading.value = false
+  }
 }
 
 function closeBookingCancellationDialog() {
@@ -299,11 +330,14 @@ function closeBookingCancellationDialog() {
   }
 
   bookingError.value = ''
-  bookingPendingCancellation.value = null
+  bookingDetailLoadingError.value = ''
+  bookingDetailBooking.value = null
+  bookingDetailServices.value = []
+  bookingDetailLoading.value = false
 }
 
 async function confirmBookingCancellation() {
-  const booking = bookingPendingCancellation.value
+  const booking = bookingDetailBooking.value
 
   if (!booking) {
     return
@@ -315,7 +349,7 @@ async function confirmBookingCancellation() {
   try {
     await cancelEventBooking(booking.id)
     bookings.value = bookings.value.filter((currentBooking) => currentBooking.id !== booking.id)
-    bookingPendingCancellation.value = null
+    closeBookingCancellationDialog()
     toast.showToast('La reserva se ha anulado correctamente.')
   } catch (requestError) {
     bookingError.value = resolveBookingCancellationError(requestError)
@@ -336,6 +370,9 @@ async function toggleBookingVisibility(booking: EventBooking) {
     bookings.value = bookings.value.map((currentBooking) =>
       currentBooking.id === updatedBooking.id ? updatedBooking : currentBooking,
     )
+    if (bookingDetailBooking.value?.id === updatedBooking.id) {
+      bookingDetailBooking.value = updatedBooking
+    }
     toast.showToast(
       updatedBooking.isVisible
         ? 'La reserva vuelve a mostrarse en tu perfil publico.'
@@ -659,8 +696,7 @@ function resolveLapTimeDeleteError(requestError: unknown): string {
           :past-bookings="pastBookings"
           :booking-cancelling-id="bookingCancellingId"
           :booking-visibility-updating-id="bookingVisibilityUpdatingId"
-          :cancellation-cutoff-iso="cancellationCutoffIso"
-          @request-cancel="cancelBooking"
+          @view-booking="openBookingDetail"
           @toggle-visibility="toggleBookingVisibility"
         />
 
@@ -701,32 +737,19 @@ function resolveLapTimeDeleteError(requestError: unknown): string {
       </section>
     </template>
 
-    <EventBookingDialog
-      :is-open="bookingPendingCancellation !== null"
-      mode="cancel"
-      :track-name="bookingPendingCancellation?.trackName ?? ''"
-      :event-date="
-        bookingPendingCancellation ? formatDisplayDate(bookingPendingCancellation.eventDate) : ''
+    <ProfileBookingDetailDialog
+      :is-open="bookingDetailBooking !== null"
+      :booking="bookingDetailBooking"
+      :services="bookingDetailServices"
+      :loading="bookingDetailLoading"
+      :loading-error="bookingDetailLoadingError"
+      :cancellation-error="bookingError"
+      :is-cancelling="
+        bookingDetailBooking !== null && bookingCancellingId === bookingDetailBooking.id
       "
-      :base-price-label="
-        bookingPendingCancellation
-          ? formatCurrency(bookingPendingCancellation.basePriceAtPurchase)
-          : ''
-      "
-      :total-price-label="
-        bookingPendingCancellation
-          ? formatCurrency(bookingPendingCancellation.basePriceAtPurchase)
-          : ''
-      "
-      :selected-services="[]"
-      :is-submitting="
-        bookingPendingCancellation !== null &&
-        bookingCancellingId === bookingPendingCancellation.id
-      "
-      :error-message="bookingError"
-      :is-visible-on-public-profile="false"
+      :can-cancel="bookingDetailBooking ? canCancelBooking(bookingDetailBooking) : false"
       @close="closeBookingCancellationDialog"
-      @confirm="confirmBookingCancellation"
+      @cancel="confirmBookingCancellation"
     />
   </main>
 </template>

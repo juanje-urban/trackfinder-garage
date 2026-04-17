@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, reactive, watch } from 'vue'
 import { X } from 'lucide-vue-next'
+import { useRouter } from 'vue-router'
 import heroImage from '@/assets/tracks/ricardo_tormo_cover_1.jpg'
 import logoUrl from '@/assets/tfg_logo.svg'
 import AuthAccessPanel from '@/components/auth/AuthAccessPanel.vue'
@@ -17,6 +18,7 @@ const MAX_LONG_FIELD_LENGTH = 255
 const MAX_SHORT_FIELD_LENGTH = 20
 
 const auth = useAuth()
+const router = useRouter()
 const form = reactive<AuthOrganizerRegisterPayload>({
   displayName: '',
   email: '',
@@ -185,10 +187,12 @@ function closeDialog() {
   auth.closeAuthDialog()
 }
 
-function logout() {
+async function logout() {
   auth.clearSession()
+  auth.closeAuthDialog()
   mode.value = 'login'
   uiState.error = ''
+  await router.push('/')
 }
 
 function handleDialogKeydown(event: KeyboardEvent) {

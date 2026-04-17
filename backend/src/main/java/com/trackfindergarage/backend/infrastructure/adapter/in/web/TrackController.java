@@ -2,7 +2,6 @@ package com.trackfindergarage.backend.infrastructure.adapter.in.web;
 
 import com.trackfindergarage.backend.application.port.in.LapTimeUseCase;
 import com.trackfindergarage.backend.application.port.in.TrackUseCase;
-import com.trackfindergarage.backend.domain.model.LapTime;
 import com.trackfindergarage.backend.domain.model.Track;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.CreateTrackRequest;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.TrackResponse;

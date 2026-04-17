@@ -1,7 +1,6 @@
 package com.trackfindergarage.backend.infrastructure.adapter.in.web;
 
 import com.trackfindergarage.backend.application.port.in.EventBookingServiceUseCase;
-import com.trackfindergarage.backend.domain.model.EventBookingService;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.CreateEventBookingServiceRequest;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.EventBookingServiceResponse;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.mapper.EventBookingServiceWebMapper;

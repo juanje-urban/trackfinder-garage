@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Eye, EyeOff } from 'lucide-vue-next'
+import { Eye, EyeOff, FileText } from 'lucide-vue-next'
 import { RouterLink } from 'vue-router'
 import type { EventBooking } from '@/types/eventBooking'
 import { formatDisplayDate } from '@/utils/format'
@@ -10,17 +10,12 @@ const props = defineProps<{
   pastBookings: EventBooking[]
   bookingCancellingId: number | null
   bookingVisibilityUpdatingId: number | null
-  cancellationCutoffIso: string
 }>()
 
 const emit = defineEmits<{
-  requestCancel: [booking: EventBooking]
+  viewBooking: [booking: EventBooking]
   toggleVisibility: [booking: EventBooking]
 }>()
-
-function canCancelBooking(booking: EventBooking): boolean {
-  return booking.eventDate >= props.cancellationCutoffIso
-}
 
 function getBookingVisibilityToneClass(isVisible: boolean): string {
   return isVisible ? 'icon-button--danger' : 'icon-button--success'
@@ -44,11 +39,7 @@ function visibilityActionLabel(isVisible: boolean): string {
         </p>
 
         <div v-else class="surface-card-list">
-          <article
-            v-for="booking in activeBookings"
-            :key="booking.id"
-            class="surface-card"
-          >
+          <article v-for="booking in activeBookings" :key="booking.id" class="surface-card">
             <RouterLink class="profile-booking-card__main" :to="`/events/${booking.eventId}`">
               <div class="panel-copy">
                 <p class="ui-eyebrow">{{ formatDisplayDate(booking.eventDate) }}</p>
@@ -82,18 +73,15 @@ function visibilityActionLabel(isVisible: boolean): string {
                 </button>
 
                 <button
-                  v-if="canCancelBooking(booking)"
-                  class="action-button profile-booking-card__cancel"
+                  class="icon-button profile-booking-card__detail"
                   type="button"
                   :disabled="bookingCancellingId === booking.id"
-                  @click="emit('requestCancel', booking)"
+                  aria-label="Ver detalle de la reserva"
+                  title="Ver detalle de la reserva"
+                  @click="emit('viewBooking', booking)"
                 >
-                  {{ bookingCancellingId === booking.id ? 'Anulando...' : 'Anular reserva' }}
+                  <FileText :size="16" aria-hidden="true" />
                 </button>
-
-                <span v-else class="subtle-note profile-booking-card__note">
-                  La anulacion se cierra 14 dias antes.
-                </span>
               </div>
             </div>
           </article>
@@ -182,18 +170,17 @@ function visibilityActionLabel(isVisible: boolean): string {
   gap: var(--space-sm);
 }
 
-.profile-booking-card__cancel {
-  background: linear-gradient(135deg, rgba(190, 34, 34, 0.92), rgba(126, 10, 10, 0.92));
+.profile-booking-card__detail {
+  border-color: rgba(255, 186, 103, 0.42);
+  background: linear-gradient(135deg, rgba(192, 90, 30, 0.92), rgba(128, 46, 12, 0.92));
+  color: #fff7f0;
+  box-shadow: 0 14px 30px rgba(128, 46, 12, 0.24);
 }
 
 .profile-booking-card__visibility-waiting {
   font-size: var(--fs-caption);
   font-weight: 700;
   letter-spacing: 0.08em;
-}
-
-.profile-booking-card__note {
-  text-align: right;
 }
 
 @media (max-width: 980px) {

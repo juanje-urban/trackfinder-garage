@@ -1,7 +1,6 @@
 package com.trackfindergarage.backend.infrastructure.adapter.in.web;
 
 import com.trackfindergarage.backend.application.port.in.OrganizerServiceUseCase;
-import com.trackfindergarage.backend.domain.model.OrganizerService;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.CreateOrganizerServiceRequest;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.OrganizerServiceResponse;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.mapper.OrganizerServiceWebMapper;
