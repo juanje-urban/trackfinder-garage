@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { X } from 'lucide-vue-next'
 import { computed } from 'vue'
 
 const props = withDefaults(
@@ -51,8 +52,14 @@ const panelStyle = computed(() => ({
           </div>
         </slot>
 
-        <button class="app-modal__close" type="button" @click="$emit('close')">
-          {{ props.closeLabel }}
+        <button
+          class="app-modal__close"
+          type="button"
+          :aria-label="props.closeLabel"
+          :title="props.closeLabel"
+          @click="$emit('close')"
+        >
+          <X :size="18" aria-hidden="true" />
         </button>
       </header>
 
@@ -92,18 +99,21 @@ const panelStyle = computed(() => ({
 }
 
 .app-modal__close {
-  padding: 10px 14px;
-  border: 1px solid var(--line-soft);
-  border-radius: var(--radius-pill);
-  color: var(--text-body);
-  background: var(--surface-glass);
-  font-weight: 700;
+  width: 40px;
+  height: 40px;
+  border: 1px solid rgba(255, 114, 114, 0.5);
+  border-radius: 999px;
+  color: #fff4f4;
+  background: linear-gradient(135deg, rgba(214, 31, 31, 0.94), rgba(146, 12, 12, 0.94));
+  box-shadow: 0 14px 30px rgba(146, 12, 12, 0.24);
+  display: grid;
+  place-items: center;
 }
 
 .app-modal__panel--light .app-modal__close {
-  border-color: rgba(48, 17, 15, 0.14);
-  background: rgba(48, 17, 15, 0.06);
-  color: var(--text-on-light);
+  border-color: rgba(255, 114, 114, 0.5);
+  color: #fff4f4;
+  background: linear-gradient(135deg, rgba(214, 31, 31, 0.94), rgba(146, 12, 12, 0.94));
 }
 
 @media (max-width: 720px) {

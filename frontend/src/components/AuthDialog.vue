@@ -439,10 +439,11 @@ function validateMaxLength(value: string, maxLength: number, label: string): str
   right: var(--space-xl);
   width: 40px;
   height: 40px;
-  border: 1px solid var(--line-faint);
-  border-radius: 12px;
-  color: var(--text-strong);
-  background: var(--surface-glass-strong);
+  border: 1px solid rgba(255, 114, 114, 0.5);
+  border-radius: 999px;
+  color: #fff4f4;
+  background: linear-gradient(135deg, rgba(214, 31, 31, 0.94), rgba(146, 12, 12, 0.94));
+  box-shadow: 0 14px 30px rgba(146, 12, 12, 0.24);
   display: grid;
   place-items: center;
 }

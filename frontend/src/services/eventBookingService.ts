@@ -39,6 +39,13 @@ export async function getBookedServicesByEventIdAndUserId(
   return response.data
 }
 
+export async function getBookedServicesByBookingId(
+  bookingId: number,
+): Promise<EventBookedService[]> {
+  const response = await api.get<EventBookedService[]>(`/event-booking-services/booking/${bookingId}`)
+  return response.data
+}
+
 export async function getCurrentUserBookedServicesByEventId(
   eventId: number,
 ): Promise<EventBookedService[]> {

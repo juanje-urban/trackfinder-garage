@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { X } from 'lucide-vue-next'
+
 const props = defineProps<{
   isOpen: boolean
   mode: 'checkout' | 'cancel'
@@ -42,8 +44,14 @@ defineEmits<{
           <p class="ui-copy-muted">{{ props.eventDate }}</p>
         </div>
 
-        <button class="booking-dialog__close" type="button" @click="$emit('close')">
-          Cerrar
+        <button
+          class="booking-dialog__close"
+          type="button"
+          aria-label="Cerrar"
+          title="Cerrar"
+          @click="$emit('close')"
+        >
+          <X :size="18" aria-hidden="true" />
         </button>
       </header>
 
@@ -148,11 +156,15 @@ defineEmits<{
 }
 
 .booking-dialog__close {
-  padding: 10px 14px;
-  border: 1px solid var(--line-soft);
-  border-radius: var(--radius-sm);
-  background: var(--surface-glass);
-  color: var(--text-body);
+  width: 40px;
+  height: 40px;
+  border: 1px solid rgba(255, 114, 114, 0.5);
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(214, 31, 31, 0.94), rgba(146, 12, 12, 0.94));
+  color: #fff4f4;
+  box-shadow: 0 14px 30px rgba(146, 12, 12, 0.24);
+  display: grid;
+  place-items: center;
 }
 
 .booking-dialog__lines {

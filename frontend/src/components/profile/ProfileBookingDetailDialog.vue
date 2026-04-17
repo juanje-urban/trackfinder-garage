@@ -94,11 +94,11 @@ const eventPath = computed(() => (props.booking ? `/events/${props.booking.event
           {{ props.loadingError }}
         </p>
 
-        <div v-else-if="props.services.length > 0" class="list-divider">
+        <div v-else-if="props.services.length > 0" class="surface-card-list">
           <article
             v-for="service in props.services"
             :key="service.id"
-            class="list-divider__item profile-booking-detail__service"
+            class="profile-booking-detail__service"
           >
             <span class="surface-detail-item__value">{{ service.name }}</span>
             <strong class="surface-detail-item__value">{{ formatCurrency(service.price) }}</strong>
@@ -152,6 +152,10 @@ const eventPath = computed(() => (props.booking ? `/events/${props.booking.event
 }
 
 .profile-booking-detail__service {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
   padding: var(--space-md) var(--space-lg);
   border: 1px solid var(--line-soft);
   border-radius: var(--radius-sm);
@@ -174,6 +178,7 @@ const eventPath = computed(() => (props.booking ? `/events/${props.booking.event
 }
 
 @media (max-width: 640px) {
+  .profile-booking-detail__service,
   .profile-booking-detail__actions {
     flex-direction: column;
     align-items: stretch;

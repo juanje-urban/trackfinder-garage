@@ -27,30 +27,28 @@ onMounted(async () => {
 
 <template>
   <CatalogPage
-    hero-eyebrow="Circuit registry"
-    hero-title="Tracks with a paddock-grade look"
-    hero-description="The circuit catalog now shares the same dark premium language as the public events feed, ready to grow into richer detail and booking flows."
-    section-eyebrow="Track management look"
-    section-title="Circuit cards with shared styling"
-    section-hint="Reusable surfaces, spacing and typography now match the event listing."
+    hero-eyebrow="Circuitos"
+    hero-title="Nuestras pistas"
+    hero-description="Explora el catálogo de circuitos donde podrás encontrar nuestros eventos."
+    section-eyebrow="Catálogo"
     :loading="loading"
-    loading-message="Loading circuits..."
+    loading-message="Cargando circuitos..."
     :error="error"
     :empty="tracks.length === 0"
-    empty-message="No public circuits are available right now."
+    empty-message="No hay circuitos publicos disponibles en este momento."
   >
 
     <template #metrics>
       <MetricCard
-        label="Total tracks"
+        label="Circuitos"
         :value="String(tracks.length)"
-        hint="Publicly visible circuits"
+        hint="Circuitos locales y de clase mundial"
         tone="accent"
       />
       <MetricCard
-        label="Locations"
+        label="Localizaciones"
         :value="String(locationCount)"
-        hint="Cities or regions represented"
+        hint="Ciudades representadas"
       />
     </template>
 

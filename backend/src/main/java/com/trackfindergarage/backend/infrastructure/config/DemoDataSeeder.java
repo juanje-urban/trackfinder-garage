@@ -1,4 +1,4 @@
-package com.trackfindergarage.backend.infrastructure.config;
+﻿package com.trackfindergarage.backend.infrastructure.config;
 
 import com.trackfindergarage.backend.domain.model.LapTime;
 import com.trackfindergarage.backend.domain.model.Message;
@@ -103,14 +103,14 @@ public class DemoDataSeeder implements CommandLineRunner {
     private static final String JARAMA_TRACK_NAME = "Circuito de Madrid Jarama - RACE";
     private static final String RICARDO_TORMO_TRACK_NAME = "Circuit Ricardo Tormo";
     private static final String GUADIX_TRACK_NAME = "Circuito Mike G Guadix";
-    private static final String ALGARVE_TRACK_NAME = "Autodromo Internacional do Algarve";
-    private static final String NURBURGRING_TRACK_NAME = "Nurburgring";
+    private static final String ALGARVE_TRACK_NAME = "Autódromo Internacional do Algarve";
+    private static final String NURBURGRING_TRACK_NAME = "Nürburgring";
     private static final String LE_MANS_SARTHE_TRACK_NAME = "Circuit de la Sarthe";
     private static final String LE_MANS_BUGATTI_TRACK_NAME = "Bugatti Circuit";
-    private static final String NURBURGRING_GP_TRACK_NAME = "Nurburgring Grand Prix-Strecke";
+    private static final String NURBURGRING_GP_TRACK_NAME = "Nürburgring Grand Prix-Strecke";
     private static final String BARCELONA_TRACK_NAME = "Circuit de Barcelona-Catalunya";
-    private static final String JEREZ_TRACK_NAME = "Circuito de Jerez - Angel Nieto";
-    private static final String MOTORLAND_TRACK_NAME = "MotorLand Aragon";
+    private static final String JEREZ_TRACK_NAME = "Circuito de Jerez - Ángel Nieto";
+    private static final String MOTORLAND_TRACK_NAME = "MotorLand Aragón";
     private static final String NAVARRA_TRACK_NAME = "Circuito de Navarra";
     private static final String ALBACETE_TRACK_NAME = "Circuito de Albacete";
     private static final String MONTEBLANCO_TRACK_NAME = "Circuito de Monteblanco";
@@ -139,18 +139,16 @@ public class DemoDataSeeder implements CommandLineRunner {
     private static final String COVERED_PADDOCK_SERVICE_NAME = "Reserva de paddock cubierto";
     private static final String NOISE_CONTROL_SERVICE_NAME = "Control de ruido";
     private static final String SKIDPAD_SERVICE_NAME = "Pista deslizante";
-    private static final String EVENT_PHOTOGRAPHY_SERVICE_NAME = "Fotografia del evento";
-    private static final String EVENT_VIDEO_SERVICE_NAME = "Video resumen del evento";
+    private static final String EVENT_PHOTOGRAPHY_SERVICE_NAME = "Fotografía del evento";
+    private static final String EVENT_VIDEO_SERVICE_NAME = "Vídeo resumen del evento";
     private static final String CATERING_SERVICE_NAME = "Catering";
     private static final String WELCOME_PACK_SERVICE_NAME = "Welcome pack";
-    private static final String INSTRUCTOR_SERVICE_NAME = "Instructor de conduccion";
+    private static final String INSTRUCTOR_SERVICE_NAME = "Instructor de conducción";
     private static final String SECOND_DRIVER_INSURANCE_SERVICE_NAME = "Seguro para segundo conductor";
     private static final String COPILOT_INSURANCE_SERVICE_NAME = "Seguro para copiloto";
     private static final String TRANSPONDER_TIMING_SERVICE_NAME = "Cronometraje con transponder";
     private static final String UNREAD_MESSAGE_SUBJECT = "Consulta sobre tandas en Jarama";
     private static final String UNREAD_MESSAGE_CONTENT =
-            "Hola, me interesa una tanda en Jarama para abril. \u00BFTen\u00E9is previsto organizar alguna? Gracias.";
-    private static final String LEGACY_UNREAD_MESSAGE_CONTENT =
             "Hola, me interesa una tanda en Jarama para abril. ¿Tenéis previsto organizar alguna? Gracias.";
 
     private static final BigDecimal PRICE_18_00 = new BigDecimal("18.00");
@@ -307,7 +305,7 @@ public class DemoDataSeeder implements CommandLineRunner {
         user.setEmail(email);
         user.setName(name);
         user.setSurname(surname);
-        user.setAddress("Direccion demo");
+        user.setAddress("Dirección demo");
         user.setPhone(demoPhoneNumber(email));
         user.setRole(role);
         user.setPasswordHash(passwordEncoder.encode(rawPassword));
@@ -813,29 +811,29 @@ public class DemoDataSeeder implements CommandLineRunner {
     private List<UserSeed> standardUserSeeds() {
         return List.of(
                 new UserSeed(JUANJE_DISPLAY_NAME, "juanje@example.com", "Juanje", "Demo"),
-                new UserSeed(MARIA_DISPLAY_NAME, "maria@example.com", "Maria", "Demo"),
+                new UserSeed(MARIA_DISPLAY_NAME, "maria@example.com", "María", "Demo"),
                 new UserSeed(CARLOS_DISPLAY_NAME, "carlos@example.com", "Carlos", "Demo"),
                 new UserSeed(FERNANDO_ALONSO_DISPLAY_NAME, "fernando.alonso@example.com", "Fernando", "Alonso"),
-                new UserSeed(ALEX_PALAU_DISPLAY_NAME, "alex.palau@example.com", "Alex", "Palou"),
+                new UserSeed(ALEX_PALAU_DISPLAY_NAME, "alex.palau@example.com", "Álex", "Palou"),
                 new UserSeed(LATEBRAKER_88_DISPLAY_NAME, "laura.sanz@example.com", "Laura", "Sanz"),
                 new UserSeed(CURVA_PERALTADA_DISPLAY_NAME, "sergio.rivas@example.com", "Sergio", "Rivas"),
                 new UserSeed(APEXHUNTER_DISPLAY_NAME, "diego.mena@example.com", "Diego", "Mena"),
-                new UserSeed(PITLANE_JUNKIE_DISPLAY_NAME, "ines.duarte@example.com", "Ines", "Duarte"),
+                new UserSeed(PITLANE_JUNKIE_DISPLAY_NAME, "ines.duarte@example.com", "Inés", "Duarte"),
                 new UserSeed(KERB_RIDER_DISPLAY_NAME, "marta.nogueira@example.com", "Marta", "Nogueira"),
                 new UserSeed(FLATOUT_MARTA_DISPLAY_NAME, "marta.cabrera@example.com", "Marta", "Cabrera"),
                 new UserSeed(HEELTOE_DANI_DISPLAY_NAME, "daniel.pardo@example.com", "Daniel", "Pardo"),
-                new UserSeed(TRACKRAT_77_DISPLAY_NAME, "raul.vega@example.com", "Raul", "Vega"),
-                new UserSeed(BOXBOX_RAUL_DISPLAY_NAME, "raul.ochoa@example.com", "Raul", "Ochoa"),
-                new UserSeed(REDFLAG_INES_DISPLAY_NAME, "ines.pastor@example.com", "Ines", "Pastor"),
-                new UserSeed(CHICANE_CHASER_DISPLAY_NAME, "pablo.ordonez@example.com", "Pablo", "Ordonez"),
+                new UserSeed(TRACKRAT_77_DISPLAY_NAME, "raul.vega@example.com", "Raúl", "Vega"),
+                new UserSeed(BOXBOX_RAUL_DISPLAY_NAME, "raul.ochoa@example.com", "Raúl", "Ochoa"),
+                new UserSeed(REDFLAG_INES_DISPLAY_NAME, "ines.pastor@example.com", "Inés", "Pastor"),
+                new UserSeed(CHICANE_CHASER_DISPLAY_NAME, "pablo.ordonez@example.com", "Pablo", "Ordóñez"),
                 new UserSeed(FULLTHROTTLE_EVA_DISPLAY_NAME, "eva.silva@example.com", "Eva", "Silva"),
                 new UserSeed(GRIDWALKER_DISPLAY_NAME, "hugo.lemos@example.com", "Hugo", "Lemos"),
                 new UserSeed(OVERSTEER_MIGUEL_DISPLAY_NAME, "miguel.costa@example.com", "Miguel", "Costa"),
-                new UserSeed(TYRESMOKE_LUCIA_DISPLAY_NAME, "lucia.roman@example.com", "Lucia", "Roman"),
-                new UserSeed(CURB_ATTACK_DISPLAY_NAME, "adrian.prieto@example.com", "Adrian", "Prieto"),
+                new UserSeed(TYRESMOKE_LUCIA_DISPLAY_NAME, "lucia.roman@example.com", "Lucía", "Román"),
+                new UserSeed(CURB_ATTACK_DISPLAY_NAME, "adrian.prieto@example.com", "Adrián", "Prieto"),
                 new UserSeed(BRAKEPOINT_NORA_DISPLAY_NAME, "nora.campos@example.com", "Nora", "Campos"),
                 new UserSeed(PADDOCK_PAULA_DISPLAY_NAME, "paula.freitas@example.com", "Paula", "Freitas"),
-                new UserSeed(STINTMASTER_DISPLAY_NAME, "alvaro.nieto@example.com", "Alvaro", "Nieto"),
+                new UserSeed(STINTMASTER_DISPLAY_NAME, "alvaro.nieto@example.com", "Álvaro", "Nieto"),
                 new UserSeed(APEX_LUSO_DISPLAY_NAME, "tiago.martins@example.com", "Tiago", "Martins")
         );
     }
@@ -921,118 +919,118 @@ public class DemoDataSeeder implements CommandLineRunner {
         return List.of(
                 new TrackSeed(
                         CALAFAT_TRACK_NAME,
-                        "L'Ametlla de Mar, Tarragona, Espana",
-                        "Circuito junto al Mediterraneo, conocido por sus cursos de conduccion y tandas privadas en la costa de Tarragona."
+                        "L'Ametlla de Mar, Tarragona, España",
+                        "Circuito junto al Mediterráneo, conocido por sus cursos de conducción y tandas privadas en la costa de Tarragona."
                 ),
                 new TrackSeed(
                         JARAMA_TRACK_NAME,
-                        "San Sebastian de los Reyes, Madrid, Espana",
-                        "Trazado historico del automovilismo espanol, sede habitual de eventos, track days y experiencias de conduccion cerca de Madrid."
+                        "San Sebastián de los Reyes, Madrid, España",
+                        "Trazado histórico del automovilismo español, sede habitual de eventos, track days y experiencias de conducción cerca de Madrid."
                 ),
                 new TrackSeed(
                         RICARDO_TORMO_TRACK_NAME,
-                        "Cheste, Valencia, Espana",
-                        "Circuito permanente de la Comunitat Valenciana, referencia nacional para motociclismo y automovilismo con gradas panoramicas."
+                        "Cheste, Valencia, España",
+                        "Circuito permanente de la Comunitat Valenciana, referencia nacional para motociclismo y automovilismo con gradas panorámicas."
                 ),
                 new TrackSeed(
                         GUADIX_TRACK_NAME,
-                        "Guadix, Granada, Espana",
+                        "Guadix, Granada, España",
                         "Circuito andaluz muy usado para tandas, pruebas de desarrollo y entrenamientos, situado en el altiplano granadino."
                 ),
                 new TrackSeed(
                         ALGARVE_TRACK_NAME,
-                        "Portimao, Faro, Portugal",
-                        "Circuito portugues famoso por sus desniveles y curvas ciegas, habitual en competiciones internacionales y pruebas de equipos."
+                        "Portimão, Faro, Portugal",
+                        "Circuito portugués famoso por sus desniveles y curvas ciegas, habitual en competiciones internacionales y pruebas de equipos."
                 ),
                 new TrackSeed(
                         NURBURGRING_TRACK_NAME,
-                        "Nurburg, Renania-Palatinado, Alemania",
-                        "Complejo aleman de referencia mundial, celebre por la Nordschleife y por su importancia historica en el automovilismo europeo."
+                        "Nürburg, Renania-Palatinado, Alemania",
+                        "Complejo alemán de referencia mundial, célebre por la Nordschleife y por su importancia histórica en el automovilismo europeo."
                 ),
                 new TrackSeed(
                         LE_MANS_SARTHE_TRACK_NAME,
                         "Le Mans, Sarthe, Francia",
-                        "Trazado semipermanente celebre por las 24 Horas de Le Mans, mezcla de rectas larguisimas y enlazadas rapidas en el oeste de Francia."
+                        "Trazado semipermanente célebre por las 24 Horas de Le Mans, mezcla de rectas larguísimas y enlazadas rápidas en el oeste de Francia."
                 ),
                 new TrackSeed(
                         LE_MANS_BUGATTI_TRACK_NAME,
                         "Le Mans, Sarthe, Francia",
-                        "Circuito permanente dentro del complejo de Le Mans, habitual para pruebas, competiciones nacionales y track days tecnicos."
+                        "Circuito permanente dentro del complejo de Le Mans, habitual para pruebas, competiciones nacionales y track days técnicos."
                 ),
                 new TrackSeed(
                         NURBURGRING_GP_TRACK_NAME,
-                        "Nurburg, Renania-Palatinado, Alemania",
-                        "Variante de gran premio del complejo de Nurburgring, con instalaciones modernas y un paddock preparado para eventos internacionales."
+                        "Nürburg, Renania-Palatinado, Alemania",
+                        "Variante de gran premio del complejo de Nürburgring, con instalaciones modernas y un paddock preparado para eventos internacionales."
                 ),
                 new TrackSeed(
                         BARCELONA_TRACK_NAME,
-                        "Montmelo, Barcelona, Espana",
-                        "Circuito catalan de referencia internacional, habitual en competiciones de primer nivel y en jornadas privadas de alto ritmo."
+                        "Montmeló, Barcelona, España",
+                        "Circuito catalán de referencia internacional, habitual en competiciones de primer nivel y en jornadas privadas de alto ritmo."
                 ),
                 new TrackSeed(
                         JEREZ_TRACK_NAME,
-                        "Jerez de la Frontera, Cadiz, Espana",
+                        "Jerez de la Frontera, Cádiz, España",
                         "Trazado andaluz muy conocido por su fluidez y por acoger programas de tandas, cursos avanzados y pruebas privadas."
                 ),
                 new TrackSeed(
                         MOTORLAND_TRACK_NAME,
-                        "Alcaniz, Teruel, Espana",
-                        "Complejo aragones moderno y tecnico, con grandes escapatorias y un paddock preparado para eventos de gran afluencia."
+                        "Alcañiz, Teruel, España",
+                        "Complejo aragonés moderno y técnico, con grandes escapatorias y un paddock preparado para eventos de gran afluencia."
                 ),
                 new TrackSeed(
                         NAVARRA_TRACK_NAME,
-                        "Los Arcos, Navarra, Espana",
-                        "Circuito rapido y variado del norte de Espana, popular entre clubes y organizadores que buscan fines de semana completos."
+                        "Los Arcos, Navarra, España",
+                        "Circuito rápido y variado del norte de España, popular entre clubes y organizadores que buscan fines de semana completos."
                 ),
                 new TrackSeed(
                         ALBACETE_TRACK_NAME,
-                        "Albacete, Castilla-La Mancha, Espana",
-                        "Trazado muy apreciado por su equilibrio entre tecnica y velocidad, habitual para entrenamientos y tandas de aficionados."
+                        "Albacete, Castilla-La Mancha, España",
+                        "Trazado muy apreciado por su equilibrio entre técnica y velocidad, habitual para entrenamientos y tandas de aficionados."
                 ),
                 new TrackSeed(
                         MONTEBLANCO_TRACK_NAME,
-                        "La Palma del Condado, Huelva, Espana",
-                        "Instalacion moderna del sur peninsular, utilizada para track days, desarrollo de vehiculos y jornadas corporativas."
+                        "La Palma del Condado, Huelva, España",
+                        "Instalación moderna del sur peninsular, utilizada para track days, desarrollo de vehículos y jornadas corporativas."
                 ),
                 new TrackSeed(
                         CARTAGENA_TRACK_NAME,
-                        "Fuente Alamo, Murcia, Espana",
-                        "Circuito compacto y tecnico del sureste espanol, ideal para tandas privadas y sesiones con coches ligeros."
+                        "Fuente Álamo, Murcia, España",
+                        "Circuito compacto y técnico del sureste español, ideal para tandas privadas y sesiones con coches ligeros."
                 ),
                 new TrackSeed(
                         ESTORIL_TRACK_NAME,
                         "Cascais, Lisboa, Portugal",
-                        "Circuito historico portugues junto al Atlantico, muy atractivo para eventos ibericos y tandas con ambiente premium."
+                        "Circuito histórico portugués junto al Atlántico, muy atractivo para eventos ibéricos y tandas con ambiente premium."
                 ),
                 new TrackSeed(
                         BRAGA_TRACK_NAME,
                         "Braga, Norte, Portugal",
-                        "Trazado portugues de longitud contenida, perfecto para jornadas de comunidad, formacion y sesiones técnicas."
+                        "Trazado portugués de longitud contenida, perfecto para jornadas de comunidad, formación y sesiones técnicas."
                 ),
                 new TrackSeed(
                         VILA_REAL_TRACK_NAME,
                         "Vila Real, Norte, Portugal",
-                        "Recorrido urbano portugues de caracter rapido y exigente, plausible para eventos demo y experiencias especiales."
+                        "Recorrido urbano portugués de carácter rápido y exigente, plausible para eventos demo y experiencias especiales."
                 ),
                 new TrackSeed(
                         BOAVISTA_TRACK_NAME,
                         "Porto, Norte, Portugal",
-                        "Circuito urbano iconico del entorno de Porto, util como referencia para eventos especiales de exhibicion y comunidad."
+                        "Circuito urbano icónico del entorno de Porto, útil como referencia para eventos especiales de exhibición y comunidad."
                 ),
                 new TrackSeed(
                         SPA_TRACK_NAME,
-                        "Stavelot, Lieja, Belgica",
-                        "Uno de los circuitos mas emblematicos de Europa, muy asociado a tandas premium y a experiencias de alto nivel."
+                        "Stavelot, Lieja, Bélgica",
+                        "Uno de los circuitos más emblemáticos de Europa, muy asociado a tandas premium y a experiencias de alto nivel."
                 ),
                 new TrackSeed(
                         MUGELLO_TRACK_NAME,
                         "Scarperia e San Piero, Toscana, Italia",
-                        "Trazado italiano muy apreciado por su desnivel, enlazadas rapidas y ambiente de paddock de primer nivel."
+                        "Trazado italiano muy apreciado por su desnivel, enlazadas rápidas y ambiente de paddock de primer nivel."
                 ),
                 new TrackSeed(
                         PAUL_RICARD_TRACK_NAME,
                         "Le Castellet, Provenza-Alpes-Costa Azul, Francia",
-                        "Circuito frances moderno y versatil, frecuentemente utilizado para entrenamientos privados y eventos internacionales."
+                        "Circuito francés moderno y versátil, frecuentemente utilizado para entrenamientos privados y eventos internacionales."
                 )
         );
     }
@@ -1053,7 +1051,7 @@ public class DemoDataSeeder implements CommandLineRunner {
                 ),
                 new ServiceSeed(
                         NOISE_CONTROL_SERVICE_NAME,
-                        "Supervision y medicion del nivel sonoro del vehiculo en pista.",
+                        "Supervisión y medición del nivel sonoro del vehículo en pista.",
                         true,
                         false
                 ),
@@ -1065,13 +1063,13 @@ public class DemoDataSeeder implements CommandLineRunner {
                 ),
                 new ServiceSeed(
                         EVENT_PHOTOGRAPHY_SERVICE_NAME,
-                        "Cobertura fotografica profesional de la jornada.",
+                        "Cobertura fotográfica profesional de la jornada.",
                         false,
                         true
                 ),
                 new ServiceSeed(
                         EVENT_VIDEO_SERVICE_NAME,
-                        "Edicion de video con los mejores momentos del evento.",
+                        "Edición de vídeo con los mejores momentos del evento.",
                         false,
                         true
                 ),
@@ -1083,13 +1081,13 @@ public class DemoDataSeeder implements CommandLineRunner {
                 ),
                 new ServiceSeed(
                         WELCOME_PACK_SERVICE_NAME,
-                        "Pack de bienvenida con acreditacion y material del evento.",
+                        "Pack de bienvenida con acreditación y material del evento.",
                         false,
                         true
                 ),
                 new ServiceSeed(
                         INSTRUCTOR_SERVICE_NAME,
-                        "Sesion de asesoramiento y acompanamiento con instructor.",
+                        "Sesión de asesoramiento y acompañamiento con instructor.",
                         false,
                         true
                 ),
@@ -1843,14 +1841,8 @@ public class DemoDataSeeder implements CommandLineRunner {
                 LocalDateTime.of(2026, 3, 24, 18, 30),
                 false,
                 UNREAD_MESSAGE_SUBJECT,
-                resolveUnreadMessageContent()
+                UNREAD_MESSAGE_CONTENT
         );
-    }
-
-    private String resolveUnreadMessageContent() {
-        return LEGACY_UNREAD_MESSAGE_CONTENT.contains("\u00C2")
-                ? UNREAD_MESSAGE_CONTENT
-                : LEGACY_UNREAD_MESSAGE_CONTENT;
     }
 
     private void createOrganizerServiceIfMissing(String legalName, String serviceName) {

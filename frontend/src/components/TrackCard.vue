@@ -44,7 +44,7 @@ const visualStyle = computed(() => {
           class="action-button action-button--ghost"
           :to="{ path: '/events', query: { trackId: String(track.id) } }"
         >
-          Browse events
+          Ver eventos
         </RouterLink>
       </div>
     </div>

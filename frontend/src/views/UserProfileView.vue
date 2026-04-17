@@ -11,7 +11,7 @@ import { useAuth } from '@/composables/useAuth'
 import { useToast } from '@/composables/useToast'
 import {
   cancelEventBooking,
-  getCurrentUserBookedServicesByEventId,
+  getBookedServicesByBookingId,
   getCurrentUserEventBookings,
   updateOwnEventBookingVisibility,
 } from '@/services/eventBookingService'
@@ -300,19 +300,27 @@ async function openBookingDetail(booking: EventBooking) {
   bookingDetailLoading.value = true
 
   try {
-    const [bookedServices, eventServices] = await Promise.all([
-      getCurrentUserBookedServicesByEventId(booking.eventId),
+    const [bookedServicesResult, eventServicesResult] = await Promise.allSettled([
+      getBookedServicesByBookingId(booking.id),
       getEventServicesByEventId(booking.eventId),
     ])
 
-    const eventServiceNames = new Map(
-      eventServices.map((service) => [
-        service.id,
-        service.trackServiceName ?? service.organizerServiceName ?? 'Servicio adicional',
-      ]),
-    )
+    if (bookedServicesResult.status === 'rejected') {
+      bookingDetailLoadingError.value = 'No se pudieron cargar los servicios contratados.'
+      return
+    }
 
-    bookingDetailServices.value = bookedServices.map((service) => ({
+    const eventServiceNames =
+      eventServicesResult.status === 'fulfilled'
+        ? new Map(
+            eventServicesResult.value.map((service) => [
+              service.id,
+              service.trackServiceName ?? service.organizerServiceName ?? 'Servicio adicional',
+            ]),
+          )
+        : new Map<number, string>()
+
+    bookingDetailServices.value = bookedServicesResult.value.map((service) => ({
       id: service.id,
       name: eventServiceNames.get(service.eventServiceId) ?? 'Servicio adicional',
       price: service.priceAtPurchase,

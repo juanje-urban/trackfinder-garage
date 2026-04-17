@@ -50,17 +50,19 @@ withDefaults(
       </div>
 
       <div class="panel-copy profile-hero__alias">
-        <h1 class="ui-title-hero">{{ displayName }}</h1>
-        <button
-          v-if="showEmailAction"
-          class="profile-hero__contact-button"
-          type="button"
-          aria-label="Contacto por correo proximamente"
-          title="Contacto por correo proximamente"
-          @click="emit('email-action')"
-        >
-          <Mail :size="18" aria-hidden="true" />
-        </button>
+        <div class="profile-hero__headline">
+          <h1 class="ui-title-hero">{{ displayName }}</h1>
+          <button
+            v-if="showEmailAction"
+            class="profile-hero__contact-button"
+            type="button"
+            aria-label="Contacto por correo proximamente"
+            title="Contacto por correo proximamente"
+            @click="emit('email-action')"
+          >
+            <Mail :size="18" aria-hidden="true" />
+          </button>
+        </div>
       </div>
     </div>
 
@@ -137,17 +139,24 @@ withDefaults(
     0 0 3px rgba(0, 0, 0, 0.56);
 }
 
+.profile-hero__headline {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
 .profile-hero__contact-button {
   width: 42px;
   height: 42px;
   padding: 0;
   display: inline-grid;
   place-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.28);
+  border: 1px solid rgba(255, 196, 102, 0.46);
   border-radius: 999px;
-  background: rgba(8, 14, 22, 0.62);
-  color: white;
-  box-shadow: 0 12px 30px rgba(5, 10, 18, 0.24);
+  background: linear-gradient(135deg, rgba(212, 102, 42, 0.96), rgba(134, 52, 16, 0.96));
+  color: #fff7ef;
+  box-shadow: 0 14px 32px rgba(97, 34, 9, 0.28);
 }
 
 .profile-hero__stats {

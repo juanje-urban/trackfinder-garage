@@ -24,31 +24,64 @@ function defineTrackMedia(slug: string, galleryCount = 2): TrackMediaManifestEnt
   }
 }
 
-// Update only the dummy file names here as you add real assets to src/assets/tracks.
-export const trackMediaManifest: Record<string, TrackMediaManifestEntry> = {
-  'Circuit Calafat': defineTrackMedia('calafat'),
-  'Circuito de Madrid Jarama - RACE': defineTrackMedia('jarama'),
-  'Circuit Ricardo Tormo': defineTrackMedia('ricardo_tormo'),
-  'Circuito Mike G Guadix': defineTrackMedia('guadix'),
-  'Autodromo Internacional do Algarve': defineTrackMedia('algarve'),
-  Nurburgring: defineTrackMedia('nurburgring'),
-  'Circuit de la Sarthe': defineTrackMedia('le_mans_sarthe'),
-  'Bugatti Circuit': defineTrackMedia('le_mans_bugatti'),
-  'Nurburgring Grand Prix-Strecke': defineTrackMedia('nurburgring_gp'),
-  'Circuit de Barcelona-Catalunya': defineTrackMedia('barcelona'),
-  'Circuito de Jerez - Angel Nieto': defineTrackMedia('jerez'),
-  'MotorLand Aragon': defineTrackMedia('motorland'),
-  'Circuito de Navarra': defineTrackMedia('navarra'),
-  'Circuito de Albacete': defineTrackMedia('albacete'),
-  'Circuito de Monteblanco': defineTrackMedia('monteblanco'),
-  'Circuito de Cartagena': defineTrackMedia('cartagena'),
-  'Circuito do Estoril': defineTrackMedia('estoril'),
-  'Circuito Vasco Sameiro': defineTrackMedia('braga'),
-  'Circuito de Vila Real': defineTrackMedia('vila_real'),
-  'Circuito da Boavista': defineTrackMedia('boavista'),
-  'Circuit de Spa-Francorchamps': defineTrackMedia('spa'),
-  'Mugello Circuit': defineTrackMedia('mugello'),
-  'Circuit Paul Ricard': defineTrackMedia('paul_ricard'),
+const trackMediaManifest = {
+  calafat: defineTrackMedia('calafat'),
+  jarama: defineTrackMedia('jarama'),
+  ricardoTormo: defineTrackMedia('ricardo_tormo'),
+  guadix: defineTrackMedia('guadix'),
+  algarve: defineTrackMedia('algarve'),
+  nurburgring: defineTrackMedia('nurburgring'),
+  leMansSarthe: defineTrackMedia('le_mans_sarthe'),
+  leMansBugatti: defineTrackMedia('le_mans_bugatti'),
+  nurburgringGp: defineTrackMedia('nurburgring_gp'),
+  barcelona: defineTrackMedia('barcelona'),
+  jerez: defineTrackMedia('jerez'),
+  motorland: defineTrackMedia('motorland'),
+  navarra: defineTrackMedia('navarra'),
+  albacete: defineTrackMedia('albacete'),
+  monteblanco: defineTrackMedia('monteblanco'),
+  cartagena: defineTrackMedia('cartagena'),
+  estoril: defineTrackMedia('estoril'),
+  braga: defineTrackMedia('braga'),
+  vilaReal: defineTrackMedia('vila_real'),
+  boavista: defineTrackMedia('boavista'),
+  spa: defineTrackMedia('spa'),
+  mugello: defineTrackMedia('mugello'),
+  paulRicard: defineTrackMedia('paul_ricard'),
+}
+
+type TrackMediaKey = keyof typeof trackMediaManifest
+
+// Relacion entre el nombre real del circuito y el slug de assets del front.
+const trackMediaNameMap: Record<string, TrackMediaKey> = {
+  'Circuit Calafat': 'calafat',
+  'Circuito de Madrid Jarama - RACE': 'jarama',
+  'Circuit Ricardo Tormo': 'ricardoTormo',
+  'Circuito Mike G Guadix': 'guadix',
+  'Autódromo Internacional do Algarve': 'algarve',
+  'Autodromo Internacional do Algarve': 'algarve',
+  'Nürburgring': 'nurburgring',
+  Nurburgring: 'nurburgring',
+  'Circuit de la Sarthe': 'leMansSarthe',
+  'Bugatti Circuit': 'leMansBugatti',
+  'Nürburgring Grand Prix-Strecke': 'nurburgringGp',
+  'Nurburgring Grand Prix-Strecke': 'nurburgringGp',
+  'Circuit de Barcelona-Catalunya': 'barcelona',
+  'Circuito de Jerez - Ángel Nieto': 'jerez',
+  'Circuito de Jerez - Angel Nieto': 'jerez',
+  'MotorLand Aragón': 'motorland',
+  'MotorLand Aragon': 'motorland',
+  'Circuito de Navarra': 'navarra',
+  'Circuito de Albacete': 'albacete',
+  'Circuito de Monteblanco': 'monteblanco',
+  'Circuito de Cartagena': 'cartagena',
+  'Circuito do Estoril': 'estoril',
+  'Circuito Vasco Sameiro': 'braga',
+  'Circuito de Vila Real': 'vilaReal',
+  'Circuito da Boavista': 'boavista',
+  'Circuit de Spa-Francorchamps': 'spa',
+  'Mugello Circuit': 'mugello',
+  'Circuit Paul Ricard': 'paulRicard',
 }
 
 function resolveTrackAsset(fileName: string): string | undefined {
@@ -69,7 +102,8 @@ function resolveTrackAssetByBaseName(baseName: string): string | undefined {
 }
 
 export function getTrackMedia(trackName: string): TrackMedia {
-  const manifestEntry = trackMediaManifest[trackName]
+  const mediaKey = trackMediaNameMap[trackName]
+  const manifestEntry = mediaKey ? trackMediaManifest[mediaKey] : undefined
 
   if (!manifestEntry) {
     return { gallery: [] }
