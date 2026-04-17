@@ -1,4 +1,4 @@
-﻿package com.trackfindergarage.backend.infrastructure.config;
+package com.trackfindergarage.backend.infrastructure.config;
 
 import com.trackfindergarage.backend.domain.model.LapTime;
 import com.trackfindergarage.backend.domain.model.Message;
