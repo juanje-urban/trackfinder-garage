@@ -53,6 +53,14 @@ function formatOrganizerSummaryLine(organizer: Organizer | null): string {
     .filter((value) => value.trim() !== '')
     .join(' - ')
 }
+
+function resolveOrganizerNoteLabel(organizer: Organizer | null): string | undefined {
+  if (organizer === null || organizer.organizerEnabled) {
+    return undefined
+  }
+
+  return 'Solicitud de organizador pendiente de aprobación'
+}
 </script>
 
 <template>
@@ -110,6 +118,8 @@ function formatOrganizerSummaryLine(organizer: Organizer | null): string {
           :real-name="formatUserName(item.user)"
           :summary="formatUserSummaryLine(item.user)"
           :detail="formatOrganizerSummaryLine(item.organizer)"
+          :note-label="resolveOrganizerNoteLabel(item.organizer)"
+          :note-tone="item.organizer && !item.organizer.organizerEnabled ? 'warning' : undefined"
           :enabled="item.user.enabled"
           :disabled="userBusyId === item.user.id"
           @toggle="$emit('toggleUser', item.user)"

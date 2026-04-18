@@ -13,7 +13,7 @@ const props = defineProps<{
 }>()
 
 const mediaStyle = computed(() => {
-  const trackMedia = getTrackMedia(props.event.trackName)
+  const trackMedia = getTrackMedia(props.event.trackShortName)
 
   return createVisualStyle(
     props.event.id,

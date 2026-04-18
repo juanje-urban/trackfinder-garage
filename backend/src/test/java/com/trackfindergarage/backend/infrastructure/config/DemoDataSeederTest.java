@@ -61,7 +61,7 @@ class DemoDataSeederTest {
     private static final String ORGANIZER_ROLE_NAME = "ORGANIZER";
     private static final LocalDate FUTURE_EVENTS_THRESHOLD = LocalDate.of(2026, 7, 1);
     private static final String UNREAD_MESSAGE_CONTENT =
-            "Hola, me interesa una tanda en Jarama para abril. \u00BFTen\u00E9is previsto organizar alguna? Gracias.";
+            "Hola, me interesa una tanda en Jarama para abril. ¿Tenéis previsto organizar alguna? Gracias.";
 
     @Mock
     private SpringDataRoleRepository roleRepository;

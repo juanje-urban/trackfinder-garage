@@ -26,30 +26,30 @@ import java.util.Objects;
 @Transactional
 public class EventBookingService implements EventBookingUseCase {
 
-    private static final String EVENT_BOOKING_NOT_FOUND_WITH_ID = "Event booking not found with id: ";
-    private static final String USER_NOT_FOUND_WITH_ID = "User not found with id: ";
-    private static final String EVENT_NOT_FOUND_WITH_ID = "Event not found with id: ";
-    private static final String USER_ID_REQUIRED = "User id is required";
-    private static final String EVENT_ID_REQUIRED = "Event id is required";
+    private static final String EVENT_BOOKING_NOT_FOUND_WITH_ID = "Reserva de evento no encontrada con id: ";
+    private static final String USER_NOT_FOUND_WITH_ID = "Usuario no encontrado con id: ";
+    private static final String EVENT_NOT_FOUND_WITH_ID = "Evento no encontrado con id: ";
+    private static final String USER_ID_REQUIRED = "El id de usuario es obligatorio";
+    private static final String EVENT_ID_REQUIRED = "El id de evento es obligatorio";
     private static final String EVENT_BOOKING_ALREADY_EXISTS =
-            "User id %d already has a booking for event id %d";
+            "El usuario con id %d ya tiene una reserva para el evento con id %d";
     private static final String EVENT_BOOKING_REQUIRES_FUTURE_EVENT =
-            "Event booking can only be created for future events";
+            "La reserva solo puede crearse para eventos futuros";
     private static final String EVENT_BOOKING_REQUIRES_EVENT_CAPACITY =
-            "Event max participants is required before accepting bookings";
-    private static final String EVENT_IS_FULL = "Event id %d is full";
+            "El número máximo de participantes del evento es obligatorio antes de aceptar reservas";
+    private static final String EVENT_IS_FULL = "El evento con id %d está completo";
     private static final String EVENT_BOOKING_CANNOT_BE_DELETED_WITHIN_14_DAYS =
-            "Event booking cannot be deleted less than 14 days before the event";
-    private static final String AUTHENTICATED_EMAIL_REQUIRED = "Authenticated user email is required";
-    private static final String USER_NOT_FOUND_WITH_EMAIL = "User not found with email: ";
-    private static final String EVENT_SERVICE_NOT_FOUND_WITH_ID = "Event service not found with id: ";
+            "La reserva no puede eliminarse con menos de 14 días de antelación al evento";
+    private static final String AUTHENTICATED_EMAIL_REQUIRED = "El correo electrónico del usuario autenticado es obligatorio";
+    private static final String USER_NOT_FOUND_WITH_EMAIL = "Usuario no encontrado con correo electrónico: ";
+    private static final String EVENT_SERVICE_NOT_FOUND_WITH_ID = "Servicio de evento no encontrado con id: ";
     private static final String EVENT_SERVICE_MUST_BELONG_TO_EVENT =
-            "Event service id %d does not belong to event id %d";
+            "El servicio de evento con id %d no pertenece al evento con id %d";
     private static final String ONLY_STANDARD_USERS_CAN_BOOK_EVENTS =
-            "Only standard users can book events";
+            "Solo los usuarios estándar pueden reservar eventos";
     private static final String USER_ROLE_NAME = "USER";
     private static final String ONLY_BOOKING_OWNER_CAN_CANCEL_EVENT_BOOKING =
-            "Only the owner of the booking can cancel it";
+            "Solo el propietario de la reserva puede cancelarla";
 
     private final EventBookingPersistencePort eventBookingPersistencePort;
     private final EventBookingServicePersistencePort eventBookingServicePersistencePort;

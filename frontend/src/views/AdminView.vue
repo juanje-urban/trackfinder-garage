@@ -150,7 +150,7 @@ onMounted(async () => {
   if (!auth.isAuthenticated.value) {
     loading.value = false
     errorTitle.value = 'Acceso restringido'
-    error.value = 'Inicia sesion con una cuenta de administrador para acceder a esta area.'
+    error.value = 'Inicia sesión con una cuenta de administrador para acceder a esta área.'
     return
   }
 
@@ -175,6 +175,7 @@ watch(
 function createEmptyTrackForm(): TrackPayload {
   return {
     name: '',
+    shortName: '',
     location: '',
     description: '',
   }
@@ -218,13 +219,13 @@ async function loadAdminPage() {
         errorTitle.value = 'Acceso restringido'
         error.value = 'Esta area esta reservada para cuentas con rol administrador.'
       } else if (requestError.response?.status === 401) {
-        errorTitle.value = 'Sesion no valida'
-        error.value = 'Tu sesion ya no es valida. Inicia sesion de nuevo para continuar.'
+        errorTitle.value = 'Sesión no válida'
+        error.value = 'Tu sesión ya no es válida. Inicia sesión de nuevo para continuar.'
       } else {
-        error.value = 'No se pudo cargar el panel de administracion.'
+        error.value = 'No se pudo cargar el panel de administración.'
       }
     } else {
-      error.value = 'No se pudo cargar el panel de administracion.'
+      error.value = 'No se pudo cargar el panel de administración.'
     }
   } finally {
     loading.value = false
@@ -251,6 +252,7 @@ function startTrackEdit(track: Track) {
   editingTrackId.value = track.id
   Object.assign(trackForm, {
     name: track.name,
+    shortName: track.shortName,
     location: track.location,
     description: track.description,
   })
@@ -266,6 +268,7 @@ async function saveTrack() {
   try {
     const payload: TrackPayload = {
       name: trackForm.name.trim(),
+      shortName: trackForm.shortName.trim(),
       location: trackForm.location.trim(),
       description: trackForm.description.trim(),
     }
@@ -499,7 +502,7 @@ function resolveRequestError(requestError: unknown, fallbackMessage: string): st
   return resolveApiErrorMessage(requestError, {
     fallback: fallbackMessage,
     statusMessages: {
-      403: 'No tienes permisos para realizar esta accion.',
+      403: 'No tienes permisos para realizar esta acción.',
     },
   })
 }
@@ -508,13 +511,13 @@ function resolveRequestError(requestError: unknown, fallbackMessage: string): st
 <template>
   <main class="page-shell section-stack">
     <section v-if="loading" class="panel panel-pad-lg panel-stack-sm">
-      <p class="ui-eyebrow">Administracion</p>
+      <p class="ui-eyebrow">Administración</p>
       <h1 class="ui-title-section">Cargando centro de control</h1>
       <p class="ui-copy-muted">Estamos preparando los datos de organizadores, circuitos y usuarios.</p>
     </section>
 
     <section v-else-if="error" class="panel panel-pad-lg panel-stack-sm">
-      <p class="ui-eyebrow">Administracion</p>
+      <p class="ui-eyebrow">Administración</p>
       <h1 class="ui-title-section">{{ errorTitle }}</h1>
       <p class="ui-copy-muted">{{ error }}</p>
       <RouterLink class="action-button" to="/">Volver al inicio</RouterLink>
@@ -523,12 +526,12 @@ function resolveRequestError(requestError: unknown, fallbackMessage: string): st
     <template v-else>
       <PageHero
         eyebrow="Centro de control"
-        title="Administracion"
-        description="Gestiona solicitudes de organizador, circuitos, servicios y cuentas de usuario desde un unico panel operativo."
+        title="Administración"
+        description="Gestiona solicitudes de organizador, circuitos, servicios y cuentas de usuario desde un único panel operativo."
       />
 
       <section class="panel panel-pad-lg panel-stack-lg">
-        <div class="pill-tabs" role="tablist" aria-label="Navegacion de administracion">
+        <div class="pill-tabs" role="tablist" aria-label="Navegación de administración">
           <button
             v-for="tab in tabItems"
             :key="tab.id"
@@ -611,12 +614,26 @@ function resolveRequestError(requestError: unknown, fallbackMessage: string): st
       </label>
 
       <label class="surface-field surface-field--full">
-        <span class="surface-field__label">Ubicacion</span>
+        <span class="surface-field__label">Nombre corto de assets</span>
+        <input
+          v-model="trackForm.shortName"
+          type="text"
+          maxlength="120"
+          pattern="[a-z0-9_]+"
+          placeholder="jarama"
+        />
+        <span class="ui-copy-caption">
+          Usa minúsculas, números y guiones bajos. Se combinará con `_cover_1`, `_cover_2` y `_layout`.
+        </span>
+      </label>
+
+      <label class="surface-field surface-field--full">
+        <span class="surface-field__label">Ubicación</span>
         <input v-model="trackForm.location" type="text" maxlength="255" />
       </label>
 
       <label class="surface-field surface-field--full">
-        <span class="surface-field__label">Descripcion</span>
+        <span class="surface-field__label">Descripción</span>
         <textarea v-model="trackForm.description" rows="6" maxlength="500"></textarea>
       </label>
 
@@ -647,7 +664,7 @@ function resolveRequestError(requestError: unknown, fallbackMessage: string): st
       </label>
 
       <label class="surface-field surface-field--full">
-        <span class="surface-field__label">Descripcion</span>
+        <span class="surface-field__label">Descripción</span>
         <textarea v-model="serviceForm.description" rows="6" maxlength="500"></textarea>
       </label>
 

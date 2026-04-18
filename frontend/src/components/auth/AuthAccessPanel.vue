@@ -55,7 +55,7 @@ function toggleOrganizerMode() {
         type="button"
         @click="$emit('setMode', 'login')"
       >
-        Iniciar sesion
+        Iniciar sesión
       </button>
       <button
         class="auth-tab"
@@ -74,7 +74,7 @@ function toggleOrganizerMode() {
       @submit.prevent="$emit('submit')"
     >
       <label v-if="isRegistrationMode" class="auth-field">
-        <span class="auth-field__label">Alias publico</span>
+        <span class="auth-field__label">Alias público</span>
         <span class="auth-field__control">
           <User :size="16" class="auth-field__icon" />
           <input
@@ -116,14 +116,14 @@ function toggleOrganizerMode() {
       </label>
 
       <label v-if="isRegistrationMode" class="auth-field">
-        <span class="auth-field__label">Telefono</span>
+        <span class="auth-field__label">Teléfono</span>
         <span class="auth-field__control">
           <Lock :size="16" class="auth-field__icon" />
           <input
             :value="form.phone"
             type="tel"
             autocomplete="tel"
-            placeholder="Tu telefono"
+            placeholder="Tu teléfono"
             @input="updateField('phone', $event)"
           />
         </span>
@@ -158,21 +158,21 @@ function toggleOrganizerMode() {
       </label>
 
       <label v-if="isRegistrationMode" class="auth-field auth-field--full">
-        <span class="auth-field__label">Direccion</span>
+        <span class="auth-field__label">Dirección</span>
         <span class="auth-field__control">
           <Mail :size="16" class="auth-field__icon" />
           <input
             :value="form.address"
             type="text"
             autocomplete="street-address"
-            placeholder="Tu direccion"
+            placeholder="Tu dirección"
             @input="updateField('address', $event)"
           />
         </span>
       </label>
 
       <label class="auth-field" :class="{ 'auth-field--full': isRegistrationMode }">
-        <span class="auth-field__label">Correo electronico</span>
+        <span class="auth-field__label">Correo electrónico</span>
         <span class="auth-field__control">
           <Mail :size="16" class="auth-field__icon" />
           <input
@@ -187,20 +187,20 @@ function toggleOrganizerMode() {
       </label>
 
       <label class="auth-field" :class="{ 'auth-field--full': isRegistrationMode }">
-        <span class="auth-field__label">Contrasena</span>
+        <span class="auth-field__label">Contraseña</span>
         <span class="auth-field__control">
           <Lock :size="16" class="auth-field__icon" />
           <input
             :value="form.password"
             :type="showPassword ? 'text' : 'password'"
             :autocomplete="mode === 'login' ? 'current-password' : 'new-password'"
-            placeholder="Introduce tu contrasena"
+            placeholder="Introduce tu contraseña"
             @input="updateField('password', $event)"
           />
           <button
             class="auth-field__visibility"
             type="button"
-            :aria-label="showPassword ? 'Ocultar contrasena' : 'Mostrar contrasena'"
+            :aria-label="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
             @click="$emit('togglePasswordVisibility')"
           >
             <EyeOff v-if="showPassword" :size="16" />

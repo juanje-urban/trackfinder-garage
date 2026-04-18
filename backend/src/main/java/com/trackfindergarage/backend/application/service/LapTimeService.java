@@ -21,18 +21,18 @@ import java.util.Locale;
 @Transactional
 public class LapTimeService implements LapTimeUseCase {
 
-    private static final String USER_NOT_FOUND_WITH_ID = "User not found with id: ";
-    private static final String TRACK_NOT_FOUND_WITH_ID = "Track not found with id: ";
-    private static final String LAP_TIME_NOT_FOUND_WITH_ID = "Lap time not found with id: ";
-    private static final String USER_ID_REQUIRED = "User id is required";
-    private static final String AUTHENTICATED_EMAIL_REQUIRED = "Authenticated user email is required";
-    private static final String USER_NOT_FOUND_WITH_EMAIL = "User not found with email: ";
-    private static final String TRACK_ID_REQUIRED = "Track id is required";
-    private static final String LAP_DATE_REQUIRED = "Lap date is required";
-    private static final String NO_LAP_TIMES_FOUND_FOR_TRACK_ID = "No lap times found for track id: ";
+    private static final String USER_NOT_FOUND_WITH_ID = "Usuario no encontrado con id: ";
+    private static final String TRACK_NOT_FOUND_WITH_ID = "Circuito no encontrado con id: ";
+    private static final String LAP_TIME_NOT_FOUND_WITH_ID = "Tiempo de vuelta no encontrado con id: ";
+    private static final String USER_ID_REQUIRED = "El id de usuario es obligatorio";
+    private static final String AUTHENTICATED_EMAIL_REQUIRED = "El correo electrónico del usuario autenticado es obligatorio";
+    private static final String USER_NOT_FOUND_WITH_EMAIL = "Usuario no encontrado con correo electrónico: ";
+    private static final String TRACK_ID_REQUIRED = "El id del circuito es obligatorio";
+    private static final String LAP_DATE_REQUIRED = "La fecha de la vuelta es obligatoria";
+    private static final String NO_LAP_TIMES_FOUND_FOR_TRACK_ID = "No se han encontrado tiempos de vuelta para el circuito con id: ";
     private static final String NO_LAP_TIMES_FOUND_FOR_USER_AND_TRACK =
-            "No lap times found for user id %d and track id %d";
-    private static final String ONLY_LAP_TIME_OWNER_CAN_DELETE = "Only the owner of the lap time can delete it";
+            "No se han encontrado tiempos de vuelta para el usuario con id %d y el circuito con id %d";
+    private static final String ONLY_LAP_TIME_OWNER_CAN_DELETE = "Solo el propietario del tiempo de vuelta puede eliminarlo";
 
     private final LapTimePersistencePort lapTimePersistencePort;
     private final UserPersistencePort userPersistencePort;

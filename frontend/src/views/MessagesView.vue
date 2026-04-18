@@ -61,7 +61,7 @@ const activeThread = computed(
 onMounted(async () => {
   if (!isAuthenticated.value) {
     loading.value = false
-    error.value = 'Necesitas iniciar sesion para acceder a tus mensajes.'
+    error.value = 'Necesitas iniciar sesión para acceder a tus mensajes.'
     return
   }
 
@@ -100,7 +100,7 @@ async function loadMessagesPage() {
     error.value = resolveApiErrorMessage(requestError, {
       fallback: 'No se pudo cargar tu bandeja de mensajes.',
       statusMessages: {
-        401: 'Tu sesion ha caducado. Inicia sesion de nuevo.',
+        401: 'Tu sesión ha caducado. Inicia sesión de nuevo.',
       },
     })
   } finally {
@@ -276,7 +276,7 @@ async function submitMessage(payload: { receiverId: number; subject: string; mes
     sendError.value = resolveApiErrorMessage(requestError, {
       fallback: 'No se pudo enviar el mensaje.',
       statusMessages: {
-        401: 'Tu sesion ha caducado. Inicia sesion de nuevo.',
+        401: 'Tu sesión ha caducado. Inicia sesión de nuevo.',
       },
       matches: [
         { includes: 'themselves', message: 'No puedes enviarte mensajes a ti mismo.' },
@@ -312,7 +312,7 @@ async function submitMessage(payload: { receiverId: number; subject: string; mes
 
     <section v-else-if="error" class="panel panel-pad-lg panel-stack-sm">
       <p class="ui-eyebrow">Mensajes</p>
-      <h1 class="ui-title-section">No se pudo cargar la mensajeria</h1>
+      <h1 class="ui-title-section">No se pudo cargar la mensajería</h1>
       <p class="ui-copy-muted">{{ error }}</p>
       <button class="action-button" type="button" @click="loadMessagesPage">Reintentar</button>
     </section>
@@ -321,7 +321,7 @@ async function submitMessage(payload: { receiverId: number; subject: string; mes
       <PageHero
         eyebrow="Mensajes"
         title="Bandeja compartida"
-        description="Organiza tus conversaciones por hilos y responde desde un unico espacio."
+        description="Organiza tus conversaciones por hilos y responde desde un único espacio."
       />
 
       <section class="messages-layout panel panel-pad-lg">
@@ -336,17 +336,17 @@ async function submitMessage(payload: { receiverId: number; subject: string; mes
         <section class="messages-main panel-stack-lg">
           <div v-if="isComposeMode" class="panel-copy">
             <p class="ui-eyebrow">Nuevo mensaje</p>
-            <h2 class="ui-title-card">Iniciar una conversacion</h2>
+            <h2 class="ui-title-card">Iniciar una conversación</h2>
             <p class="ui-copy-muted">Selecciona el destinatario, define un asunto y escribe tu mensaje.</p>
           </div>
 
           <div v-else-if="activeThread" class="panel-copy">
             <p class="ui-eyebrow">
-              {{ formatMessageRoleLabel(activeThread.roleName) || 'Conversacion' }}
+              {{ formatMessageRoleLabel(activeThread.roleName) || 'Conversación' }}
             </p>
             <h2 class="ui-title-card">{{ activeThread.subject }}</h2>
             <p class="ui-copy-muted">
-              {{ activeThread.counterpartDisplayName }} · Ultimo mensaje el
+              {{ activeThread.counterpartDisplayName }} · Último mensaje el
               {{ formatMessageTimestamp(activeThread.lastMessageAt) }}
             </p>
           </div>
@@ -354,7 +354,7 @@ async function submitMessage(payload: { receiverId: number; subject: string; mes
           <div v-else class="panel-copy">
             <p class="ui-eyebrow">Mensajes</p>
             <h2 class="ui-title-card">Selecciona un hilo</h2>
-            <p class="ui-copy-muted">O pulsa en "Nuevo mensaje" para empezar una conversacion.</p>
+            <p class="ui-copy-muted">O pulsa en "Nuevo mensaje" para empezar una conversación.</p>
           </div>
 
           <MessageComposePanel
@@ -386,7 +386,7 @@ async function submitMessage(payload: { receiverId: number; subject: string; mes
           <div v-else class="messages-empty panel panel-pad-lg panel-stack-sm">
             <MessageSquare :size="20" aria-hidden="true" />
             <p class="ui-copy-muted">
-              No tienes ningun hilo seleccionado. Pulsa en "Nuevo mensaje" para empezar uno.
+              No tienes ningún hilo seleccionado. Pulsa en "Nuevo mensaje" para empezar uno.
             </p>
           </div>
         </section>

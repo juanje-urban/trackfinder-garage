@@ -9,7 +9,7 @@ const props = defineProps<{
   track: Track
 }>()
 
-const trackMedia = computed(() => getTrackMedia(props.track.name))
+const trackMedia = computed(() => getTrackMedia(props.track.shortName))
 
 const visualStyle = computed(() => {
   if (trackMedia.value.coverImage) {

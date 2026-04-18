@@ -42,7 +42,7 @@ defineEmits<{
             <p class="ui-copy-muted">
               {{ organizer.name }} {{ organizer.surname }} - {{ organizer.email }}
             </p>
-            <p class="ui-copy-muted">CIF: {{ organizer.cif }} - Telefono: {{ organizer.phone }}</p>
+            <p class="ui-copy-muted">CIF: {{ organizer.cif }} - Teléfono: {{ organizer.phone }}</p>
           </div>
 
           <div class="admin-request-actions">

@@ -66,7 +66,7 @@ const remainingCapacity = computed(() =>
 
 const emptyMessage = computed(() =>
   events.value.length === 0
-    ? 'No hay eventos publicos futuros disponibles en este momento.'
+    ? 'No hay eventos públicos futuros disponibles en este momento.'
     : 'No hay eventos que coincidan con los filtros actuales.',
 )
 

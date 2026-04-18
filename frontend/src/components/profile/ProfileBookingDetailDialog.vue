@@ -69,7 +69,7 @@ const eventPath = computed(() => (props.booking ? `/events/${props.booking.event
           <span class="surface-detail-item__value profile-booking-detail__visibility">
             <Eye v-if="props.booking.isVisible" :size="15" aria-hidden="true" />
             <EyeOff v-else :size="15" aria-hidden="true" />
-            {{ props.booking.isVisible ? 'Visible en perfil publico' : 'Oculta en perfil publico' }}
+            {{ props.booking.isVisible ? 'Visible en perfil público' : 'Oculta en perfil público' }}
           </span>
         </article>
       </div>

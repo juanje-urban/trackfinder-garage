@@ -22,21 +22,21 @@ import java.util.Locale;
 @Transactional
 public class EventBookingServiceService implements EventBookingServiceUseCase {
 
-    private static final String EVENT_BOOKING_SERVICE_NOT_FOUND_WITH_ID = "Event booking service not found with id: ";
-    private static final String EVENT_BOOKING_NOT_FOUND_WITH_ID = "Event booking not found with id: ";
-    private static final String EVENT_SERVICE_NOT_FOUND_WITH_ID = "Event service not found with id: ";
-    private static final String EVENT_NOT_FOUND_WITH_ID = "Event not found with id: ";
-    private static final String USER_NOT_FOUND_WITH_ID = "User not found with id: ";
-    private static final String USER_NOT_FOUND_WITH_EMAIL = "User not found with email: ";
-    private static final String EVENT_BOOKING_ID_REQUIRED = "Event booking id is required";
-    private static final String EVENT_SERVICE_ID_REQUIRED = "Event service id is required";
+    private static final String EVENT_BOOKING_SERVICE_NOT_FOUND_WITH_ID = "Servicio de reserva de evento no encontrado con id: ";
+    private static final String EVENT_BOOKING_NOT_FOUND_WITH_ID = "Reserva de evento no encontrada con id: ";
+    private static final String EVENT_SERVICE_NOT_FOUND_WITH_ID = "Servicio de evento no encontrado con id: ";
+    private static final String EVENT_NOT_FOUND_WITH_ID = "Evento no encontrado con id: ";
+    private static final String USER_NOT_FOUND_WITH_ID = "Usuario no encontrado con id: ";
+    private static final String USER_NOT_FOUND_WITH_EMAIL = "Usuario no encontrado con correo electrónico: ";
+    private static final String EVENT_BOOKING_ID_REQUIRED = "El id de la reserva de evento es obligatorio";
+    private static final String EVENT_SERVICE_ID_REQUIRED = "El id del servicio de evento es obligatorio";
     private static final String EVENT_BOOKING_SERVICE_ALREADY_EXISTS =
-            "Event service id %d is already associated with event booking id %d";
+            "El servicio de evento con id %d ya está asociado a la reserva de evento con id %d";
     private static final String EVENT_SERVICE_MUST_BELONG_TO_BOOKING_EVENT =
-            "Event service id %d does not belong to the same event as event booking id %d";
+            "El servicio de evento con id %d no pertenece al mismo evento que la reserva de evento con id %d";
     private static final String EVENT_BOOKING_SERVICE_REQUIRES_FUTURE_EVENT =
-            "Event booking service can only be created for future events";
-    private static final String AUTHENTICATED_EMAIL_REQUIRED = "Authenticated user email is required";
+            "El servicio de reserva de evento solo puede crearse para eventos futuros";
+    private static final String AUTHENTICATED_EMAIL_REQUIRED = "El correo electrónico del usuario autenticado es obligatorio";
 
     private final EventBookingServicePersistencePort eventBookingServicePersistencePort;
     private final EventBookingPersistencePort eventBookingPersistencePort;

@@ -97,7 +97,9 @@ const availability = computed<EventAvailabilitySummary | null>(() => {
 })
 
 const trackMedia = computed(() =>
-  eventDetail.value ? getTrackMedia(eventDetail.value.event.trackName) : { gallery: [] },
+  eventDetail.value
+    ? getTrackMedia(eventDetail.value.event.trackShortName)
+    : { gallery: [] },
 )
 
 const layoutImage = computed(() => trackMedia.value.layoutImage)
@@ -195,7 +197,7 @@ const bookingCaption = computed(() => {
   }
 
   if (!auth.isAuthenticated.value) {
-    return 'Inicia sesion con una cuenta de usuario para reservar.'
+    return 'Inicia sesión con una cuenta de usuario para reservar.'
   }
 
   return 'La reserva esta disponible solo para cuentas de usuario.'
@@ -429,7 +431,7 @@ function resolveBookingError(requestError: unknown): string {
   return resolveApiErrorMessage(requestError, {
     fallback: 'No se pudo confirmar la reserva.',
     statusMessages: {
-      401: 'Tu sesion ha caducado. Inicia sesion de nuevo.',
+      401: 'Tu sesión ha caducado. Inicia sesión de nuevo.',
       403: 'Solo las cuentas de usuario pueden reservar plaza.',
     },
     matches: [
@@ -444,7 +446,7 @@ function resolveBookingCancellationError(requestError: unknown): string {
   return resolveApiErrorMessage(requestError, {
     fallback: 'No se pudo anular la reserva.',
     statusMessages: {
-      401: 'Tu sesion ha caducado. Inicia sesion de nuevo.',
+      401: 'Tu sesión ha caducado. Inicia sesión de nuevo.',
       403: 'Solo puedes anular tus propias reservas.',
     },
     matches: [
@@ -506,7 +508,7 @@ function handleMediaDialogKeydown(event: KeyboardEvent) {
       <p class="ui-eyebrow">Eventos</p>
       <h1 class="ui-title-section">Detalle no disponible</h1>
       <p class="ui-copy-muted">{{ error || 'No se pudo cargar el evento solicitado.' }}</p>
-      <RouterLink class="action-button" to="/events">Volver al catalogo</RouterLink>
+      <RouterLink class="action-button" to="/events">Volver al catálogo</RouterLink>
     </section>
 
     <template v-else>

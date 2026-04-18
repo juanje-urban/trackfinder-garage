@@ -16,12 +16,14 @@ class TrackWebMapperTest {
     void toDomainMapsCreateRequestToTrack() {
         CreateTrackRequest request = new CreateTrackRequest();
         request.setName(" Jarama ");
+        request.setShortName(" jarama ");
         request.setLocation(" Madrid ");
         request.setDescription(" Fast track ");
 
         Track track = trackWebMapper.toDomain(request);
 
         assertEquals("Jarama", track.getName());
+        assertEquals("jarama", track.getShortName());
         assertEquals("Madrid", track.getLocation());
         assertEquals("Fast track", track.getDescription());
     }
@@ -31,12 +33,14 @@ class TrackWebMapperTest {
         Track track = new Track();
         UpdateTrackRequest request = new UpdateTrackRequest();
         request.setName(" Montmelo ");
+        request.setShortName(" montmelo ");
         request.setLocation(" Barcelona ");
         request.setDescription(" Updated ");
 
         trackWebMapper.updateDomain(track, request);
 
         assertEquals("Montmelo", track.getName());
+        assertEquals("montmelo", track.getShortName());
         assertEquals("Barcelona", track.getLocation());
         assertEquals("Updated", track.getDescription());
     }
@@ -46,6 +50,7 @@ class TrackWebMapperTest {
         Track track = new Track();
         track.setId(4L);
         track.setName("Cheste");
+        track.setShortName("ricardo_tormo");
         track.setLocation("Valencia");
         track.setDescription("Circuit");
 
@@ -53,6 +58,7 @@ class TrackWebMapperTest {
 
         assertEquals(4L, response.getId());
         assertEquals("Cheste", response.getName());
+        assertEquals("ricardo_tormo", response.getShortName());
         assertEquals("Valencia", response.getLocation());
         assertEquals("Circuit", response.getDescription());
     }

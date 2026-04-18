@@ -44,7 +44,7 @@ const isOrganizerRegisterMode = computed(() => mode.value === 'organizer-registe
 
 const dialogTitle = computed(() => {
   if (auth.isAuthenticated.value) {
-    return 'Sesion iniciada'
+    return 'Sesión iniciada'
   }
 
   if (mode.value === 'organizer-register') {
@@ -56,16 +56,16 @@ const dialogTitle = computed(() => {
 
 const dialogSubtitle = computed(() => {
   if (auth.isAuthenticated.value) {
-    return 'Ya tienes acceso al garage. Puedes cerrar sesion cuando quieras.'
+    return 'Ya tienes acceso al garage. Puedes cerrar sesión cuando quieras.'
   }
 
   if (mode.value === 'organizer-register') {
-    return 'Podras iniciar sesion de inmediato. Tu perfil de organizador quedara pendiente de aprobacion.'
+    return 'Podrás iniciar sesión de inmediato. Tu perfil de organizador quedará pendiente de aprobación.'
   }
 
   return mode.value === 'login'
-    ? 'Accede con tu correo y tu contrasena para entrar al garage.'
-    : 'Registrate con correo y contrasena para guardar tu acceso.'
+    ? 'Accede con tu correo y tu contraseña para entrar al garage.'
+    : 'Regístrate con correo y contraseña para guardar tu acceso.'
 })
 
 const submitLabel = computed(() => {
@@ -73,7 +73,7 @@ const submitLabel = computed(() => {
     return 'Crear cuenta de organizador'
   }
 
-  return mode.value === 'login' ? 'Iniciar sesion' : 'Crear cuenta'
+  return mode.value === 'login' ? 'Iniciar sesión' : 'Crear cuenta'
 })
 
 const switchPrompt = computed(() =>
@@ -223,12 +223,12 @@ function getErrorMessage(error: unknown, currentMode: AuthMode): string {
   return resolveApiErrorMessage(error, {
     fallback:
       currentMode === 'login'
-        ? 'No se pudo iniciar sesion.'
+        ? 'No se pudo iniciar sesión.'
         : currentMode === 'organizer-register'
           ? 'No se pudo crear la cuenta de organizador.'
           : 'No se pudo crear la cuenta.',
     statusMessages: {
-      401: 'Correo o contrasena incorrectos.',
+      401: 'Correo o contraseña incorrectos.',
       409:
         currentMode === 'organizer-register'
           ? 'No se pudo crear la cuenta de organizador porque ya existe un dato duplicado.'
@@ -237,8 +237,8 @@ function getErrorMessage(error: unknown, currentMode: AuthMode): string {
     matches: [
       { includes: 'display name', message: 'Ese alias ya esta en uso.' },
       { includes: 'email', message: 'Ya existe una cuenta registrada con ese correo.' },
-      { includes: 'phone', message: 'Ya existe una cuenta registrada con ese telefono.' },
-      { includes: 'legal name', message: 'Ya existe un organizador con esa razon social.' },
+      { includes: 'phone', message: 'Ya existe una cuenta registrada con ese teléfono.' },
+      { includes: 'legal name', message: 'Ya existe un organizador con esa razón social.' },
       { includes: 'cif', message: 'Ya existe un organizador con ese CIF.' },
     ],
   })
@@ -248,23 +248,23 @@ function validateForm(currentMode: AuthMode): string {
   const email = form.email.trim()
 
   if (!email) {
-    return 'Introduce tu correo electronico.'
+    return 'Introduce tu correo electrónico.'
   }
 
   if (email.length > MAX_LONG_FIELD_LENGTH) {
-    return 'El correo electronico no puede superar 255 caracteres.'
+    return 'El correo electrónico no puede superar 255 caracteres.'
   }
 
   if (!EMAIL_PATTERN.test(email)) {
-    return 'Introduce un correo electronico valido.'
+    return 'Introduce un correo electrónico válido.'
   }
 
   if (!form.password.trim()) {
-    return 'Introduce una contrasena.'
+    return 'Introduce una contraseña.'
   }
 
   if (form.password.length > MAX_LONG_FIELD_LENGTH) {
-    return 'La contrasena no puede superar 255 caracteres.'
+    return 'La contraseña no puede superar 255 caracteres.'
   }
 
   if (currentMode === 'login') {
@@ -278,10 +278,10 @@ function validateForm(currentMode: AuthMode): string {
     validateMaxLength(form.name, MAX_LONG_FIELD_LENGTH, 'El nombre') ||
     requireValue(form.surname, 'Introduce tus apellidos.') ||
     validateMaxLength(form.surname, MAX_LONG_FIELD_LENGTH, 'Los apellidos') ||
-    requireValue(form.address, 'Introduce tu direccion.') ||
-    validateMaxLength(form.address, MAX_LONG_FIELD_LENGTH, 'La direccion') ||
-    requireValue(form.phone, 'Introduce tu telefono.') ||
-    validateMaxLength(form.phone, MAX_SHORT_FIELD_LENGTH, 'El telefono')
+    requireValue(form.address, 'Introduce tu dirección.') ||
+    validateMaxLength(form.address, MAX_LONG_FIELD_LENGTH, 'La dirección') ||
+    requireValue(form.phone, 'Introduce tu teléfono.') ||
+    validateMaxLength(form.phone, MAX_SHORT_FIELD_LENGTH, 'El teléfono')
 
   if (commonRegisterError) {
     return commonRegisterError
@@ -289,8 +289,8 @@ function validateForm(currentMode: AuthMode): string {
 
   if (currentMode === 'organizer-register') {
     return (
-      requireValue(form.legalName, 'Introduce la razon social.') ||
-      validateMaxLength(form.legalName, MAX_LONG_FIELD_LENGTH, 'La razon social') ||
+      requireValue(form.legalName, 'Introduce la razón social.') ||
+      validateMaxLength(form.legalName, MAX_LONG_FIELD_LENGTH, 'La razón social') ||
       requireValue(form.cif, 'Introduce el CIF.') ||
       validateMaxLength(form.cif, MAX_SHORT_FIELD_LENGTH, 'El CIF')
     )
@@ -318,7 +318,7 @@ function validateMaxLength(value: string, maxLength: number, label: string): str
       <button
         class="auth-overlay__backdrop"
         type="button"
-        aria-label="Cerrar cuadro de autenticacion"
+        aria-label="Cerrar cuadro de autenticación"
         @click="closeDialog"
       ></button>
 

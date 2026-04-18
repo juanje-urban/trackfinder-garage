@@ -14,8 +14,8 @@ import java.util.List;
 @Transactional
 public class RoleService implements RoleUseCase {
 
-    private static final String ROLE_NOT_FOUND_WITH_ID = "Role not found with id: ";
-    private static final String ROLE_ALREADY_EXISTS = "Role with value '%s' already exists";
+    private static final String ROLE_NOT_FOUND_WITH_ID = "Rol no encontrado con id: ";
+    private static final String ROLE_ALREADY_EXISTS = "Ya existe un rol con el valor '%s'";
 
     private final RolePersistencePort rolePersistencePort;
 

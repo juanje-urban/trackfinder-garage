@@ -23,7 +23,7 @@ defineEmits<{
     </button>
 
     <p v-if="threads.length === 0" class="ui-copy-muted">
-      Todavia no tienes hilos iniciados.
+      Todavía no tienes hilos iniciados.
     </p>
 
     <div v-else class="messages-thread-list">

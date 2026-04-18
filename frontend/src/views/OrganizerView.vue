@@ -178,7 +178,7 @@ async function loadWorkspace() {
     workspace.value = await getOrganizerWorkspace()
   } catch (requestError) {
     error.value = resolveApiErrorMessage(requestError, {
-      fallback: 'No se pudo cargar tu area de organizacion.',
+      fallback: 'No se pudo cargar tu área de organización.',
       statusMessages: {
         403: 'Esta area esta reservada para cuentas con rol organizador.',
       },
@@ -288,7 +288,7 @@ function toServiceKey(kind: 'track' | 'organizer', id: number): string {
 
 async function addCatalogService() {
   if (selectedAvailableServiceId.value === '') {
-    serviceError.value = 'Selecciona un servicio para anadirlo al catalogo.'
+    serviceError.value = 'Selecciona un servicio para añadirlo al catálogo.'
     return
   }
 
@@ -298,10 +298,10 @@ async function addCatalogService() {
   try {
     workspace.value = await addOrganizerCatalogService(Number(selectedAvailableServiceId.value))
     selectedAvailableServiceId.value = ''
-    toast.showToast('El servicio se ha anadido a tu catalogo.')
+    toast.showToast('El servicio se ha añadido a tu catálogo.')
   } catch (requestError) {
     serviceError.value = resolveApiErrorMessage(requestError, {
-      fallback: 'No se pudo anadir el servicio al catalogo.',
+      fallback: 'No se pudo añadir el servicio al catálogo.',
     })
   } finally {
     serviceSubmitting.value = false
@@ -314,10 +314,10 @@ async function removeCatalogService(organizerServiceId: number) {
 
   try {
     workspace.value = await removeOrganizerCatalogService(organizerServiceId)
-    toast.showToast('El servicio se ha retirado de tu catalogo.')
+    toast.showToast('El servicio se ha retirado de tu catálogo.')
   } catch (requestError) {
     serviceError.value = resolveApiErrorMessage(requestError, {
-      fallback: 'No se pudo retirar el servicio del catalogo.',
+      fallback: 'No se pudo retirar el servicio del catálogo.',
       matches: [
         {
           includes: 'attached to future events',
@@ -357,12 +357,12 @@ function buildEventPayload() {
 
   const maxParticipants = Number(eventForm.maxParticipants)
   if (!Number.isInteger(maxParticipants) || maxParticipants <= 0) {
-    throw new Error('Introduce un aforo maximo valido.')
+    throw new Error('Introduce un aforo máximo válido.')
   }
 
   const description = eventForm.description.trim()
   if (description === '') {
-    throw new Error('La descripcion del evento es obligatoria.')
+    throw new Error('La descripción del evento es obligatoria.')
   }
 
   const services = [
@@ -495,13 +495,13 @@ async function deleteEvent() {
 <template>
   <main class="page-shell section-stack">
     <section v-if="loading" class="panel panel-pad-lg panel-stack-sm">
-      <p class="ui-eyebrow">Organizacion</p>
+      <p class="ui-eyebrow">Organización</p>
       <h1 class="ui-title-section">Preparando tu area de trabajo</h1>
-      <p class="ui-copy-muted">Estamos cargando tu catalogo, tus eventos y las estadisticas.</p>
+      <p class="ui-copy-muted">Estamos cargando tu catálogo, tus eventos y las estadísticas.</p>
     </section>
 
     <section v-else-if="error" class="panel panel-pad-lg panel-stack-sm">
-      <p class="ui-eyebrow">Organizacion</p>
+      <p class="ui-eyebrow">Organización</p>
       <h1 class="ui-title-section">Acceso restringido</h1>
       <p class="ui-copy-muted">{{ error }}</p>
     </section>
@@ -509,8 +509,8 @@ async function deleteEvent() {
     <template v-else-if="workspace">
       <PageHero
         eyebrow="Organizador"
-        title="Mi organizacion"
-        :description="`Gestiona el catalogo y los eventos de ${workspace.organizer.legalName}.`"
+        title="Mi organización"
+        :description="`Gestiona el catálogo y los eventos de ${workspace.organizer.legalName}.`"
       />
 
       <section class="organizer-metrics">
@@ -625,7 +625,7 @@ async function deleteEvent() {
         </label>
 
         <label class="surface-field">
-          <span class="surface-field__label">Aforo maximo</span>
+          <span class="surface-field__label">Aforo máximo</span>
           <input
             v-model="eventForm.maxParticipants"
             type="number"
@@ -635,7 +635,7 @@ async function deleteEvent() {
         </label>
 
         <label class="surface-field surface-field--full">
-          <span class="surface-field__label">Descripcion</span>
+          <span class="surface-field__label">Descripción</span>
           <textarea v-model="eventForm.description" rows="5" maxlength="5000"></textarea>
         </label>
 
@@ -697,7 +697,7 @@ async function deleteEvent() {
           </div>
 
           <p v-if="organizerServiceOptions.length === 0" class="ui-copy-muted">
-            Primero anade servicios a tu catalogo para poder ofertarlos aqui.
+            Primero añade servicios a tu catálogo para poder ofertarlos aquí.
           </p>
 
           <div v-else class="organizer-service-option-list">
@@ -763,7 +763,7 @@ async function deleteEvent() {
           }}</strong>.
         </p>
         <p class="ui-copy-muted">
-          Solo se puede eliminar si el evento sigue siendo futuro y todavia no tiene ninguna
+          Solo se puede eliminar si el evento sigue siendo futuro y todavía no tiene ninguna
           reserva.
         </p>
       </div>

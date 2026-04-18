@@ -20,22 +20,22 @@ import java.util.List;
 @Transactional
 public class EventServiceService implements EventServiceUseCase {
 
-    private static final String EVENT_SERVICE_NOT_FOUND_WITH_ID = "Event service not found with id: ";
-    private static final String EVENT_NOT_FOUND_WITH_ID = "Event not found with id: ";
-    private static final String TRACK_SERVICE_NOT_FOUND_WITH_ID = "Track service not found with id: ";
-    private static final String ORGANIZER_SERVICE_NOT_FOUND_WITH_ID = "Organizer service not found with id: ";
-    private static final String PRICE_REQUIRED = "Price is required";
-    private static final String PRICE_MUST_BE_GREATER_THAN_ZERO = "Price must be greater than 0";
+    private static final String EVENT_SERVICE_NOT_FOUND_WITH_ID = "Servicio de evento no encontrado con id: ";
+    private static final String EVENT_NOT_FOUND_WITH_ID = "Evento no encontrado con id: ";
+    private static final String TRACK_SERVICE_NOT_FOUND_WITH_ID = "Servicio de circuito no encontrado con id: ";
+    private static final String ORGANIZER_SERVICE_NOT_FOUND_WITH_ID = "Servicio de organizador no encontrado con id: ";
+    private static final String PRICE_REQUIRED = "El precio es obligatorio";
+    private static final String PRICE_MUST_BE_GREATER_THAN_ZERO = "El precio debe ser mayor que 0";
     private static final String EXACTLY_ONE_SERVICE_ASSOCIATION_REQUIRED =
-            "Exactly one of trackServiceId or organizerServiceId must be provided";
+            "Debe proporcionarse exactamente uno de trackServiceId u organizerServiceId";
     private static final String TRACK_SERVICE_ALREADY_EXISTS_FOR_EVENT =
-            "Track service id %d is already associated with event id %d";
+            "El servicio de circuito con id %d ya está asociado al evento con id %d";
     private static final String ORGANIZER_SERVICE_ALREADY_EXISTS_FOR_EVENT =
-            "Organizer service id %d is already associated with event id %d";
+            "El servicio de organizador con id %d ya está asociado al evento con id %d";
     private static final String TRACK_SERVICE_MUST_BELONG_TO_EVENT_TRACK =
-            "Track service id %d does not belong to the same track as event id %d";
+            "El servicio de circuito con id %d no pertenece al mismo circuito que el evento con id %d";
     private static final String ORGANIZER_SERVICE_MUST_BELONG_TO_EVENT_ORGANIZER =
-            "Organizer service id %d does not belong to the same organizer as event id %d";
+            "El servicio de organizador con id %d no pertenece al mismo organizador que el evento con id %d";
 
     private final EventServicePersistencePort eventServicePersistencePort;
     private final EventPersistencePort eventPersistencePort;

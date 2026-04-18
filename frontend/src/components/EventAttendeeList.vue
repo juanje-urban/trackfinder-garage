@@ -123,7 +123,7 @@ watch(
     <p v-if="loading" class="ui-copy-muted">Cargando asistentes visibles...</p>
     <p v-else-if="error" class="status-message status-message--error">{{ error }}</p>
     <p v-else-if="attendees.length === 0" class="ui-copy-muted">
-      Nadie ha mostrado todavia su asistencia en este evento.
+      Nadie ha mostrado todavía su asistencia en este evento.
     </p>
 
     <div v-else class="event-attendee-list__rows">

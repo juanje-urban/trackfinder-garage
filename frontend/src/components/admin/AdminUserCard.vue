@@ -6,6 +6,8 @@ const props = defineProps<{
   realName?: string
   summary: string
   detail?: string
+  noteLabel?: string
+  noteTone?: 'warning'
   enabled: boolean
   disabled?: boolean
   protectedLabel?: string
@@ -23,6 +25,13 @@ defineEmits<{
         <span class="admin-user-card__alias">{{ props.displayName }}</span>
         <span v-if="props.realName" class="admin-user-card__real-name">{{ props.realName }}</span>
       </h4>
+      <span
+        v-if="props.noteLabel"
+        class="badge admin-user-card__note"
+        :class="props.noteTone ? `admin-user-card__note--${props.noteTone}` : 'badge--soft'"
+      >
+        {{ props.noteLabel }}
+      </span>
       <p class="ui-copy-muted admin-user-card__meta">{{ props.summary }}</p>
       <p v-if="props.detail" class="ui-copy-muted admin-user-card__meta">{{ props.detail }}</p>
     </div>
@@ -79,6 +88,16 @@ defineEmits<{
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.admin-user-card__note {
+  width: fit-content;
+}
+
+.admin-user-card__note--warning {
+  background: rgba(184, 114, 21, 0.24);
+  color: #ffdca7;
+  border: 1px solid rgba(255, 196, 92, 0.34);
 }
 
 .admin-user-card__button {

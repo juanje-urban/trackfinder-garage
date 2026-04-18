@@ -20,26 +20,26 @@ import java.util.List;
 @Transactional
 public class EventService implements EventUseCase {
 
-    private static final String EVENT_NOT_FOUND_WITH_ID = "Event not found with id: ";
-    private static final String ORGANIZER_NOT_FOUND_WITH_ID = "Organizer not found with id: ";
-    private static final String TRACK_NOT_FOUND_WITH_ID = "Track not found with id: ";
+    private static final String EVENT_NOT_FOUND_WITH_ID = "Evento no encontrado con id: ";
+    private static final String ORGANIZER_NOT_FOUND_WITH_ID = "Organizador no encontrado con id: ";
+    private static final String TRACK_NOT_FOUND_WITH_ID = "Circuito no encontrado con id: ";
     private static final String EVENT_ALREADY_EXISTS_FOR_TRACK_AND_DATE =
-            "An event already exists for track id %d on date %s";
-    private static final String ORGANIZER_ID_REQUIRED = "Organizer id is required";
-    private static final String TRACK_ID_REQUIRED = "Track id is required";
-    private static final String EVENT_DATE_REQUIRED = "Event date is required";
-    private static final String EVENT_DATE_MUST_BE_FUTURE = "Event date must be in the future";
-    private static final String BASE_PRICE_REQUIRED = "Base price is required";
-    private static final String BASE_PRICE_MUST_BE_GREATER_THAN_ZERO = "Base price must be greater than 0";
-    private static final String MAX_PARTICIPANTS_REQUIRED = "Max participants is required";
-    private static final String MAX_PARTICIPANTS_MUST_BE_GREATER_THAN_ZERO = "Max participants must be greater than 0";
-    private static final String DESCRIPTION_REQUIRED = "Description is required";
+            "Ya existe un evento para el circuito con id %d en la fecha %s";
+    private static final String ORGANIZER_ID_REQUIRED = "El id del organizador es obligatorio";
+    private static final String TRACK_ID_REQUIRED = "El id del circuito es obligatorio";
+    private static final String EVENT_DATE_REQUIRED = "La fecha del evento es obligatoria";
+    private static final String EVENT_DATE_MUST_BE_FUTURE = "La fecha del evento debe ser futura";
+    private static final String BASE_PRICE_REQUIRED = "El precio base es obligatorio";
+    private static final String BASE_PRICE_MUST_BE_GREATER_THAN_ZERO = "El precio base debe ser mayor que 0";
+    private static final String MAX_PARTICIPANTS_REQUIRED = "El número máximo de participantes es obligatorio";
+    private static final String MAX_PARTICIPANTS_MUST_BE_GREATER_THAN_ZERO = "El número máximo de participantes debe ser mayor que 0";
+    private static final String DESCRIPTION_REQUIRED = "La descripción es obligatoria";
     private static final String MAX_PARTICIPANTS_CANNOT_BE_LESS_THAN_CURRENT_BOOKINGS =
-            "Max participants cannot be less than current bookings (%d)";
-    private static final String START_DATE_REQUIRED = "Start date is required";
-    private static final String END_DATE_REQUIRED = "End date is required";
+            "El número máximo de participantes no puede ser menor que el número actual de reservas (%d)";
+    private static final String START_DATE_REQUIRED = "La fecha de inicio es obligatoria";
+    private static final String END_DATE_REQUIRED = "La fecha de fin es obligatoria";
     private static final String START_DATE_MUST_BE_BEFORE_OR_EQUAL_END_DATE =
-            "Start date must be before or equal to end date";
+            "La fecha de inicio debe ser anterior o igual a la fecha de fin";
 
     private final EventBookingPersistencePort eventBookingPersistencePort;
     private final EventPersistencePort eventPersistencePort;

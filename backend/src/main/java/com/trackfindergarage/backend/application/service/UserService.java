@@ -21,17 +21,17 @@ import java.util.Optional;
 @Transactional
 public class UserService implements UserUseCase {
 
-    private static final String USER_NOT_FOUND_WITH_ID = "User not found with id: ";
-    private static final String USER_DISPLAY_NAME_ALREADY_EXISTS = "User with display name '%s' already exists";
-    private static final String USER_EMAIL_ALREADY_EXISTS = "User with email '%s' already exists";
-    private static final String USER_PHONE_ALREADY_EXISTS = "User with phone '%s' already exists";
+    private static final String USER_NOT_FOUND_WITH_ID = "Usuario no encontrado con id: ";
+    private static final String USER_DISPLAY_NAME_ALREADY_EXISTS = "Ya existe un usuario con el nombre visible '%s'";
+    private static final String USER_EMAIL_ALREADY_EXISTS = "Ya existe un usuario con el correo electrónico '%s'";
+    private static final String USER_PHONE_ALREADY_EXISTS = "Ya existe un usuario con el teléfono '%s'";
     private static final String ORGANIZER_USERS_MANAGED_THROUGH_ORGANIZER_SERVICE =
-            "Organizer users must be managed through OrganizerService";
-    private static final String AUTHENTICATED_EMAIL_REQUIRED = "Authenticated user email is required";
-    private static final String USER_NOT_FOUND_WITH_EMAIL = "User not found with email: ";
+            "Los usuarios organizadores deben gestionarse a través de OrganizerService";
+    private static final String AUTHENTICATED_EMAIL_REQUIRED = "El correo electrónico del usuario autenticado es obligatorio";
+    private static final String USER_NOT_FOUND_WITH_EMAIL = "Usuario no encontrado con correo electrónico: ";
     private static final String DEFAULT_ADMIN_EMAIL = "admin@example.com";
     private static final String DEFAULT_ADMIN_ACCOUNT_CANNOT_BE_DISABLED =
-            "The default administrator account cannot be disabled";
+            "La cuenta de administrador por defecto no puede deshabilitarse";
 
     private final UserPersistencePort userPersistencePort;
     private final RolePersistencePort rolePersistencePort;

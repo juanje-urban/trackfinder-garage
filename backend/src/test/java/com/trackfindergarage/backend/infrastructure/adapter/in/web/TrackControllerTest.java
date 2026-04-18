@@ -40,6 +40,7 @@ class TrackControllerTest {
     void createTrackDelegatesToUseCaseAndReturnsMappedResponse() {
         CreateTrackRequest request = new CreateTrackRequest();
         request.setName("Jarama");
+        request.setShortName("jarama");
         request.setLocation("Madrid");
         request.setDescription("Circuit");
 
@@ -49,6 +50,7 @@ class TrackControllerTest {
 
         assertEquals(1L, response.getId());
         assertEquals("Jarama", response.getName());
+        assertEquals("jarama", response.getShortName());
         verify(trackUseCase).createTrack(any(Track.class));
     }
 
@@ -56,15 +58,20 @@ class TrackControllerTest {
     void updateTrackDelegatesToUseCaseAndReturnsMappedResponse() {
         UpdateTrackRequest request = new UpdateTrackRequest();
         request.setName("Cheste");
+        request.setShortName("ricardo_tormo");
         request.setLocation("Valencia");
         request.setDescription("Updated");
 
-        when(trackUseCase.updateTrack(eq(2L), any(Track.class))).thenReturn(trackWithId(2L, "Cheste"));
+        Track updatedTrack = trackWithId(2L, "Cheste");
+        updatedTrack.setShortName("ricardo_tormo");
+
+        when(trackUseCase.updateTrack(eq(2L), any(Track.class))).thenReturn(updatedTrack);
 
         TrackResponse response = trackController.updateTrack(2L, request);
 
         assertEquals(2L, response.getId());
         assertEquals("Cheste", response.getName());
+        assertEquals("ricardo_tormo", response.getShortName());
         verify(trackUseCase).updateTrack(eq(2L), any(Track.class));
     }
 
@@ -131,6 +138,7 @@ class TrackControllerTest {
         Track track = new Track();
         track.setId(id);
         track.setName(name);
+        track.setShortName(name.trim().toLowerCase().replace(' ', '_'));
         track.setLocation("Location");
         track.setDescription("Description");
         return track;

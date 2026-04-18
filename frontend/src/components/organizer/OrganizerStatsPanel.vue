@@ -44,7 +44,7 @@ defineProps<{
       </div>
 
       <div v-if="stats.eventStats.length === 0" class="ui-copy-muted">
-        Todavia no hay eventos que analizar.
+        Todavía no hay eventos que analizar.
       </div>
 
       <div v-else class="panel-stack-lg">

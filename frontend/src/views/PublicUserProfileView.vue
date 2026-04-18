@@ -143,7 +143,7 @@ async function loadPublicProfilePage() {
     publicBookings.value = []
     publicLapTimes.value = []
     trackRankings.value = {}
-    error.value = 'No se pudo cargar el perfil publico solicitado.'
+    error.value = 'No se pudo cargar el perfil público solicitado.'
   } finally {
     loading.value = false
   }
@@ -209,13 +209,13 @@ function handleEmailAction() {
 <template>
   <main class="page-shell section-stack">
     <section v-if="loading" class="panel panel-pad-lg panel-stack-sm">
-      <p class="ui-eyebrow">Perfil publico</p>
+      <p class="ui-eyebrow">Perfil público</p>
       <h1 class="ui-title-section">Preparando el perfil del piloto</h1>
       <p class="ui-copy-muted">Un momento, estamos reuniendo su actividad visible.</p>
     </section>
 
     <section v-else-if="error || !publicProfile" class="panel panel-pad-lg panel-stack-sm">
-      <p class="ui-eyebrow">Perfil publico</p>
+      <p class="ui-eyebrow">Perfil público</p>
       <h1 class="ui-title-section">Perfil no disponible</h1>
       <p class="ui-copy-muted">{{ error || 'No se pudo cargar este perfil.' }}</p>
       <RouterLink class="action-button" to="/">Volver al inicio</RouterLink>
@@ -259,10 +259,10 @@ function handleEmailAction() {
           </article>
 
           <article class="panel panel-pad-lg panel-stack-md">
-            <h2 class="ui-title-card">Vueltas rapidas</h2>
+            <h2 class="ui-title-card">Vueltas rápidas</h2>
 
             <p v-if="groupedLapTimes.length === 0" class="ui-copy-muted">
-              Este piloto todavia no ha registrado vueltas.
+              Este piloto todavía no ha registrado vueltas.
             </p>
 
             <div v-else class="public-profile-lap-groups">

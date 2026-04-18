@@ -29,7 +29,7 @@ defineEmits<{
     <div class="auth-dialog__actions">
       <button class="action-button" type="button" @click="$emit('close')">Seguir navegando</button>
       <button class="action-button action-button--ghost" type="button" @click="$emit('logout')">
-        Cerrar sesion
+        Cerrar sesión
       </button>
     </div>
   </div>

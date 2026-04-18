@@ -29,6 +29,7 @@ class TrackServiceWebMapperTest {
         Track track = new Track();
         track.setId(1L);
         track.setName("Jarama");
+        track.setShortName("jarama");
 
         com.trackfindergarage.backend.domain.model.Service service =
                 new com.trackfindergarage.backend.domain.model.Service();

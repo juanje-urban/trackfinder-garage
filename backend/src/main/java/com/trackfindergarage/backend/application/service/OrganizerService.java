@@ -23,14 +23,14 @@ import java.util.Optional;
 @Transactional
 public class OrganizerService implements OrganizerUseCase {
 
-    private static final String ORGANIZER_NOT_FOUND_WITH_ID = "Organizer not found with id: ";
-    private static final String USER_NOT_FOUND_WITH_EMAIL = "User not found with email: ";
-    private static final String AUTHENTICATED_EMAIL_REQUIRED = "Authenticated user email is required";
-    private static final String USER_DISPLAY_NAME_ALREADY_EXISTS = "User with display name '%s' already exists";
-    private static final String USER_EMAIL_ALREADY_EXISTS = "User with email '%s' already exists";
-    private static final String USER_PHONE_ALREADY_EXISTS = "User with phone '%s' already exists";
-    private static final String ORGANIZER_LEGAL_NAME_ALREADY_EXISTS = "Organizer with legal name '%s' already exists";
-    private static final String ORGANIZER_CIF_ALREADY_EXISTS = "Organizer with cif '%s' already exists";
+    private static final String ORGANIZER_NOT_FOUND_WITH_ID = "Organizador no encontrado con id: ";
+    private static final String USER_NOT_FOUND_WITH_EMAIL = "Usuario no encontrado con correo electrónico: ";
+    private static final String AUTHENTICATED_EMAIL_REQUIRED = "El correo electrónico del usuario autenticado es obligatorio";
+    private static final String USER_DISPLAY_NAME_ALREADY_EXISTS = "Ya existe un usuario con el nombre visible '%s'";
+    private static final String USER_EMAIL_ALREADY_EXISTS = "Ya existe un usuario con el correo electrónico '%s'";
+    private static final String USER_PHONE_ALREADY_EXISTS = "Ya existe un usuario con el teléfono '%s'";
+    private static final String ORGANIZER_LEGAL_NAME_ALREADY_EXISTS = "Ya existe un organizador con la razón social '%s'";
+    private static final String ORGANIZER_CIF_ALREADY_EXISTS = "Ya existe un organizador con el CIF '%s'";
 
     private final OrganizerPersistencePort organizerPersistencePort;
     private final UserPersistencePort userPersistencePort;

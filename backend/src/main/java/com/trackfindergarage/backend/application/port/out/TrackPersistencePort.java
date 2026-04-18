@@ -11,6 +11,10 @@ public interface TrackPersistencePort {
 
     Optional<Track> findById(Long id);
 
+    Optional<Track> findByName(String name);
+
+    Optional<Track> findByShortName(String shortName);
+
     List<Track> findAll();
 
     void delete(Track track);

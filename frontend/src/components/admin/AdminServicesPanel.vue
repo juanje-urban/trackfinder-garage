@@ -22,14 +22,14 @@ defineEmits<{
     <article class="panel panel-pad-lg panel-stack-md">
       <div class="section-header">
         <div class="panel-copy">
-          <h3 class="ui-title-card">Catalogo de servicios</h3>
+          <h3 class="ui-title-card">Catálogo de servicios</h3>
           <p class="ui-copy-muted">
             Crea servicios nuevos, ajusta su alcance y activa o desactiva su disponibilidad.
           </p>
         </div>
 
         <button class="action-button admin-services__create" type="button" @click="$emit('openCreateService')">
-          Anadir servicio
+          Añadir servicio
         </button>
       </div>
 

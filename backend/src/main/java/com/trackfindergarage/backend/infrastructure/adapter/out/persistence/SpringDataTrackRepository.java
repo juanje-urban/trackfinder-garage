@@ -8,4 +8,6 @@ import java.util.Optional;
 public interface SpringDataTrackRepository extends JpaRepository<Track, Long> {
 
     Optional<Track> findByName(String name);
+
+    Optional<Track> findByShortName(String shortName);
 }

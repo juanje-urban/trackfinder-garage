@@ -48,32 +48,32 @@ import java.util.Set;
 @Transactional
 public class OrganizerWorkspaceService implements OrganizerWorkspaceUseCase {
 
-    private static final String AUTHENTICATED_EMAIL_REQUIRED = "Authenticated user email is required";
-    private static final String USER_NOT_FOUND_WITH_EMAIL = "User not found with email: ";
-    private static final String ORGANIZER_NOT_FOUND_FOR_USER = "Organizer not found for user id: ";
-    private static final String ORGANIZER_ROLE_REQUIRED = "Only organizer accounts can access this workspace";
+    private static final String AUTHENTICATED_EMAIL_REQUIRED = "El correo electrónico del usuario autenticado es obligatorio";
+    private static final String USER_NOT_FOUND_WITH_EMAIL = "Usuario no encontrado con correo electrónico: ";
+    private static final String ORGANIZER_NOT_FOUND_FOR_USER = "Organizador no encontrado para el usuario con id: ";
+    private static final String ORGANIZER_ROLE_REQUIRED = "Solo las cuentas de organizador pueden acceder a este espacio de trabajo";
     private static final String ORGANIZER_PENDING_APPROVAL =
-            "Organizer account is pending approval";
+            "La cuenta de organizador está pendiente de aprobación";
     private static final String EVENT_DOES_NOT_BELONG_TO_AUTHENTICATED_ORGANIZER =
-            "Event does not belong to the authenticated organizer";
+            "El evento no pertenece al organizador autenticado";
     private static final String EVENT_TRACK_CANNOT_BE_CHANGED =
-            "Event track cannot be changed once the event has been created";
+            "El circuito del evento no puede modificarse una vez creado el evento";
     private static final String EVENT_DATE_CANNOT_BE_CHANGED =
-            "Event date cannot be changed once the event has been created";
+            "La fecha del evento no puede modificarse una vez creado el evento";
     private static final String ONLY_FUTURE_EVENTS_CAN_BE_DELETED =
-            "Only future events can be deleted";
+            "Solo se pueden eliminar eventos futuros";
     private static final String EVENT_WITH_BOOKINGS_CANNOT_BE_DELETED =
-            "Event cannot be deleted while it already has bookings";
+            "El evento no puede eliminarse mientras tenga reservas";
     private static final String ORGANIZER_SERVICE_DOES_NOT_BELONG_TO_AUTHENTICATED_ORGANIZER =
-            "Organizer service does not belong to the authenticated organizer";
+            "El servicio de organizador no pertenece al organizador autenticado";
     private static final String ORGANIZER_SERVICE_IN_USE_BY_FUTURE_EVENTS =
-            "Organizer service cannot be removed while it is attached to future events";
+            "El servicio de organizador no puede eliminarse mientras esté asociado a eventos futuros";
     private static final String EVENT_SERVICE_ALREADY_HAS_BOOKINGS =
-            "Event service cannot be removed because it has already been purchased";
+            "El servicio de evento no puede eliminarse porque ya ha sido adquirido";
     private static final String EVENT_SERVICE_SELECTION_MUST_TARGET_EXACTLY_ONE_SOURCE =
-            "Each event service must target exactly one source";
+            "Cada servicio de evento debe apuntar exactamente a un único origen";
     private static final String DUPLICATED_EVENT_SERVICE_SELECTION =
-            "The same service cannot be added twice to the same event";
+            "El mismo servicio no puede añadirse dos veces al mismo evento";
 
     private final UserPersistencePort userPersistencePort;
     private final OrganizerPersistencePort organizerPersistencePort;

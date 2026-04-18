@@ -17,15 +17,15 @@ import java.util.List;
 @Transactional
 public class TrackServiceService implements TrackServiceUseCase {
 
-    private static final String TRACK_NOT_FOUND_WITH_ID = "Track not found with id: ";
-    private static final String SERVICE_NOT_FOUND_WITH_ID = "Service not found with id: ";
-    private static final String TRACK_SERVICE_NOT_FOUND_WITH_ID = "Track service not found with id: ";
-    private static final String TRACK_ID_REQUIRED = "Track id is required";
-    private static final String SERVICE_ID_REQUIRED = "Service id is required";
+    private static final String TRACK_NOT_FOUND_WITH_ID = "Circuito no encontrado con id: ";
+    private static final String SERVICE_NOT_FOUND_WITH_ID = "Servicio no encontrado con id: ";
+    private static final String TRACK_SERVICE_NOT_FOUND_WITH_ID = "Servicio de circuito no encontrado con id: ";
+    private static final String TRACK_ID_REQUIRED = "El id del circuito es obligatorio";
+    private static final String SERVICE_ID_REQUIRED = "El id del servicio es obligatorio";
     private static final String TRACK_SERVICE_ALREADY_EXISTS =
-            "Track service already exists for track id %d and service id %d";
+            "Ya existe un servicio de circuito para el circuito con id %d y el servicio con id %d";
     private static final String SERVICE_NOT_ALLOWED_FOR_TRACKS =
-            "Service with id %d is not allowed for tracks";
+            "El servicio con id %d no está permitido para circuitos";
 
     private final TrackServicePersistencePort trackServicePersistencePort;
     private final TrackPersistencePort trackPersistencePort;

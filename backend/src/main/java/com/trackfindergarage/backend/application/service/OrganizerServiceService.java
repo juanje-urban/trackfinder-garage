@@ -17,15 +17,15 @@ import java.util.List;
 @Transactional
 public class OrganizerServiceService implements OrganizerServiceUseCase {
 
-    private static final String ORGANIZER_NOT_FOUND_WITH_ID = "Organizer not found with id: ";
-    private static final String SERVICE_NOT_FOUND_WITH_ID = "Service not found with id: ";
-    private static final String ORGANIZER_SERVICE_NOT_FOUND_WITH_ID = "Organizer service not found with id: ";
-    private static final String ORGANIZER_ID_REQUIRED = "Organizer id is required";
-    private static final String SERVICE_ID_REQUIRED = "Service id is required";
+    private static final String ORGANIZER_NOT_FOUND_WITH_ID = "Organizador no encontrado con id: ";
+    private static final String SERVICE_NOT_FOUND_WITH_ID = "Servicio no encontrado con id: ";
+    private static final String ORGANIZER_SERVICE_NOT_FOUND_WITH_ID = "Servicio de organizador no encontrado con id: ";
+    private static final String ORGANIZER_ID_REQUIRED = "El id del organizador es obligatorio";
+    private static final String SERVICE_ID_REQUIRED = "El id del servicio es obligatorio";
     private static final String ORGANIZER_SERVICE_ALREADY_EXISTS =
-            "Organizer service already exists for organizer id %d and service id %d";
+            "Ya existe un servicio de organizador para el organizador con id %d y el servicio con id %d";
     private static final String SERVICE_NOT_ALLOWED_FOR_ORGANIZERS =
-            "Service with id %d is not allowed for organizers";
+            "El servicio con id %d no está permitido para organizadores";
 
     private final OrganizerServicePersistencePort organizerServicePersistencePort;
     private final OrganizerPersistencePort organizerPersistencePort;

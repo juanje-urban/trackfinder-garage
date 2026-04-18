@@ -167,7 +167,7 @@ const tabItems = computed<Array<{ id: ProfileTab; label: string }>>(() =>
 onMounted(async () => {
   if (!isStandardUser.value && !isOrganizerAccount.value) {
     loading.value = false
-    error.value = 'Esta area esta reservada para usuarios y organizadores con sesion iniciada.'
+    error.value = 'Esta área está reservada para usuarios y organizadores con sesión iniciada.'
     return
   }
 
@@ -383,8 +383,8 @@ async function toggleBookingVisibility(booking: EventBooking) {
     }
     toast.showToast(
       updatedBooking.isVisible
-        ? 'La reserva vuelve a mostrarse en tu perfil publico.'
-        : 'La reserva se ha ocultado de tu perfil publico.',
+        ? 'La reserva vuelve a mostrarse en tu perfil público.'
+        : 'La reserva se ha ocultado de tu perfil público.',
     )
   } catch (requestError) {
     bookingError.value = resolveBookingVisibilityError(requestError)
@@ -414,7 +414,7 @@ async function saveProfile() {
     nextPassword !== nextPasswordConfirmation
   ) {
     profileSaving.value = false
-    profileError.value = 'La confirmacion de la contrasena no coincide.'
+    profileError.value = 'La confirmación de la contraseña no coincide.'
     return
   }
 
@@ -440,7 +440,7 @@ async function saveProfile() {
 
     if (credentialChanged) {
       auth.clearSession()
-      toast.showToast('Tus credenciales se han actualizado. Inicia sesion de nuevo para continuar.')
+      toast.showToast('Tus credenciales se han actualizado. Inicia sesión de nuevo para continuar.')
       await router.push('/')
       auth.openAuthDialog()
       return
@@ -470,7 +470,7 @@ async function saveOrganizerProfile() {
     nextPassword !== nextPasswordConfirmation
   ) {
     profileSaving.value = false
-    profileError.value = 'La confirmacion de la contrasena no coincide.'
+    profileError.value = 'La confirmación de la contraseña no coincide.'
     return
   }
 
@@ -498,7 +498,7 @@ async function saveOrganizerProfile() {
 
     if (credentialChanged) {
       auth.clearSession()
-      toast.showToast('Tus credenciales se han actualizado. Inicia sesion de nuevo para continuar.')
+      toast.showToast('Tus credenciales se han actualizado. Inicia sesión de nuevo para continuar.')
       await router.push('/')
       auth.openAuthDialog()
       return
@@ -602,7 +602,7 @@ function resolveBookingVisibilityError(requestError: unknown): string {
   return resolveApiErrorMessage(requestError, {
     fallback: 'No se pudo actualizar la visibilidad de la reserva.',
     statusMessages: {
-      401: 'Tu sesion ha caducado. Inicia sesion de nuevo.',
+      401: 'Tu sesión ha caducado. Inicia sesión de nuevo.',
       403: 'Solo puedes cambiar la visibilidad de tus propias reservas.',
     },
     matches: [
@@ -619,7 +619,7 @@ function resolveProfileError(requestError: unknown): string {
     fallback: 'No se pudo actualizar tu perfil.',
     matches: [
       { includes: 'email', message: 'Ya existe una cuenta registrada con ese correo.' },
-      { includes: 'phone', message: 'Ya existe una cuenta registrada con ese telefono.' },
+      { includes: 'phone', message: 'Ya existe una cuenta registrada con ese teléfono.' },
     ],
   })
 }
@@ -629,8 +629,8 @@ function resolveOrganizerProfileError(requestError: unknown): string {
     fallback: 'No se pudo actualizar tu perfil de organizador.',
     matches: [
       { includes: 'email', message: 'Ya existe una cuenta registrada con ese correo.' },
-      { includes: 'phone', message: 'Ya existe una cuenta registrada con ese telefono.' },
-      { includes: 'legal name', message: 'Ya existe un organizador con esa razon social.' },
+      { includes: 'phone', message: 'Ya existe una cuenta registrada con ese teléfono.' },
+      { includes: 'legal name', message: 'Ya existe un organizador con esa razón social.' },
       { includes: 'cif', message: 'Ya existe un organizador con ese CIF.' },
     ],
   })
@@ -679,7 +679,7 @@ function resolveLapTimeDeleteError(requestError: unknown): string {
         <h1 class="ui-title-section">{{ organizerProfile.legalName }}</h1>
         <p class="ui-copy-muted">
           {{ organizerProfile.displayName }} &middot;
-          {{ organizerProfile.organizerEnabled ? 'Organizador validado' : 'Pendiente de validacion' }}
+          {{ organizerProfile.organizerEnabled ? 'Organizador validado' : 'Pendiente de validación' }}
         </p>
       </section>
 

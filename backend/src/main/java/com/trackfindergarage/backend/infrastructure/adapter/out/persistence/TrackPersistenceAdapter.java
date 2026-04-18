@@ -27,6 +27,16 @@ public class TrackPersistenceAdapter implements TrackPersistencePort {
     }
 
     @Override
+    public Optional<Track> findByName(String name) {
+        return springDataTrackRepository.findByName(name);
+    }
+
+    @Override
+    public Optional<Track> findByShortName(String shortName) {
+        return springDataTrackRepository.findByShortName(shortName);
+    }
+
+    @Override
     public List<Track> findAll() {
         return springDataTrackRepository.findAll();
     }

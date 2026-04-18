@@ -66,6 +66,7 @@ class EventWebMapperTest {
         Track track = new Track();
         track.setId(2L);
         track.setName("Jarama");
+        track.setShortName("jarama");
 
         Event event = new Event();
         event.setId(10L);
@@ -83,6 +84,7 @@ class EventWebMapperTest {
         assertEquals("Organizer SL", response.getOrganizerLegalName());
         assertEquals(2L, response.getTrackId());
         assertEquals("Jarama", response.getTrackName());
+        assertEquals("jarama", response.getTrackShortName());
         assertEquals(30, response.getMaxParticipants());
         assertEquals(12, response.getRemainingCapacity());
         assertEquals("Jornada premium con acceso a paddock y cronometraje opcional.", response.getDescription());

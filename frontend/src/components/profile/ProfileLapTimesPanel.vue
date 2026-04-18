@@ -34,7 +34,7 @@ defineEmits<{
     <div class="profile-grid">
       <article class="panel panel-pad-lg panel-stack-md">
         <div class="panel-copy">
-          <p class="ui-eyebrow">Anadir</p>
+          <p class="ui-eyebrow">Añadir</p>
           <h3 class="ui-title-card">Nueva vuelta</h3>
         </div>
 
@@ -86,7 +86,7 @@ defineEmits<{
         </div>
 
         <p v-if="sortedLapTimes.length === 0" class="ui-copy-muted">
-          Todavia no has registrado tiempos por vuelta.
+          Todavía no has registrado tiempos por vuelta.
         </p>
 
         <div v-else class="surface-card-list">

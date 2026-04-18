@@ -18,23 +18,23 @@ import java.util.Objects;
 @Transactional
 public class MessageService implements MessageUseCase {
 
-    private static final String MESSAGE_NOT_FOUND_WITH_ID = "Message not found with id: ";
-    private static final String USER_NOT_FOUND_WITH_ID = "User not found with id: ";
-    private static final String USER_NOT_FOUND_WITH_EMAIL = "User not found with email: ";
-    private static final String AUTHENTICATED_EMAIL_REQUIRED = "Authenticated user email is required";
-    private static final String SENDER_ID_REQUIRED = "Sender id is required";
-    private static final String RECEIVER_ID_REQUIRED = "Receiver id is required";
-    private static final String SUBJECT_REQUIRED = "Subject is required";
-    private static final String MESSAGE_TEXT_REQUIRED = "Message text is required";
-    private static final String SUBJECT_TOO_LONG = "Subject must not be longer than 255 characters";
-    private static final String MESSAGE_TEXT_TOO_LONG = "Message text must not be longer than 500 characters";
-    private static final String USER_CANNOT_MESSAGE_SELF = "A user cannot send a message to themselves";
+    private static final String MESSAGE_NOT_FOUND_WITH_ID = "Mensaje no encontrado con id: ";
+    private static final String USER_NOT_FOUND_WITH_ID = "Usuario no encontrado con id: ";
+    private static final String USER_NOT_FOUND_WITH_EMAIL = "Usuario no encontrado con correo electrónico: ";
+    private static final String AUTHENTICATED_EMAIL_REQUIRED = "El correo electrónico del usuario autenticado es obligatorio";
+    private static final String SENDER_ID_REQUIRED = "El id del remitente es obligatorio";
+    private static final String RECEIVER_ID_REQUIRED = "El id del destinatario es obligatorio";
+    private static final String SUBJECT_REQUIRED = "El asunto es obligatorio";
+    private static final String MESSAGE_TEXT_REQUIRED = "El texto del mensaje es obligatorio";
+    private static final String SUBJECT_TOO_LONG = "El asunto no debe superar los 255 caracteres";
+    private static final String MESSAGE_TEXT_TOO_LONG = "El texto del mensaje no debe superar los 500 caracteres";
+    private static final String USER_CANNOT_MESSAGE_SELF = "Un usuario no puede enviarse un mensaje a sí mismo";
     private static final String CONVERSATION_REQUIRES_TWO_DIFFERENT_USERS =
-            "Conversation requires two different users";
+            "La conversación requiere dos usuarios diferentes";
     private static final String ONLY_RECEIVER_CAN_CHANGE_READ_STATUS =
-            "Only the receiver can change the read status of a message";
+            "Solo el destinatario puede cambiar el estado de lectura de un mensaje";
     private static final String RECEIVER_ACCOUNT_IS_DISABLED =
-            "Receiver account must be active to receive new messages";
+            "La cuenta del destinatario debe estar activa para recibir nuevos mensajes";
 
     private final MessagePersistencePort messagePersistencePort;
     private final UserPersistencePort userPersistencePort;

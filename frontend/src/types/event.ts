@@ -4,6 +4,7 @@ export interface Event {
   organizerLegalName: string
   trackId: number
   trackName: string
+  trackShortName: string
   eventDate: string
   basePrice: number
   maxParticipants: number

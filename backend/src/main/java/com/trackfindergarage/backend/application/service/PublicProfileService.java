@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class PublicProfileService implements PublicProfileUseCase {
 
-    private static final String USER_NOT_FOUND_WITH_DISPLAY_NAME = "User not found with display name: ";
+    private static final String USER_NOT_FOUND_WITH_DISPLAY_NAME = "Usuario no encontrado con nombre: ";
 
     private final UserPersistencePort userPersistencePort;
     private final EventBookingPersistencePort eventBookingPersistencePort;

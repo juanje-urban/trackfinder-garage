@@ -15,6 +15,7 @@ public class EventResponse {
     private String organizerLegalName;
     private Long trackId;
     private String trackName;
+    private String trackShortName;
     private LocalDate eventDate;
     private BigDecimal basePrice;
     private int maxParticipants;

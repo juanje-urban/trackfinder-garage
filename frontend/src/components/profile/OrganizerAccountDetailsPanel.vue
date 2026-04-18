@@ -86,11 +86,11 @@ defineEmits<{
         </div>
 
         <label v-if="editMode" class="surface-detail-item">
-          <span class="surface-detail-item__label">Telefono</span>
+          <span class="surface-detail-item__label">Teléfono</span>
           <input v-model="profileForm.phone" type="tel" autocomplete="tel" />
         </label>
         <div v-else class="surface-detail-item">
-          <span class="surface-detail-item__label">Telefono</span>
+          <span class="surface-detail-item__label">Teléfono</span>
           <strong class="surface-detail-item__value">{{ organizerProfile.phone }}</strong>
         </div>
 
@@ -109,7 +109,7 @@ defineEmits<{
         </div>
 
         <label v-if="editMode" class="surface-detail-item surface-detail-item--full">
-          <span class="surface-detail-item__label">Direccion</span>
+          <span class="surface-detail-item__label">Dirección</span>
           <input
             v-model="profileForm.address"
             type="text"
@@ -117,7 +117,7 @@ defineEmits<{
           />
         </label>
         <div v-else class="surface-detail-item surface-detail-item--full">
-          <span class="surface-detail-item__label">Direccion</span>
+          <span class="surface-detail-item__label">Dirección</span>
           <strong class="surface-detail-item__value">{{ organizerProfile.address }}</strong>
         </div>
 
@@ -142,12 +142,12 @@ defineEmits<{
         <div class="surface-detail-item surface-detail-item--full">
           <span class="surface-detail-item__label">Estado de organizador</span>
           <strong class="surface-detail-item__value">
-            {{ organizerProfile.organizerEnabled ? 'Validado' : 'Pendiente de validacion' }}
+            {{ organizerProfile.organizerEnabled ? 'Validado' : 'Pendiente de validación' }}
           </strong>
         </div>
 
         <label v-if="editMode" class="surface-detail-item surface-detail-item--full">
-          <span class="surface-detail-item__label">Nueva contrasena</span>
+          <span class="surface-detail-item__label">Nueva contraseña</span>
           <input
             v-model="profileForm.password"
             type="password"
@@ -156,16 +156,16 @@ defineEmits<{
           />
         </label>
         <label v-if="editMode" class="surface-detail-item surface-detail-item--full">
-          <span class="surface-detail-item__label">Confirmar nueva contrasena</span>
+          <span class="surface-detail-item__label">Confirmar nueva contraseña</span>
           <input
             v-model="profileForm.passwordConfirmation"
             type="password"
             autocomplete="new-password"
-            placeholder="Repite la nueva contrasena"
+            placeholder="Repite la nueva contraseña"
           />
         </label>
         <div v-else class="surface-detail-item surface-detail-item--full">
-          <span class="surface-detail-item__label">Contrasena</span>
+          <span class="surface-detail-item__label">Contraseña</span>
           <strong class="surface-detail-item__value">************</strong>
         </div>
       </div>

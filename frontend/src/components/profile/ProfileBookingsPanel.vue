@@ -22,7 +22,7 @@ function getBookingVisibilityToneClass(isVisible: boolean): string {
 }
 
 function visibilityActionLabel(isVisible: boolean): string {
-  return isVisible ? 'Ocultar en perfil publico' : 'Mostrar en perfil publico'
+  return isVisible ? 'Ocultar en perfil público' : 'Mostrar en perfil público'
 }
 </script>
 
@@ -35,7 +35,7 @@ function visibilityActionLabel(isVisible: boolean): string {
         <h3 class="ui-title-card">Reservas activas</h3>
 
         <p v-if="activeBookings.length === 0" class="ui-copy-muted">
-          Todavia no tienes reservas futuras.
+          Todavía no tienes reservas futuras.
         </p>
 
         <div v-else class="surface-card-list">
@@ -92,7 +92,7 @@ function visibilityActionLabel(isVisible: boolean): string {
         <h3 class="ui-title-card">Historial</h3>
 
         <p v-if="pastBookings.length === 0" class="ui-copy-muted">
-          Tu historial todavia no muestra asistencias pasadas.
+          Tu historial todavía no muestra asistencias pasadas.
         </p>
 
         <div v-else class="surface-card-list">

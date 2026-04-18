@@ -65,6 +65,7 @@ class TrackServiceControllerTest {
         Track track = new Track();
         track.setId(trackId);
         track.setName("Track");
+        track.setShortName("track");
 
         com.trackfindergarage.backend.domain.model.Service service = new com.trackfindergarage.backend.domain.model.Service();
         service.setId(serviceId);

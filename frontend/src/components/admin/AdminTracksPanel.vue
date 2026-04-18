@@ -45,7 +45,7 @@ function readSelectedValue(event: Event): number | '' {
 
         <button class="action-button admin-tracks__create" type="button" @click="$emit('openCreateTrack')">
           <Plus :size="16" aria-hidden="true" />
-          Anadir circuito
+          Añadir circuito
         </button>
       </div>
 
@@ -54,6 +54,7 @@ function readSelectedValue(event: Event): number | '' {
           <div class="panel-copy surface-card__copy">
             <p class="ui-eyebrow">{{ track.location }}</p>
             <h4 class="ui-title-card">{{ track.name }}</h4>
+            <p class="ui-copy-caption">Assets: {{ track.shortName }}</p>
             <p class="ui-copy-muted">{{ track.description }}</p>
           </div>
 
@@ -116,12 +117,12 @@ function readSelectedValue(event: Event): number | '' {
           :disabled="assignmentSaving || !selectedTrackId || !selectedServiceId"
           @click="$emit('addAssignment')"
         >
-          {{ assignmentSaving ? 'Vinculando...' : 'Anadir al circuito' }}
+          {{ assignmentSaving ? 'Vinculando...' : 'Añadir al circuito' }}
         </button>
       </div>
 
       <p v-if="selectedTrackAssignments.length === 0" class="ui-copy-muted">
-        Este circuito todavia no tiene servicios vinculados.
+        Este circuito todavía no tiene servicios vinculados.
       </p>
 
       <div v-else class="surface-card-list">

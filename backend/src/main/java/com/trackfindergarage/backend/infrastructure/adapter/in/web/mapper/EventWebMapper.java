@@ -51,6 +51,7 @@ public class EventWebMapper {
                 .organizerLegalName(event.getOrganizer() != null ? event.getOrganizer().getLegalName() : null)
                 .trackId(event.getTrack() != null ? event.getTrack().getId() : null)
                 .trackName(event.getTrack() != null ? event.getTrack().getName() : null)
+                .trackShortName(event.getTrack() != null ? event.getTrack().getShortName() : null)
                 .eventDate(event.getEventDate())
                 .basePrice(event.getBasePrice())
                 .maxParticipants(event.getMaxParticipants())

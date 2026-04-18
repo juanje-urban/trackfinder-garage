@@ -60,6 +60,7 @@ class EventControllerTest {
         assertEquals(14, updated.getRemainingCapacity());
         assertEquals("Track day demo con descripcion larga para pruebas.", created.getDescription());
         assertEquals("Track day demo con descripcion larga para pruebas.", updated.getDescription());
+        assertEquals("track_demo", created.getTrackShortName());
     }
 
     @Test
@@ -99,6 +100,7 @@ class EventControllerTest {
         Track track = new Track();
         track.setId(trackId);
         track.setName("Track");
+        track.setShortName("track_demo");
 
         Event event = new Event();
         event.setId(id);

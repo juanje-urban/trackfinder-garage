@@ -79,7 +79,7 @@ watch(
       {{ error }}
     </p>
     <p v-else-if="ranking.length === 0" class="track-record-board__status">
-      Todavia no hay tiempos publicados para este circuito.
+      Todavía no hay tiempos publicados para este circuito.
     </p>
 
     <div v-else class="track-record-board__list">

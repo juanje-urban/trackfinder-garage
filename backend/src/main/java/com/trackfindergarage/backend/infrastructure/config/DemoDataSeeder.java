@@ -41,6 +41,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Component
 @Profile("demo")
@@ -371,6 +372,7 @@ public class DemoDataSeeder implements CommandLineRunner {
     private void seedTracks() {
         trackSeeds().forEach(trackSeed -> createTrackIfMissing(
                 trackSeed.name(),
+                trackSeed.shortName(),
                 trackSeed.location(),
                 trackSeed.description()
         ));
@@ -380,13 +382,34 @@ public class DemoDataSeeder implements CommandLineRunner {
         serviceSeeds().forEach(this::createServiceIfMissing);
     }
 
-    private void createTrackIfMissing(String name, String location, String description) {
-        if (trackRepository.findByName(name).isPresent()) {
+    private void createTrackIfMissing(String name, String shortName, String location, String description) {
+        Optional<Track> existingTrackOptional = trackRepository.findByName(name);
+        if (existingTrackOptional.isPresent()) {
+            Track existingTrack = existingTrackOptional.get();
+            boolean requiresUpdate = false;
+
+            if (!shortName.equals(existingTrack.getShortName())) {
+                existingTrack.setShortName(shortName);
+                requiresUpdate = true;
+            }
+            if (!location.equals(existingTrack.getLocation())) {
+                existingTrack.setLocation(location);
+                requiresUpdate = true;
+            }
+            if (!description.equals(existingTrack.getDescription())) {
+                existingTrack.setDescription(description);
+                requiresUpdate = true;
+            }
+
+            if (requiresUpdate) {
+                trackRepository.save(existingTrack);
+            }
             return;
         }
 
         Track track = new Track();
         track.setName(name);
+        track.setShortName(shortName);
         track.setLocation(location);
         track.setDescription(description);
         trackRepository.save(track);
@@ -919,116 +942,139 @@ public class DemoDataSeeder implements CommandLineRunner {
         return List.of(
                 new TrackSeed(
                         CALAFAT_TRACK_NAME,
+                        "calafat",
                         "L'Ametlla de Mar, Tarragona, España",
                         "Circuito junto al Mediterráneo, conocido por sus cursos de conducción y tandas privadas en la costa de Tarragona."
                 ),
                 new TrackSeed(
                         JARAMA_TRACK_NAME,
+                        "jarama",
                         "San Sebastián de los Reyes, Madrid, España",
                         "Trazado histórico del automovilismo español, sede habitual de eventos, track days y experiencias de conducción cerca de Madrid."
                 ),
                 new TrackSeed(
                         RICARDO_TORMO_TRACK_NAME,
+                        "ricardo_tormo",
                         "Cheste, Valencia, España",
                         "Circuito permanente de la Comunitat Valenciana, referencia nacional para motociclismo y automovilismo con gradas panorámicas."
                 ),
                 new TrackSeed(
                         GUADIX_TRACK_NAME,
+                        "guadix",
                         "Guadix, Granada, España",
                         "Circuito andaluz muy usado para tandas, pruebas de desarrollo y entrenamientos, situado en el altiplano granadino."
                 ),
                 new TrackSeed(
                         ALGARVE_TRACK_NAME,
+                        "algarve",
                         "Portimão, Faro, Portugal",
                         "Circuito portugués famoso por sus desniveles y curvas ciegas, habitual en competiciones internacionales y pruebas de equipos."
                 ),
                 new TrackSeed(
                         NURBURGRING_TRACK_NAME,
+                        "nurburgring",
                         "Nürburg, Renania-Palatinado, Alemania",
                         "Complejo alemán de referencia mundial, célebre por la Nordschleife y por su importancia histórica en el automovilismo europeo."
                 ),
                 new TrackSeed(
                         LE_MANS_SARTHE_TRACK_NAME,
+                        "le_mans_sarthe",
                         "Le Mans, Sarthe, Francia",
                         "Trazado semipermanente célebre por las 24 Horas de Le Mans, mezcla de rectas larguísimas y enlazadas rápidas en el oeste de Francia."
                 ),
                 new TrackSeed(
                         LE_MANS_BUGATTI_TRACK_NAME,
+                        "le_mans_bugatti",
                         "Le Mans, Sarthe, Francia",
                         "Circuito permanente dentro del complejo de Le Mans, habitual para pruebas, competiciones nacionales y track days técnicos."
                 ),
                 new TrackSeed(
                         NURBURGRING_GP_TRACK_NAME,
+                        "nurburgring_gp",
                         "Nürburg, Renania-Palatinado, Alemania",
                         "Variante de gran premio del complejo de Nürburgring, con instalaciones modernas y un paddock preparado para eventos internacionales."
                 ),
                 new TrackSeed(
                         BARCELONA_TRACK_NAME,
+                        "barcelona",
                         "Montmeló, Barcelona, España",
                         "Circuito catalán de referencia internacional, habitual en competiciones de primer nivel y en jornadas privadas de alto ritmo."
                 ),
                 new TrackSeed(
                         JEREZ_TRACK_NAME,
+                        "jerez",
                         "Jerez de la Frontera, Cádiz, España",
                         "Trazado andaluz muy conocido por su fluidez y por acoger programas de tandas, cursos avanzados y pruebas privadas."
                 ),
                 new TrackSeed(
                         MOTORLAND_TRACK_NAME,
+                        "motorland",
                         "Alcañiz, Teruel, España",
                         "Complejo aragonés moderno y técnico, con grandes escapatorias y un paddock preparado para eventos de gran afluencia."
                 ),
                 new TrackSeed(
                         NAVARRA_TRACK_NAME,
+                        "navarra",
                         "Los Arcos, Navarra, España",
                         "Circuito rápido y variado del norte de España, popular entre clubes y organizadores que buscan fines de semana completos."
                 ),
                 new TrackSeed(
                         ALBACETE_TRACK_NAME,
+                        "albacete",
                         "Albacete, Castilla-La Mancha, España",
                         "Trazado muy apreciado por su equilibrio entre técnica y velocidad, habitual para entrenamientos y tandas de aficionados."
                 ),
                 new TrackSeed(
                         MONTEBLANCO_TRACK_NAME,
+                        "monteblanco",
                         "La Palma del Condado, Huelva, España",
                         "Instalación moderna del sur peninsular, utilizada para track days, desarrollo de vehículos y jornadas corporativas."
                 ),
                 new TrackSeed(
                         CARTAGENA_TRACK_NAME,
+                        "cartagena",
                         "Fuente Álamo, Murcia, España",
                         "Circuito compacto y técnico del sureste español, ideal para tandas privadas y sesiones con coches ligeros."
                 ),
                 new TrackSeed(
                         ESTORIL_TRACK_NAME,
+                        "estoril",
                         "Cascais, Lisboa, Portugal",
                         "Circuito histórico portugués junto al Atlántico, muy atractivo para eventos ibéricos y tandas con ambiente premium."
                 ),
                 new TrackSeed(
                         BRAGA_TRACK_NAME,
+                        "braga",
                         "Braga, Norte, Portugal",
                         "Trazado portugués de longitud contenida, perfecto para jornadas de comunidad, formación y sesiones técnicas."
                 ),
                 new TrackSeed(
                         VILA_REAL_TRACK_NAME,
+                        "vila_real",
                         "Vila Real, Norte, Portugal",
                         "Recorrido urbano portugués de carácter rápido y exigente, plausible para eventos demo y experiencias especiales."
                 ),
                 new TrackSeed(
                         BOAVISTA_TRACK_NAME,
+                        "boavista",
                         "Porto, Norte, Portugal",
                         "Circuito urbano icónico del entorno de Porto, útil como referencia para eventos especiales de exhibición y comunidad."
                 ),
                 new TrackSeed(
                         SPA_TRACK_NAME,
+                        "spa",
                         "Stavelot, Lieja, Bélgica",
                         "Uno de los circuitos más emblemáticos de Europa, muy asociado a tandas premium y a experiencias de alto nivel."
                 ),
                 new TrackSeed(
                         MUGELLO_TRACK_NAME,
+                        "mugello",
                         "Scarperia e San Piero, Toscana, Italia",
                         "Trazado italiano muy apreciado por su desnivel, enlazadas rápidas y ambiente de paddock de primer nivel."
                 ),
                 new TrackSeed(
                         PAUL_RICARD_TRACK_NAME,
+                        "paul_ricard",
                         "Le Castellet, Provenza-Alpes-Costa Azul, Francia",
                         "Circuito francés moderno y versátil, frecuentemente utilizado para entrenamientos privados y eventos internacionales."
                 )
@@ -2191,7 +2237,7 @@ public class DemoDataSeeder implements CommandLineRunner {
                                  boolean enabled) {
     }
 
-    private record TrackSeed(String name, String location, String description) {
+    private record TrackSeed(String name, String shortName, String location, String description) {
     }
 
     private record ServiceSeed(String name,

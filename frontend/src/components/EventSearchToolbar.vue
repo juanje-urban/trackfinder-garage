@@ -56,7 +56,7 @@ const emit = defineEmits<{
         </label>
 
         <label class="search-field">
-          <span class="search-field__label">Precio maximo</span>
+          <span class="search-field__label">Precio máximo</span>
           <input
             :value="maxBasePrice"
             type="number"

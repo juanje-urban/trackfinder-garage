@@ -33,7 +33,7 @@ const selectedServiceId = computed({
     <article class="panel panel-pad-lg panel-stack-md">
       <div class="section-header">
         <div class="panel-copy">
-          <h3 class="ui-title-card">Catalogo de servicios del organizador</h3>
+          <h3 class="ui-title-card">Catálogo de servicios del organizador</h3>
           <p class="ui-copy-muted">
             Anade servicios globales a tu oferta y retira solo los que no esten ligados a eventos
             futuros.
@@ -72,16 +72,16 @@ const selectedServiceId = computed({
           "
           @click="$emit('addService')"
         >
-          Anadir servicio
+          Añadir servicio
         </button>
       </div>
 
       <p v-if="availableCatalogServices.length === 0" class="ui-copy-muted">
-        Ya has incorporado todos los servicios disponibles del catalogo general.
+        Ya has incorporado todos los servicios disponibles del catálogo general.
       </p>
 
       <p v-if="organizerServices.length === 0" class="ui-copy-muted">
-        Todavia no has anadido servicios a tu catalogo.
+        Todavía no has añadido servicios a tu catálogo.
       </p>
 
       <div v-else class="surface-card-list">
@@ -101,8 +101,8 @@ const selectedServiceId = computed({
             class="icon-button icon-button--danger"
             type="button"
             :disabled="removingOrganizerServiceId === service.id"
-            aria-label="Retirar servicio del catalogo"
-            title="Retirar servicio del catalogo"
+            aria-label="Retirar servicio del catálogo"
+            title="Retirar servicio del catálogo"
             @click="$emit('removeService', service.id)"
           >
             <Trash2 :size="16" aria-hidden="true" />

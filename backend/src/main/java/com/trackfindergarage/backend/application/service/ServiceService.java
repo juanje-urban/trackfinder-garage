@@ -13,8 +13,8 @@ import java.util.List;
 @Transactional
 public class ServiceService implements ServiceUseCase {
 
-    private static final String SERVICE_NOT_FOUND_WITH_ID = "Service not found with id: ";
-    private static final String SERVICE_NAME_ALREADY_EXISTS = "Service with name '%s' already exists";
+    private static final String SERVICE_NOT_FOUND_WITH_ID = "Servicio no encontrado con id: ";
+    private static final String SERVICE_NAME_ALREADY_EXISTS = "Ya existe un servicio con el nombre '%s'";
 
     private final ServicePersistencePort servicePersistencePort;
 

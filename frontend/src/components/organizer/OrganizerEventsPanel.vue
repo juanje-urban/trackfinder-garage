@@ -47,7 +47,7 @@ function formatEventServiceName(service: OrganizerManagedEvent['services'][numbe
         </button>
       </div>
 
-      <p v-if="events.length === 0" class="ui-copy-muted">Todavia no has creado ningun evento.</p>
+      <p v-if="events.length === 0" class="ui-copy-muted">Todavía no has creado ningún evento.</p>
 
       <div v-else class="surface-card-list">
         <article

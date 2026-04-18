@@ -9,6 +9,7 @@ public class TrackResponse {
 
     private Long id;
     private String name;
+    private String shortName;
     private String location;
     private String description;
 }

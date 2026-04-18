@@ -35,7 +35,7 @@ onMounted(async () => {
     loading-message="Cargando circuitos..."
     :error="error"
     :empty="tracks.length === 0"
-    empty-message="No hay circuitos publicos disponibles en este momento."
+    empty-message="No hay circuitos públicos disponibles en este momento."
   >
 
     <template #metrics>
