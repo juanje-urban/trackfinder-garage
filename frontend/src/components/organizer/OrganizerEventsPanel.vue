@@ -83,7 +83,10 @@ function formatEventServiceName(service: OrganizerManagedEvent['services'][numbe
             </div>
           </div>
 
-          <div v-if="!isPastEvent(managedEvent.event.eventDate)" class="surface-card__actions--column">
+          <div
+            v-if="!isPastEvent(managedEvent.event.eventDate)"
+            class="surface-card__actions organizer-event-card__actions"
+          >
             <button
               class="icon-button icon-button--danger"
               type="button"
@@ -118,6 +121,12 @@ function formatEventServiceName(service: OrganizerManagedEvent['services'][numbe
 
 .organizer-event-card {
   align-items: start;
+}
+
+.organizer-event-card__actions {
+  gap: var(--space-sm);
+  padding-inline-start: var(--space-sm);
+  flex-wrap: nowrap;
 }
 
 @media (max-width: 720px) {

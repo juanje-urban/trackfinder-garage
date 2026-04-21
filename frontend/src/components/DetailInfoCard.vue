@@ -4,7 +4,7 @@ withDefaults(
     eyebrow: string
     title: string
     subtitle?: string
-    tone?: 'default' | 'accent' | 'success' | 'urgent' | 'limited' | 'open'
+    tone?: 'default' | 'accent' | 'success' | 'full' | 'urgent' | 'limited' | 'open'
   }>(),
   {
     subtitle: '',
@@ -48,6 +48,13 @@ withDefaults(
     var(--surface-panel-gradient);
 }
 
+.detail-info-card--full {
+  border-color: rgba(255, 119, 119, 0.5);
+  background:
+    linear-gradient(180deg, rgba(172, 35, 35, 0.18) 0%, rgba(132, 23, 23, 0.07) 100%),
+    var(--surface-panel-gradient);
+}
+
 .detail-info-card--success {
   background:
     linear-gradient(180deg, rgba(58, 215, 134, 0.12) 0%, rgba(58, 215, 134, 0.04) 100%),
@@ -63,6 +70,10 @@ withDefaults(
   color: var(--racing-amber);
 }
 
+.detail-info-card--full .ui-eyebrow {
+  color: #ffb0a9;
+}
+
 .detail-info-card--urgent .ui-eyebrow {
   color: #ffb0a9;
 }
@@ -74,6 +85,10 @@ withDefaults(
 
 .detail-info-card--limited .ui-title-detail {
   color: #ffe5a5;
+}
+
+.detail-info-card--full .ui-title-detail {
+  color: #fff0ed;
 }
 
 .detail-info-card--urgent .ui-title-detail {

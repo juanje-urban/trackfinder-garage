@@ -157,12 +157,26 @@ const hasConfirmedBooking = computed(() => existingBooking.value !== null)
 const isPastEvent = computed(() =>
   eventDetail.value ? eventDetail.value.event.eventDate < todayIso : false,
 )
+const cancellationCutoffIso = computed(() => {
+  const date = new Date()
+  date.setDate(date.getDate() + 14)
+  return toIsoDate(date)
+})
+const isEventFull = computed(() =>
+  eventDetail.value ? eventDetail.value.event.remainingCapacity <= 0 : false,
+)
+const canCancelExistingBooking = computed(() =>
+  hasConfirmedBooking.value && eventDetail.value
+    ? eventDetail.value.event.eventDate >= cancellationCutoffIso.value
+    : false,
+)
 const isUserSession = computed(() => isUserRole(auth.session.value?.roleName))
 const hasBookableSession = computed(() => auth.isAuthenticated.value && isUserSession.value)
 
 const isBookingActionDisabled = computed(
   () =>
     isPastEvent.value ||
+    (hasConfirmedBooking.value ? !canCancelExistingBooking.value : isEventFull.value) ||
     bookingSubmitting.value ||
     (auth.isAuthenticated.value && !isUserSession.value),
 )
@@ -172,6 +186,8 @@ const bookingButtonLabel = computed(() =>
     ? 'Evento finalizado'
     : hasConfirmedBooking.value
       ? 'Anular reserva'
+      : isEventFull.value
+        ? 'Aforo completo'
       : 'Reservar plaza',
 )
 
@@ -189,7 +205,13 @@ const bookingCaption = computed(() => {
   }
 
   if (hasConfirmedBooking.value) {
-    return 'Puedes anular tu reserva siempre que falten al menos 14 dias para el evento.'
+    return canCancelExistingBooking.value
+      ? 'Puedes anular tu reserva siempre que falten al menos 14 días para el evento.'
+      : 'La anulación ya no está disponible porque faltan menos de 14 días para el evento.'
+  }
+
+  if (isEventFull.value) {
+    return 'El aforo está completo y ya no se admiten nuevas reservas para este evento.'
   }
 
   if (isUserSession.value) {
@@ -200,7 +222,7 @@ const bookingCaption = computed(() => {
     return 'Inicia sesión con una cuenta de usuario para reservar.'
   }
 
-  return 'La reserva esta disponible solo para cuentas de usuario.'
+  return 'La reserva está disponible solo para cuentas de usuario.'
 })
 
 const heroStyle = computed(() => {
@@ -347,7 +369,12 @@ function handleBookingAction() {
     return
   }
 
-  if (!eventDetail.value || !isUserSession.value || isPastEvent.value) {
+  if (
+    !eventDetail.value ||
+    !isUserSession.value ||
+    isPastEvent.value ||
+    (hasConfirmedBooking.value ? !canCancelExistingBooking.value : isEventFull.value)
+  ) {
     return
   }
 
@@ -450,7 +477,7 @@ function resolveBookingCancellationError(requestError: unknown): string {
       403: 'Solo puedes anular tus propias reservas.',
     },
     matches: [
-      { includes: 'less than 14 days before the event', message: 'No puedes anular la reserva con menos de 14 dias de antelacion.' },
+      { includes: 'less than 14 days before the event', message: 'No puedes anular la reserva con menos de 14 días de antelación.' },
       { includes: 'owner of the booking', message: 'Solo puedes anular tus propias reservas.' },
     ],
   })
@@ -598,6 +625,7 @@ function handleMediaDialogKeydown(event: KeyboardEvent) {
         :mode="bookingDialogMode"
         :track-name="eventDetail.event.trackName"
         :event-date="formattedDate"
+        :can-confirm="bookingDialogMode === 'checkout' || canCancelExistingBooking"
         :base-price-label="formattedPrice"
         :total-price-label="formatCurrency(totalPrice)"
         :selected-services="bookingDialogServices"

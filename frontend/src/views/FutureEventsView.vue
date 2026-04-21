@@ -6,6 +6,7 @@ import EventSearchToolbar from '@/components/EventSearchToolbar.vue'
 import EventCard from '@/components/EventCard.vue'
 import { getFutureEvents } from '@/services/eventService'
 import type { Event } from '@/types/event'
+import { getEventRemainingLabel } from '@/utils/eventAvailability'
 import { formatCurrency, formatDisplayDate } from '@/utils/format'
 
 const route = useRoute()
@@ -99,6 +100,14 @@ function resetFilters() {
   selectedTrackId.value = ''
   maxBasePrice.value = ''
 }
+
+function formatAvailabilitySummary(remainingCapacity: number): string {
+  if (remainingCapacity <= 0) {
+    return 'Aforo completo'
+  }
+
+  return getEventRemainingLabel(remainingCapacity).replace(' para este evento', '').replace('disponibles', 'libres')
+}
 </script>
 
 <template>
@@ -142,7 +151,7 @@ function resetFilters() {
           <article class="next-event-summary__stat next-event-summary__stat--success">
             <span class="ui-stat-label">Disponibilidad</span>
             <strong class="ui-title-info next-event-summary__availability">
-              {{ firstCatalogEvent.remainingCapacity }} plazas libres
+              {{ formatAvailabilitySummary(firstCatalogEvent.remainingCapacity) }}
             </strong>
           </article>
         </div>

@@ -47,6 +47,13 @@ const availabilityLabel = computed(() =>
   --availability-glow: rgba(255, 45, 32, 0.3);
 }
 
+.event-availability-badge--full {
+  --availability-surface: rgba(73, 20, 20, 0.94);
+  --availability-border: rgba(255, 119, 119, 0.62);
+  --availability-text: #fff1ef;
+  --availability-glow: rgba(255, 45, 32, 0.34);
+}
+
 .event-availability-badge--limited {
   --availability-surface: rgba(104, 67, 14, 0.88);
   --availability-border: rgba(255, 205, 92, 0.56);

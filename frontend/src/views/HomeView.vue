@@ -11,6 +11,7 @@ import { getFutureEvents } from '@/services/eventService'
 import { getTracks } from '@/services/trackService'
 import type { Event } from '@/types/event'
 import type { Track } from '@/types/track'
+import { getEventRemainingLabel } from '@/utils/eventAvailability'
 import { formatCurrency, formatDisplayDate } from '@/utils/format'
 import heroImage from '@/assets/home/hero_page_jarama.jpg'
 
@@ -46,6 +47,14 @@ function selectUpcomingUniqueTrackEvents(sourceEvents: Event[], limit: number): 
       return true
     })
     .slice(0, limit)
+}
+
+function formatFeaturedAvailability(remainingCapacity: number): string {
+  if (remainingCapacity <= 0) {
+    return 'Aforo completo'
+  }
+
+  return getEventRemainingLabel(remainingCapacity).replace(' para este evento', '')
 }
 
 onMounted(async () => {
@@ -84,7 +93,7 @@ onMounted(async () => {
             :caption="`${formatDisplayDate(featuredEvent.eventDate)} - ${formatCurrency(featuredEvent.basePrice)} - ${featuredEvent.organizerLegalName}`"
           >
             <strong>{{ featuredEvent.trackName }}</strong>
-            <span>{{ featuredEvent.remainingCapacity }} plazas disponibles</span>
+            <span>{{ formatFeaturedAvailability(featuredEvent.remainingCapacity) }}</span>
           </HeroInfoPanel>
         </RouterLink>
       </template>

@@ -18,8 +18,38 @@ import java.util.List;
 
 @Configuration
 @EnableMethodSecurity
+/**
+ * Configuración central de seguridad de la API.
+ *
+ * <p>Esta clase define tres piezas clave del backend:</p>
+ * <ul>
+ *     <li>La cadena de filtros de Spring Security y las reglas de acceso HTTP.</li>
+ *     <li>La política CORS necesaria para permitir peticiones desde el frontend.</li>
+ *     <li>El codificador de contraseñas utilizado (BCrypt).</li>
+ * </ul>
+ *
+ * <p>Se exponen de manera pública los endpoints a modo de consulta (GET) que puedan
+ * sirvan como reclamo comercial (eventos, circuitos...). Además, se habilita seguridad
+ * a nivel de método.</p>
+ */
 public class SecurityConfig {
 
+    /**
+     * Construye la configuración principal de seguridad de la aplicación.
+     *
+     * <p>La cadena resultante aplica las siguientes decisiones:</p>
+     * <ul>
+     *     <li>Desactiva CSRF al tratarse de una API consumida por frontend separado.</li>
+     *     <li>Activa CORS con la configuración declarada en {@link #corsConfigurationSource()}.</li>
+     *     <li>Permite peticiones públicas a autenticación, catálogo, perfiles públicos y rankings.</li>
+     *     <li>Exige autenticación para cualquier endpoint no incluido en la lista pública.</li>
+     *     <li>Utiliza autenticación HTTP Basic como mecanismo de acceso a la API.</li>
+     * </ul>
+     *
+     * @param http configurador de seguridad HTTP proporcionado por Spring
+     * @return cadena de filtros de seguridad que se aplicará a todas las peticiones
+     * @throws Exception si Spring no puede construir la configuración de seguridad
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
@@ -43,18 +73,35 @@ public class SecurityConfig {
                 .build();
     }
 
+    /**
+     * Declara la política CORS utilizada por la API.
+     *
+     * <p>Permite al frontend consumir el backend desde. Es necesario porque el front y el back son orígenes
+     * distintos (front usa el puerto 5173 y back 8080).</p>
+     *
+     * @return origen de configuración CORS registrado para todas las rutas de la API
+     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
+
+        CorsConfiguration configuration = new CorsConfiguration(); //Almacena la configuración CORS
         configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://127.0.0.1:5173"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
+
         return source;
     }
 
+    /**
+     * Proporciona el codificador de contraseñas empleado por el sistema.
+     *
+     * <p>Se utiliza BCrypt, que viene incluído con Spring Security.</p>
+     *
+     * @return codificador BCrypt para contraseñas
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();

@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import EventAvailabilityBadge from '@/components/EventAvailabilityBadge.vue'
 import type { Event } from '@/types/event'
-import { getEventAvailabilityState } from '@/utils/eventAvailability'
+import { getEventAvailabilityState, getEventRemainingLabel } from '@/utils/eventAvailability'
 import { formatCurrency, formatDisplayDate } from '@/utils/format'
 import { getTrackMedia } from '@/utils/trackMedia'
 import { createVisualStyle, eventVisualPalettes } from '@/utils/visualPalettes'
@@ -43,7 +43,11 @@ const capacityFill = computed(() => {
 })
 
 const remainingText = computed(() => {
-  return `${props.event.remainingCapacity} plazas disponibles`
+  if (props.event.remainingCapacity <= 0) {
+    return 'Aforo completo'
+  }
+
+  return getEventRemainingLabel(props.event.remainingCapacity).replace(' para este evento', '')
 })
 </script>
 
@@ -125,6 +129,14 @@ const remainingText = computed(() => {
   --event-state-text: #fff0ed;
   --event-state-accent: #ff7165;
   --event-state-glow: rgba(255, 45, 32, 0.3);
+}
+
+.event-card--full {
+  --event-state-surface: rgba(73, 20, 20, 0.94);
+  --event-state-border: rgba(255, 119, 119, 0.62);
+  --event-state-text: #fff1ef;
+  --event-state-accent: #ff857b;
+  --event-state-glow: rgba(255, 45, 32, 0.34);
 }
 
 .event-card--limited {

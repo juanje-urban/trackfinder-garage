@@ -320,8 +320,8 @@ async function submitMessage(payload: { receiverId: number; subject: string; mes
     <template v-else>
       <PageHero
         eyebrow="Mensajes"
-        title="Bandeja compartida"
-        description="Organiza tus conversaciones por hilos y responde desde un único espacio."
+        title="Bandeja de entrada"
+        description="Contacta con otros usuarios de la platadorma."
       />
 
       <section class="messages-layout panel panel-pad-lg">

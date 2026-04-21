@@ -212,6 +212,10 @@ function closeEventModal() {
     return
   }
 
+  hideEventModal()
+}
+
+function hideEventModal() {
   isEventModalOpen.value = false
   resetEventForm()
 }
@@ -422,7 +426,7 @@ async function saveEvent() {
         ? 'El evento se ha creado correctamente.'
         : 'El evento se ha actualizado correctamente.',
     )
-    closeEventModal()
+    hideEventModal()
   } catch (requestError) {
     eventError.value = resolveApiErrorMessage(requestError, {
       fallback: 'No se pudo guardar el evento.',

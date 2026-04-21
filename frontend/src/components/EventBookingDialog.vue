@@ -6,6 +6,7 @@ const props = defineProps<{
   mode: 'checkout' | 'cancel'
   trackName: string
   eventDate: string
+  canConfirm: boolean
   basePriceLabel: string
   totalPriceLabel: string
   selectedServices: Array<{
@@ -55,7 +56,7 @@ defineEmits<{
         </button>
       </header>
 
-      <div class="booking-dialog__lines">
+      <div v-if="props.mode === 'checkout'" class="booking-dialog__lines">
         <div class="booking-dialog__line">
           <span>Entrada base</span>
           <strong>{{ props.basePriceLabel }}</strong>
@@ -71,6 +72,16 @@ defineEmits<{
         </div>
       </div>
 
+      <div v-else class="booking-dialog__lines">
+        <div
+          v-for="service in props.selectedServices"
+          :key="service.id"
+          class="booking-dialog__line booking-dialog__line--service"
+        >
+          <span>{{ service.name }}</span>
+        </div>
+      </div>
+
       <p v-if="props.selectedServices.length === 0" class="ui-copy-muted">
         {{
           props.mode === 'cancel'
@@ -79,8 +90,8 @@ defineEmits<{
         }}
       </p>
 
-      <div class="booking-dialog__total">
-        <span>{{ props.mode === 'cancel' ? 'Total contratado' : 'Total estimado' }}</span>
+      <div v-if="props.mode === 'checkout'" class="booking-dialog__total">
+        <span>Total estimado</span>
         <strong>{{ props.totalPriceLabel }}</strong>
       </div>
 
@@ -103,7 +114,11 @@ defineEmits<{
       </label>
 
       <p v-if="props.mode === 'cancel'" class="ui-copy-muted">
-        Podras anular la reserva siempre que falten al menos 14 dias para el evento.
+        {{
+          props.canConfirm
+            ? 'Podrás anular la reserva siempre que falten al menos 14 días para el evento.'
+            : 'La anulación ya no está disponible porque faltan menos de 14 días para el evento.'
+        }}
       </p>
 
       <p v-if="props.errorMessage" class="status-message status-message--error">
@@ -114,14 +129,19 @@ defineEmits<{
         <button class="action-button action-button--ghost" type="button" @click="$emit('close')">
           Volver
         </button>
-        <button class="action-button" type="button" :disabled="props.isSubmitting" @click="$emit('confirm')">
+        <button
+          class="action-button"
+          type="button"
+          :disabled="props.isSubmitting || !props.canConfirm"
+          @click="$emit('confirm')"
+        >
           {{
             props.isSubmitting
               ? props.mode === 'cancel'
                 ? 'Anulando...'
                 : 'Confirmando...'
               : props.mode === 'cancel'
-                ? 'Confirmar anulacion'
+                ? 'Confirmar anulación'
                 : 'Confirmar reserva'
           }}
         </button>

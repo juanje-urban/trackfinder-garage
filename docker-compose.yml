@@ -7,10 +7,14 @@ services:
       MARIADB_USER: trackuser
       MARIADB_PASSWORD: trackpass
       MARIADB_ROOT_PASSWORD: rootpass
-    ports:
-      - "3306:3306"
     volumes:
       - mariadb_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
 
   backend:
     image: ghcr.io/juanje-urban/trackfinder-garage-backend:latest
@@ -23,7 +27,8 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   frontend:
     image: ghcr.io/juanje-urban/trackfinder-garage-frontend:latest
