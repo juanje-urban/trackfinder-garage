@@ -55,8 +55,11 @@ async function refreshSession() {
   }
 
   try {
-    const nextSession = await getCurrentSession()
-    setSession(nextSession)
+    const nextIdentity = await getCurrentSession()
+    setSession({
+      ...nextIdentity,
+      authorizationHeader: state.session.authorizationHeader,
+    })
   } catch {
     clearSession()
   }

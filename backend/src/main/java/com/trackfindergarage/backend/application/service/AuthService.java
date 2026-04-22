@@ -14,15 +14,20 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.Locale;
 
+/**
+ * Implementa la lógica de autenticación y registro de usuarios.
+ *
+ * <p>Este servicio centraliza el login, la recuperación de la sesión actual y los flujos de alta tanto de usuarios
+ * normales (USER) como de organizadores (ORGANIZER). Además, normaliza los datos de entrada y construye la respuesta de
+ * autenticación que consume el frontend.</p>
+ */
 @Service
 @Transactional
 public class AuthService implements AuthUseCase {
 
-    private static final String INVALID_CREDENTIALS_MESSAGE = "Correo o contrasena incorrectos";
+    private static final String INVALID_CREDENTIALS_MESSAGE = "Correo o contraseña incorrectos";
 
     private final OrganizerUseCase organizerUseCase;
     private final UserUseCase userUseCase;
@@ -39,6 +44,14 @@ public class AuthService implements AuthUseCase {
         this.passwordEncoder = passwordEncoder;
     }
 
+    /**
+     * Comprueba las credenciales de un usuario activo y devuelve su sesión.
+     *
+     * @param email email introducido en el login
+     * @param rawPassword contraseña en texto plano introducida por el usuario
+     * @return datos básicos de sesión del usuario autenticado
+     * @throws InvalidCredentialsException si el usuario no existe, esta deshabilitado o la contraseña no coincide
+     */
     @Override
     @Transactional(readOnly = true)
     public AuthResponse login(String email, String rawPassword) {
@@ -49,22 +62,43 @@ public class AuthService implements AuthUseCase {
             throw new InvalidCredentialsException(INVALID_CREDENTIALS_MESSAGE);
         }
 
-        return buildAuthResponse(user, buildAuthorizationHeader(normalizedEmail, rawPassword));
+        return buildAuthResponse(user);
     }
 
+    /**
+     * Reconstruye la sesión actual a partir del usuario autenticado por Spring Security.
+     *
+     * @param authenticatedEmail email del usuario autenticado en la petición
+     * @return estado actual de la sesión
+     */
     @Override
     @Transactional(readOnly = true)
-    public AuthResponse getCurrentSession(String authenticatedEmail, String authorizationHeader) {
-        return buildAuthResponse(loadActiveUserByEmail(normalizeEmail(authenticatedEmail)), authorizationHeader);
+    public AuthResponse getCurrentSession(String authenticatedEmail) {
+        return buildAuthResponse(loadActiveUserByEmail(normalizeEmail(authenticatedEmail)));
     }
 
+    /**
+     * Registra un nuevo usuario final.
+     *
+     * @param command datos de alta normalizados desde la capa web
+     * @return sesión inicial del usuario creado
+     */
     @Override
     public AuthResponse register(AuthRegistrationCommand command) {
         String normalizedEmail = normalizeEmail(command.email());
         User createdUser = userUseCase.createUser(buildUser(command, normalizedEmail), command.rawPassword());
-        return buildAuthResponse(createdUser, buildAuthorizationHeader(normalizedEmail, command.rawPassword()));
+        return buildAuthResponse(createdUser);
     }
 
+    /**
+     * Registra un nuevo organizador con sus datos específicos.
+     *
+     * <p>El usuario asociado al organizador se crea con los mismos criterios que un registro normal, pero se completa
+     * con la razón social y el CIF necesarios para la entidad organizadora.</p>
+     *
+     * @param command datos de alta del organizador y de su usuario asociado
+     * @return sesión inicial del usuario del organizador
+     */
     @Override
     public AuthResponse registerOrganizer(OrganizerRegistrationCommand command) {
         AuthRegistrationCommand authRegistration = command.authRegistration();
@@ -76,10 +110,7 @@ public class AuthService implements AuthUseCase {
         organizer.setCif(normalizeText(command.cif()));
 
         Organizer createdOrganizer = organizerUseCase.createOrganizer(organizer, authRegistration.rawPassword());
-        return buildAuthResponse(
-                createdOrganizer.getUser(),
-                buildAuthorizationHeader(normalizedEmail, authRegistration.rawPassword())
-        );
+        return buildAuthResponse(createdOrganizer.getUser());
     }
 
     private User loadActiveUserByEmail(String normalizedEmail) {
@@ -99,20 +130,13 @@ public class AuthService implements AuthUseCase {
         return user;
     }
 
-    private AuthResponse buildAuthResponse(User user, String authorizationHeader) {
+    private AuthResponse buildAuthResponse(User user) {
         AuthResponse response = new AuthResponse();
         response.setUserId(user.getId());
         response.setDisplayName(user.getDisplayName());
         response.setEmail(user.getEmail());
         response.setRoleName(user.getRole() != null ? user.getRole().getRoleName() : null);
-        response.setAuthorizationHeader(authorizationHeader);
         return response;
-    }
-
-    private String buildAuthorizationHeader(String email, String rawPassword) {
-        String token = email + ":" + rawPassword;
-        String encodedToken = Base64.getEncoder().encodeToString(token.getBytes(StandardCharsets.UTF_8));
-        return "Basic " + encodedToken;
     }
 
     private String normalizeEmail(String email) {

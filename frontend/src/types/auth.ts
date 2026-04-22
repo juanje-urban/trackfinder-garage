@@ -16,10 +16,13 @@ export interface AuthOrganizerRegisterPayload extends AuthRegisterPayload {
   cif: string
 }
 
-export interface AuthSession {
+export interface AuthIdentity {
   userId: number
   displayName: string
   email: string
   roleName: string | null
+}
+
+export interface AuthSession extends AuthIdentity {
   authorizationHeader: string
 }

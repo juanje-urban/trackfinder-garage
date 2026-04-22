@@ -17,12 +17,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -61,7 +58,6 @@ class AuthServiceTest {
         assertEquals("apexhunter", response.getDisplayName());
         assertEquals("driver@example.com", response.getEmail());
         assertEquals("USER", response.getRoleName());
-        assertEquals(expectedAuthorizationHeader("driver@example.com", "secret"), response.getAuthorizationHeader());
     }
 
     @Test
@@ -99,7 +95,6 @@ class AuthServiceTest {
         assertEquals("latebraker_88", response.getDisplayName());
         assertEquals("latebraker@example.com", response.getEmail());
         assertEquals("USER", response.getRoleName());
-        assertNotNull(response.getAuthorizationHeader());
         verify(userUseCase).createUser(any(User.class), eq("secret"));
     }
 
@@ -181,10 +176,5 @@ class AuthServiceTest {
         role.setRoleName("USER");
         user.setRole(role);
         return user;
-    }
-
-    private String expectedAuthorizationHeader(String email, String rawPassword) {
-        String token = email + ":" + rawPassword;
-        return "Basic " + Base64.getEncoder().encodeToString(token.getBytes(StandardCharsets.UTF_8));
     }
 }

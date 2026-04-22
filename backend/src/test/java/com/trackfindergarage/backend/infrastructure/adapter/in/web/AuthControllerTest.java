@@ -41,12 +41,12 @@ class AuthControllerTest {
     void getCurrentSessionDelegatesToUseCase() {
         Authentication authentication = new UsernamePasswordAuthenticationToken("driver@example.com", "secret");
         AuthResponse expected = response(3L, "driver", "driver@example.com");
-        when(authUseCase.getCurrentSession("driver@example.com", "Basic token")).thenReturn(expected);
+        when(authUseCase.getCurrentSession("driver@example.com")).thenReturn(expected);
 
-        AuthResponse response = authController.getCurrentSession(authentication, "Basic token");
+        AuthResponse response = authController.getCurrentSession(authentication);
 
         assertEquals(expected.getUserId(), response.getUserId());
-        verify(authUseCase).getCurrentSession("driver@example.com", "Basic token");
+        verify(authUseCase).getCurrentSession("driver@example.com");
     }
 
     @Test
@@ -122,7 +122,6 @@ class AuthControllerTest {
         response.setDisplayName(displayName);
         response.setEmail(email);
         response.setRoleName("USER");
-        response.setAuthorizationHeader("Basic token");
         return response;
     }
 }
