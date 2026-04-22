@@ -14,7 +14,10 @@ jobs:
       run:
         working-directory: backend
     steps:
+      # Sonar necesita más contexto git que un checkout superficial.
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -31,7 +34,10 @@ jobs:
       run:
         working-directory: frontend
     steps:
+      # Analizamos el frontend como proyecto independiente del monorepo.
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: "24"
@@ -39,5 +45,14 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - name: Install dependencies
         run: npm ci
+      - name: Type-check frontend
+        run: npm run type-check
       - name: Build frontend
         run: npm run build
+      # Publica el análisis en el proyecto Sonar del frontend.
+      - name: Analyze frontend
+        uses: SonarSource/sonarqube-scan-action@v7
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          projectBaseDir: frontend

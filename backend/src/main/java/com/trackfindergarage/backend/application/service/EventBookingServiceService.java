@@ -8,7 +8,6 @@ import com.trackfindergarage.backend.application.port.out.EventPersistencePort;
 import com.trackfindergarage.backend.application.port.out.UserPersistencePort;
 import com.trackfindergarage.backend.common.exception.DuplicateResourceException;
 import com.trackfindergarage.backend.common.exception.ResourceNotFoundException;
-import com.trackfindergarage.backend.domain.model.Event;
 import com.trackfindergarage.backend.domain.model.EventBooking;
 import com.trackfindergarage.backend.domain.model.EventBookingService;
 import com.trackfindergarage.backend.domain.model.EventService;
