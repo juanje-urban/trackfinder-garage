@@ -18,11 +18,5 @@ public interface SpringDataTrackServiceRepository extends JpaRepository<TrackSer
     Optional<TrackService> findById(Long id);
 
     @EntityGraph(attributePaths = {"track", "service"})
-    List<TrackService> findByTrackId(Long trackId);
-
-    @EntityGraph(attributePaths = {"track", "service"})
-    List<TrackService> findByServiceId(Long serviceId);
-
-    @EntityGraph(attributePaths = {"track", "service"})
     Optional<TrackService> findByTrackIdAndServiceId(Long trackId, Long serviceId);
 }

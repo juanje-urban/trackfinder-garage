@@ -13,10 +13,6 @@ public interface TrackServicePersistencePort {
 
     List<TrackService> findAll();
 
-    List<TrackService> findByTrackId(Long trackId);
-
-    List<TrackService> findByServiceId(Long serviceId);
-
     Optional<TrackService> findByTrackIdAndServiceId(Long trackId, Long serviceId);
 
     void delete(TrackService trackService);

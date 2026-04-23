@@ -51,26 +51,10 @@ public class MessageController extends AbstractWebController {
         );
     }
 
-    @GetMapping("/conversation/{counterpartId}")
-    public List<MessageResponse> getOwnConversation(@PathVariable Long counterpartId,
-                                                    Authentication authentication) {
-        return mapResponses(
-                messageUseCase.getOwnConversation(authenticatedEmail(authentication), counterpartId),
-                messageWebMapper::toResponse
-        );
-    }
-
     @PatchMapping("/{id}/read")
     public MessageResponse markAsRead(@PathVariable Long id, Authentication authentication) {
         return messageWebMapper.toResponse(
                 messageUseCase.markOwnMessageAsRead(authenticatedEmail(authentication), id)
-        );
-    }
-
-    @PatchMapping("/{id}/unread")
-    public MessageResponse markAsUnread(@PathVariable Long id, Authentication authentication) {
-        return messageWebMapper.toResponse(
-                messageUseCase.markOwnMessageAsUnread(authenticatedEmail(authentication), id)
         );
     }
 }

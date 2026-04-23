@@ -10,7 +10,5 @@ public interface SpringDataServiceRepository extends JpaRepository<Service, Long
 
     Optional<Service> findByName(String name);
 
-    List<Service> findAllByAllowedForTrackTrue();
-
     List<Service> findAllByAllowedForOrganizerTrue();
 }

@@ -97,19 +97,6 @@ public class EventServiceService implements EventServiceUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public List<EventService> getAllEventServices() {
-        return eventServicePersistencePort.findAll();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public EventService getEventServiceById(Long id) {
-        return eventServicePersistencePort.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(EVENT_SERVICE_NOT_FOUND_WITH_ID + id));
-    }
-
-    @Override
-    @Transactional(readOnly = true)
     public List<EventService> getEventServicesByEventId(Long eventId) {
         eventPersistencePort.findById(eventId)
                 .orElseThrow(() -> new ResourceNotFoundException(EVENT_NOT_FOUND_WITH_ID + eventId));

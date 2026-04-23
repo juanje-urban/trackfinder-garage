@@ -10,11 +10,7 @@ public interface OrganizerServiceUseCase {
 
     void deleteOrganizerService(Long id);
 
-    List<OrganizerService> getAllOrganizerServices();
-
     OrganizerService getOrganizerServiceById(Long id);
 
     List<OrganizerService> getOrganizerServicesByOrganizerId(Long organizerId);
-
-    List<OrganizerService> getOrganizerServicesByServiceId(Long serviceId);
 }

@@ -53,12 +53,6 @@ public class ServiceService implements ServiceUseCase {
     }
 
     @Override
-    public void deleteService(Long id) {
-        Service existingService = findServiceOrThrow(id);
-        servicePersistencePort.delete(existingService);
-    }
-
-    @Override
     @Transactional(readOnly = true)
     public List<Service> getAllServices() {
         return servicePersistencePort.findAll();
@@ -66,21 +60,8 @@ public class ServiceService implements ServiceUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Service> getAllServicesAllowedForTrack() {
-        return servicePersistencePort.findAllByAllowedForTrackTrue();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
     public List<Service> getAllServicesAllowedForOrganizer() {
         return servicePersistencePort.findAllByAllowedForOrganizerTrue();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Service getServiceById(Long id) {
-        return servicePersistencePort.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(SERVICE_NOT_FOUND_WITH_ID + id));
     }
 
     @Override
@@ -97,7 +78,6 @@ public class ServiceService implements ServiceUseCase {
         return servicePersistencePort.save(existingService);
     }
 
-    //Función privada que hace lo mismo que getServiceById. Los métodos con proxy de Spring no deben ser llamados desde dentro del propio bean.
     private Service findServiceOrThrow(Long id) {
         return servicePersistencePort.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(SERVICE_NOT_FOUND_WITH_ID + id));

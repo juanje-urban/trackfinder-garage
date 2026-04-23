@@ -11,17 +11,10 @@ public interface SpringDataOrganizerServiceRepository extends JpaRepository<Orga
 
     @Override
     @EntityGraph(attributePaths = {"organizer", "organizer.user", "organizer.user.role", "service"})
-    java.util.List<OrganizerService> findAll();
-
-    @Override
-    @EntityGraph(attributePaths = {"organizer", "organizer.user", "organizer.user.role", "service"})
     Optional<OrganizerService> findById(Long id);
 
     @EntityGraph(attributePaths = {"organizer", "organizer.user", "organizer.user.role", "service"})
     List<OrganizerService> findByOrganizerIdUser(Long organizerId);
-
-    @EntityGraph(attributePaths = {"organizer", "organizer.user", "organizer.user.role", "service"})
-    List<OrganizerService> findByServiceId(Long serviceId);
 
     @EntityGraph(attributePaths = {"organizer", "organizer.user", "organizer.user.role", "service"})
     Optional<OrganizerService> findByOrganizerIdUserAndServiceId(Long organizerId, Long serviceId);

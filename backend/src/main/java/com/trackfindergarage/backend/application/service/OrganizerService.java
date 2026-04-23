@@ -179,18 +179,6 @@ public class OrganizerService implements OrganizerUseCase {
     }
 
     /**
-     * Busca un organizador por su identificador.
-     *
-     * @param id identificador del organizador
-     * @return organizador encontrado
-     */
-    @Override
-    @Transactional(readOnly = true)
-    public Organizer getOrganizerById(Long id) {
-        return findOrganizerOrThrow(id);
-    }
-
-    /**
      * Habilita una cuenta de organizador.
      *
      * @param id identificador del organizador
@@ -200,19 +188,6 @@ public class OrganizerService implements OrganizerUseCase {
     public Organizer enableOrganizer(Long id) {
         Organizer existingOrganizer = findOrganizerOrThrow(id);
         existingOrganizer.setEnabled(true);
-        return organizerPersistencePort.save(existingOrganizer);
-    }
-
-    /**
-     * Deshabilita una cuenta de organizador.
-     *
-     * @param id identificador del organizador
-     * @return organizador deshabilitado
-     */
-    @Override
-    public Organizer disableOrganizer(Long id) {
-        Organizer existingOrganizer = findOrganizerOrThrow(id);
-        existingOrganizer.setEnabled(false);
         return organizerPersistencePort.save(existingOrganizer);
     }
 

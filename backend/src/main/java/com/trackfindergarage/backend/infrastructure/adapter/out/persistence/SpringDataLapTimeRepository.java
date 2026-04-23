@@ -13,10 +13,6 @@ public interface SpringDataLapTimeRepository extends JpaRepository<LapTime, Long
     @EntityGraph(attributePaths = {"user", "track"})
     Optional<LapTime> findById(Long id);
 
-    @Override
-    @EntityGraph(attributePaths = {"user", "track"})
-    List<LapTime> findAll();
-
     @EntityGraph(attributePaths = {"user", "track"})
     List<LapTime> findByUserId(Long userId);
 

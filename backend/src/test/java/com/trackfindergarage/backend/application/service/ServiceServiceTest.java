@@ -2,7 +2,6 @@ package com.trackfindergarage.backend.application.service;
 
 import com.trackfindergarage.backend.application.port.out.ServicePersistencePort;
 import com.trackfindergarage.backend.common.exception.DuplicateResourceException;
-import com.trackfindergarage.backend.common.exception.ResourceNotFoundException;
 import com.trackfindergarage.backend.domain.model.Service;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -98,32 +97,12 @@ class ServiceServiceTest {
     }
 
     @Test
-    void deleteServiceRemovesExistingService() {
-        Service existingService = serviceWithId(3L, "Parking");
-
-        when(servicePersistencePort.findById(3L)).thenReturn(Optional.of(existingService));
-
-        serviceService.deleteService(3L);
-
-        verify(servicePersistencePort).delete(existingService);
-    }
-
-    @Test
     void getAllServicesReturnsPersistenceResult() {
         List<Service> services = List.of(serviceWithId(1L, "Parking"), serviceWithId(2L, "Box"));
 
         when(servicePersistencePort.findAll()).thenReturn(services);
 
         assertEquals(services, serviceService.getAllServices());
-    }
-
-    @Test
-    void getAllServicesAllowedForTrackReturnsPersistenceResult() {
-        List<Service> services = List.of(serviceWithId(1L, "Parking"));
-
-        when(servicePersistencePort.findAllByAllowedForTrackTrue()).thenReturn(services);
-
-        assertEquals(services, serviceService.getAllServicesAllowedForTrack());
     }
 
     @Test
@@ -161,13 +140,6 @@ class ServiceServiceTest {
 
         assertEquals(Boolean.FALSE, disabledService.getEnabled());
         verify(servicePersistencePort).save(existingService);
-    }
-
-    @Test
-    void getServiceByIdThrowsWhenServiceDoesNotExist() {
-        when(servicePersistencePort.findById(99L)).thenReturn(Optional.empty());
-
-        assertThrows(ResourceNotFoundException.class, () -> serviceService.getServiceById(99L));
     }
 
     private Service serviceWithId(Long id, String name) {

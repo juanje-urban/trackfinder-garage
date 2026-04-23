@@ -6,19 +6,11 @@ import java.util.List;
 
 public interface EventBookingUseCase {
 
-    EventBooking createEventBooking(EventBooking eventBooking);
-
     EventBooking checkoutEventBooking(String authenticatedEmail, Long eventId, List<Long> eventServiceIds, boolean isVisible);
 
     EventBooking updateOwnEventBookingVisibility(String authenticatedEmail, Long id, boolean isVisible);
 
     void deleteOwnEventBooking(String authenticatedEmail, Long id);
-
-    void deleteEventBooking(Long id);
-
-    List<EventBooking> getAllEventBookings();
-
-    EventBooking getEventBookingById(Long id);
 
     List<EventBooking> getEventBookingsByAuthenticatedEmail(String authenticatedEmail);
 

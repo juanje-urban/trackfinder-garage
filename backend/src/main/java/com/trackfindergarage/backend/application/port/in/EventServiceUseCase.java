@@ -12,9 +12,5 @@ public interface EventServiceUseCase {
 
     void deleteEventService(Long id);
 
-    List<EventService> getAllEventServices();
-
-    EventService getEventServiceById(Long id);
-
     List<EventService> getEventServicesByEventId(Long eventId);
 }

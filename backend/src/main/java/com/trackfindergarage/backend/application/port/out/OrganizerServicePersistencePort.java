@@ -11,13 +11,7 @@ public interface OrganizerServicePersistencePort {
 
     Optional<OrganizerService> findById(Long id);
 
-    List<OrganizerService> findAll();
-
     List<OrganizerService> findByOrganizerIdUser(Long organizerId);
 
-    List<OrganizerService> findByServiceId(Long serviceId);
-
     Optional<OrganizerService> findByOrganizerIdUserAndServiceId(Long organizerId, Long serviceId);
-
-    void delete(OrganizerService organizerService);
 }

@@ -22,15 +22,11 @@ public class MessageService implements MessageUseCase {
     private static final String USER_NOT_FOUND_WITH_ID = "Usuario no encontrado con id: ";
     private static final String USER_NOT_FOUND_WITH_EMAIL = "Usuario no encontrado con correo electrónico: ";
     private static final String AUTHENTICATED_EMAIL_REQUIRED = "El correo electrónico del usuario autenticado es obligatorio";
-    private static final String SENDER_ID_REQUIRED = "El id del remitente es obligatorio";
-    private static final String RECEIVER_ID_REQUIRED = "El id del destinatario es obligatorio";
     private static final String SUBJECT_REQUIRED = "El asunto es obligatorio";
     private static final String MESSAGE_TEXT_REQUIRED = "El texto del mensaje es obligatorio";
     private static final String SUBJECT_TOO_LONG = "El asunto no debe superar los 255 caracteres";
     private static final String MESSAGE_TEXT_TOO_LONG = "El texto del mensaje no debe superar los 500 caracteres";
     private static final String USER_CANNOT_MESSAGE_SELF = "Un usuario no puede enviarse un mensaje a sí mismo";
-    private static final String CONVERSATION_REQUIRES_TWO_DIFFERENT_USERS =
-            "La conversación requiere dos usuarios diferentes";
     private static final String ONLY_RECEIVER_CAN_CHANGE_READ_STATUS =
             "Solo el destinatario puede cambiar el estado de lectura de un mensaje";
     private static final String RECEIVER_ACCOUNT_IS_DISABLED =
@@ -45,73 +41,6 @@ public class MessageService implements MessageUseCase {
     }
 
     @Override
-    public Message createMessage(Message message) {
-        validateMessage(message);
-
-        Long senderId = extractSenderId(message);
-        Long receiverId = extractReceiverId(message);
-
-        if (senderId.equals(receiverId)) {
-            throw new IllegalArgumentException(USER_CANNOT_MESSAGE_SELF);
-        }
-
-        return saveNewMessage(message, loadUserById(senderId), loadUserById(receiverId));
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<Message> getAllMessages() {
-        return messagePersistencePort.findAllByOrderBySentAtAsc();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Message getMessageById(Long id) {
-        return findMessageOrThrow(id);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<Message> getMessagesBySenderId(Long senderId) {
-        loadUserById(senderId);
-        return messagePersistencePort.findBySenderIdOrderBySentAtAsc(senderId);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<Message> getMessagesByReceiverId(Long receiverId) {
-        loadUserById(receiverId);
-        return messagePersistencePort.findByReceiverIdOrderBySentAtAsc(receiverId);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<Message> getConversation(Long userId1, Long userId2) {
-        validateConversationUsers(userId1, userId2);
-        loadUserById(userId1);
-        loadUserById(userId2);
-        return messagePersistencePort.findConversation(userId1, userId2);
-    }
-
-    @Override
-    public Message markAsRead(Long id, Long userId) {
-        Message message = findMessageOrThrow(id);
-        validateReceiverAccess(message, userId);
-
-        message.setIsRead(true);
-        return messagePersistencePort.save(message);
-    }
-
-    @Override
-    public Message markAsUnread(Long id, Long userId) {
-        Message message = findMessageOrThrow(id);
-        validateReceiverAccess(message, userId);
-
-        message.setIsRead(false);
-        return messagePersistencePort.save(message);
-    }
-
-    @Override
     @Transactional(readOnly = true)
     public List<Message> getOwnMessages(String authenticatedEmail) {
         User currentUser = loadAuthenticatedUser(authenticatedEmail);
@@ -119,19 +48,13 @@ public class MessageService implements MessageUseCase {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<Message> getOwnConversation(String authenticatedEmail, Long counterpartUserId) {
-        User currentUser = loadAuthenticatedUser(authenticatedEmail);
-        validateConversationUsers(currentUser.getId(), counterpartUserId);
-        loadUserById(counterpartUserId);
-        return messagePersistencePort.findConversation(currentUser.getId(), counterpartUserId);
-    }
-
-    @Override
     public Message createOwnMessage(String authenticatedEmail, Long receiverId, String subject, String content) {
         User sender = loadAuthenticatedUser(authenticatedEmail);
         User receiver = loadUserById(receiverId);
 
+        if (Objects.equals(sender.getId(), receiver.getId())) {
+            throw new IllegalArgumentException(USER_CANNOT_MESSAGE_SELF);
+        }
         if (!Boolean.TRUE.equals(receiver.getEnabled())) {
             throw new IllegalArgumentException(RECEIVER_ACCOUNT_IS_DISABLED);
         }
@@ -141,6 +64,7 @@ public class MessageService implements MessageUseCase {
         message.setReceiver(receiver);
         message.setSubject(subject);
         message.setContent(content);
+        validateMessage(message);
 
         return saveNewMessage(message, sender, receiver);
     }
@@ -148,13 +72,7 @@ public class MessageService implements MessageUseCase {
     @Override
     public Message markOwnMessageAsRead(String authenticatedEmail, Long id) {
         User currentUser = loadAuthenticatedUser(authenticatedEmail);
-        return markAsRead(id, currentUser.getId());
-    }
-
-    @Override
-    public Message markOwnMessageAsUnread(String authenticatedEmail, Long id) {
-        User currentUser = loadAuthenticatedUser(authenticatedEmail);
-        return markAsUnread(id, currentUser.getId());
+        return updateReadStatus(id, currentUser.getId(), true);
     }
 
     @Override
@@ -171,12 +89,6 @@ public class MessageService implements MessageUseCase {
     }
 
     private void validateMessage(Message message) {
-        if (message.getSender() == null || message.getSender().getId() == null) {
-            throw new IllegalArgumentException(SENDER_ID_REQUIRED);
-        }
-        if (message.getReceiver() == null || message.getReceiver().getId() == null) {
-            throw new IllegalArgumentException(RECEIVER_ID_REQUIRED);
-        }
         if (message.getSubject() == null || message.getSubject().isBlank()) {
             throw new IllegalArgumentException(SUBJECT_REQUIRED);
         }
@@ -188,18 +100,6 @@ public class MessageService implements MessageUseCase {
         }
         if (message.getContent().length() > 500) {
             throw new IllegalArgumentException(MESSAGE_TEXT_TOO_LONG);
-        }
-    }
-
-    private void validateConversationUsers(Long userId1, Long userId2) {
-        if (userId1 == null) {
-            throw new IllegalArgumentException(SENDER_ID_REQUIRED);
-        }
-        if (userId2 == null) {
-            throw new IllegalArgumentException(RECEIVER_ID_REQUIRED);
-        }
-        if (userId1.equals(userId2)) {
-            throw new IllegalArgumentException(CONVERSATION_REQUIRES_TWO_DIFFERENT_USERS);
         }
     }
 
@@ -237,16 +137,15 @@ public class MessageService implements MessageUseCase {
         return messagePersistencePort.save(message);
     }
 
-    private Long extractSenderId(Message message) {
-        return message.getSender().getId();
-    }
-
-    private Long extractReceiverId(Message message) {
-        return message.getReceiver().getId();
-    }
-
     private Message findMessageOrThrow(Long id) {
         return messagePersistencePort.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(MESSAGE_NOT_FOUND_WITH_ID + id));
+    }
+
+    private Message updateReadStatus(Long id, Long userId, boolean isRead) {
+        Message message = findMessageOrThrow(id);
+        validateReceiverAccess(message, userId);
+        message.setIsRead(isRead);
+        return messagePersistencePort.save(message);
     }
 }

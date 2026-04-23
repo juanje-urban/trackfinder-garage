@@ -51,13 +51,6 @@ public class TrackController extends AbstractWebController {
         return trackWebMapper.toResponse(trackUseCase.updateTrack(id, trackToUpdate));
     }
 
-    @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PreAuthorize("hasRole('ADMIN')")
-    public void deleteTrack(@PathVariable Long id) {
-        trackUseCase.deleteTrack(id);
-    }
-
     @GetMapping
     public List<TrackResponse> getAllTracks() {
         return mapResponses(trackUseCase.getAllTracks(), trackWebMapper::toResponse);
@@ -66,11 +59,6 @@ public class TrackController extends AbstractWebController {
     @GetMapping("/{id}")
     public TrackResponse getTrackById(@PathVariable Long id) {
         return trackWebMapper.toResponse(trackUseCase.getTrackById(id));
-    }
-
-    @GetMapping("/{id}/record")
-    public TrackRecordResponse getTrackRecord(@PathVariable Long id) {
-        return trackRecordWebMapper.toResponse(lapTimeUseCase.getBestLapTimeByTrackId(id));
     }
 
     @GetMapping("/{id}/ranking")

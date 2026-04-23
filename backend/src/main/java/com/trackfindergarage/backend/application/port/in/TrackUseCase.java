@@ -10,8 +10,6 @@ public interface TrackUseCase {
 
     Track updateTrack(Long id, Track track);
 
-    void deleteTrack(Long id);
-
     List<Track> getAllTracks();
 
     Track getTrackById(Long id);

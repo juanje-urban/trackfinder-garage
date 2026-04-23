@@ -11,10 +11,4 @@ public interface TrackServiceUseCase {
     void deleteTrackService(Long id);
 
     List<TrackService> getAllTrackServices();
-
-    TrackService getTrackServiceById(Long id);
-
-    List<TrackService> getTrackServicesByTrackId(Long trackId);
-
-    List<TrackService> getTrackServicesByServiceId(Long serviceId);
 }

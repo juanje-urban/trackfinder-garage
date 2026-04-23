@@ -121,18 +121,6 @@ class OrganizerServiceServiceTest {
     }
 
     @Test
-    void getAllOrganizerServicesReturnsPersistenceResult() {
-        OrganizerService activeAssignment = organizerServiceWithIds(1L, 2L);
-        activeAssignment.setEnabled(true);
-        OrganizerService inactiveAssignment = organizerServiceWithIds(1L, 3L);
-        inactiveAssignment.setEnabled(false);
-
-        when(organizerServicePersistencePort.findAll()).thenReturn(List.of(activeAssignment, inactiveAssignment));
-
-        assertEquals(List.of(activeAssignment), organizerServiceService.getAllOrganizerServices());
-    }
-
-    @Test
     void getOrganizerServicesByOrganizerIdThrowsWhenOrganizerDoesNotExist() {
         when(organizerPersistencePort.findById(99L)).thenReturn(Optional.empty());
 

@@ -11,8 +11,6 @@ public interface EventBookingPersistencePort {
 
     Optional<EventBooking> findById(Long id);
 
-    List<EventBooking> findAll();
-
     List<EventBooking> findByUserId(Long userId);
 
     List<EventBooking> findByEventId(Long eventId);

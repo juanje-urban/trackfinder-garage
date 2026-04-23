@@ -20,8 +20,3 @@ export async function markOwnMessageAsRead(messageId: number): Promise<MessageIt
   const response = await api.patch<MessageItem>(`/messages/${messageId}/read`)
   return response.data
 }
-
-export async function markOwnMessageAsUnread(messageId: number): Promise<MessageItem> {
-  const response = await api.patch<MessageItem>(`/messages/${messageId}/unread`)
-  return response.data
-}

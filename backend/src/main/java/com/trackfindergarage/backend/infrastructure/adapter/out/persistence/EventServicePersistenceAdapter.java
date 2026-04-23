@@ -27,11 +27,6 @@ public class EventServicePersistenceAdapter implements EventServicePersistencePo
     }
 
     @Override
-    public List<EventService> findAll() {
-        return eventServiceRepository.findAll();
-    }
-
-    @Override
     public List<EventService> findByEventId(Long eventId) {
         return eventServiceRepository.findByEventId(eventId);
     }

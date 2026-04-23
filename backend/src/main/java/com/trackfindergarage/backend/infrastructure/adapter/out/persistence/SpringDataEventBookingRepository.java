@@ -11,10 +11,6 @@ public interface SpringDataEventBookingRepository extends JpaRepository<EventBoo
 
     @Override
     @EntityGraph(attributePaths = {"user", "event", "event.organizer", "event.track"})
-    List<EventBooking> findAll();
-
-    @Override
-    @EntityGraph(attributePaths = {"user", "event", "event.organizer", "event.track"})
     Optional<EventBooking> findById(Long id);
 
     @EntityGraph(attributePaths = {"user", "event", "event.organizer", "event.track"})

@@ -42,11 +42,6 @@ public class TrackPersistenceAdapter implements TrackPersistencePort {
     }
 
     @Override
-    public void delete(Track track) {
-        springDataTrackRepository.delete(track);
-    }
-
-    @Override
     public boolean existsById(Long id) {
         return springDataTrackRepository.existsById(id);
     }

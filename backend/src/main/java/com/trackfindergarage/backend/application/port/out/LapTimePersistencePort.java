@@ -11,13 +11,9 @@ public interface LapTimePersistencePort {
 
     Optional<LapTime> findById(Long id);
 
-    List<LapTime> findAll();
-
     List<LapTime> findByUserId(Long userId);
 
     List<LapTime> findByTrackId(Long trackId);
-
-    List<LapTime> findByUserIdAndTrackId(Long userId, Long trackId);
 
     void delete(LapTime lapTime);
 }

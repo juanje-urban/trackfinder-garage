@@ -27,18 +27,8 @@ public class TrackServicePersistenceAdapter implements TrackServicePersistencePo
     }
 
     @Override
-    public List<TrackService> findAll() {
+    public java.util.List<TrackService> findAll() {
         return trackServiceRepository.findAll();
-    }
-
-    @Override
-    public List<TrackService> findByTrackId(Long trackId) {
-        return trackServiceRepository.findByTrackId(trackId);
-    }
-
-    @Override
-    public List<TrackService> findByServiceId(Long serviceId) {
-        return trackServiceRepository.findByServiceId(serviceId);
     }
 
     @Override

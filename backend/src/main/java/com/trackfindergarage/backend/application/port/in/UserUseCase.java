@@ -47,26 +47,11 @@ public interface UserUseCase {
                                   String rawPassword);
 
     /**
-     * Elimina un usuario por su identificador.
-     *
-     * @param id identificador del usuario a eliminar
-     */
-    void deleteUser(Long id);
-
-    /**
      * Lista todos los usuarios gestionados por la plataforma.
      *
      * @return listado completo de usuarios
      */
     List<User> getAllUsers();
-
-    /**
-     * Recupera un usuario concreto por su identificador.
-     *
-     * @param id identificador del usuario
-     * @return usuario encontrado
-     */
-    User getUserById(Long id);
 
     /**
      * Habilita una cuenta de usuario.

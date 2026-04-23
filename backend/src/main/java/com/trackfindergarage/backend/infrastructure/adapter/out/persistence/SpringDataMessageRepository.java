@@ -3,8 +3,8 @@ package com.trackfindergarage.backend.infrastructure.adapter.out.persistence;
 import com.trackfindergarage.backend.domain.model.Message;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.repository.query.Param;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -13,15 +13,6 @@ public interface SpringDataMessageRepository extends JpaRepository<Message, Long
     @Override
     @EntityGraph(attributePaths = {"sender", "receiver"})
     java.util.Optional<Message> findById(Long id);
-
-    @EntityGraph(attributePaths = {"sender", "receiver"})
-    List<Message> findAllByOrderBySentAtAsc();
-
-    @EntityGraph(attributePaths = {"sender", "receiver"})
-    List<Message> findBySenderIdOrderBySentAtAsc(Long senderId);
-
-    @EntityGraph(attributePaths = {"sender", "receiver"})
-    List<Message> findByReceiverIdOrderBySentAtAsc(Long receiverId);
 
     @EntityGraph(attributePaths = {"sender", "receiver"})
     @Query("""

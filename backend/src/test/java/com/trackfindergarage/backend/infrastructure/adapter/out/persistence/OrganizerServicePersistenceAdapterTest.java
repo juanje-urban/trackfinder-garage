@@ -35,24 +35,11 @@ class OrganizerServicePersistenceAdapterTest {
         List<OrganizerService> assignments = List.of(organizerService);
 
         when(repository.findById(1L)).thenReturn(Optional.of(organizerService));
-        when(repository.findAll()).thenReturn(assignments);
         when(repository.findByOrganizerIdUser(2L)).thenReturn(assignments);
-        when(repository.findByServiceId(3L)).thenReturn(assignments);
         when(repository.findByOrganizerIdUserAndServiceId(2L, 3L)).thenReturn(Optional.of(organizerService));
 
         assertTrue(adapter.findById(1L).isPresent());
-        assertEquals(assignments, adapter.findAll());
         assertEquals(assignments, adapter.findByOrganizerIdUser(2L));
-        assertEquals(assignments, adapter.findByServiceId(3L));
         assertTrue(adapter.findByOrganizerIdUserAndServiceId(2L, 3L).isPresent());
-    }
-
-    @Test
-    void deleteDelegatesToRepository() {
-        OrganizerService organizerService = new OrganizerService();
-
-        adapter.delete(organizerService);
-
-        verify(repository).delete(organizerService);
     }
 }

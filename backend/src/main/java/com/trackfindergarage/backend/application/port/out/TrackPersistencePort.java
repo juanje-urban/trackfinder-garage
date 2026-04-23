@@ -17,7 +17,5 @@ public interface TrackPersistencePort {
 
     List<Track> findAll();
 
-    void delete(Track track);
-
     boolean existsById(Long id);
 }

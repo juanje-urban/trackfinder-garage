@@ -10,15 +10,9 @@ public interface ServiceUseCase {
 
     Service updateService(Long id, Service service);
 
-    void deleteService(Long id);
-
     List<Service> getAllServices();
 
-    List<Service> getAllServicesAllowedForTrack();
-
     List<Service> getAllServicesAllowedForOrganizer();
-
-    Service getServiceById(Long id);
 
     Service enableService(Long id);
 

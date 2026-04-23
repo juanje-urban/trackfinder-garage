@@ -35,14 +35,12 @@ class EventBookingPersistenceAdapterTest {
         List<EventBooking> eventBookings = List.of(eventBooking);
 
         when(repository.findById(1L)).thenReturn(Optional.of(eventBooking));
-        when(repository.findAll()).thenReturn(eventBookings);
         when(repository.findByUserId(2L)).thenReturn(eventBookings);
         when(repository.findByEventId(3L)).thenReturn(eventBookings);
         when(repository.countByEventId(3L)).thenReturn(2L);
         when(repository.findByUserIdAndEventId(2L, 3L)).thenReturn(Optional.of(eventBooking));
 
         assertTrue(adapter.findById(1L).isPresent());
-        assertEquals(eventBookings, adapter.findAll());
         assertEquals(eventBookings, adapter.findByUserId(2L));
         assertEquals(eventBookings, adapter.findByEventId(3L));
         assertEquals(2L, adapter.countByEventId(3L));

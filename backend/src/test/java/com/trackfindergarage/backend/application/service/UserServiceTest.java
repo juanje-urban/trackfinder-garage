@@ -92,22 +92,6 @@ class UserServiceTest {
     }
 
     @Test
-    void deleteUserDeletesOrganizerProjectionWhenPresent() {
-        User existingUser = userWithId(4L, "driver");
-        Organizer organizer = new Organizer();
-        organizer.setIdUser(4L);
-        organizer.setUser(existingUser);
-
-        when(userPersistencePort.findById(4L)).thenReturn(Optional.of(existingUser));
-        when(organizerPersistencePort.findById(4L)).thenReturn(Optional.of(organizer));
-
-        userService.deleteUser(4L);
-
-        verify(organizerPersistencePort).delete(organizer);
-        verify(userPersistencePort).delete(existingUser);
-    }
-
-    @Test
     void getAllUsersReturnsPersistenceResult() {
         List<User> users = List.of(userWithId(1L, "one"), userWithId(2L, "two"));
 
@@ -164,13 +148,6 @@ class UserServiceTest {
         assertThrows(IllegalArgumentException.class, () -> userService.disableUser(1L));
         verify(userPersistencePort, never()).save(existingUser);
         verify(organizerPersistencePort, never()).findById(1L);
-    }
-
-    @Test
-    void getUserByIdThrowsWhenUserDoesNotExist() {
-        when(userPersistencePort.findById(42L)).thenReturn(Optional.empty());
-
-        assertThrows(ResourceNotFoundException.class, () -> userService.getUserById(42L));
     }
 
     @Test

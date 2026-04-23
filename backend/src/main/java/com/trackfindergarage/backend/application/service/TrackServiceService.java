@@ -64,26 +64,6 @@ public class TrackServiceService implements TrackServiceUseCase {
         return trackServicePersistencePort.findAll();
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public TrackService getTrackServiceById(Long id) {
-        return findTrackServiceOrThrow(id);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<TrackService> getTrackServicesByTrackId(Long trackId) {
-        loadTrack(trackId);
-        return trackServicePersistencePort.findByTrackId(trackId);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<TrackService> getTrackServicesByServiceId(Long serviceId) {
-        loadService(serviceId);
-        return trackServicePersistencePort.findByServiceId(serviceId);
-    }
-
     private void ensureTrackServiceDoesNotExist(Long trackId, Long serviceId) {
         trackServicePersistencePort.findByTrackIdAndServiceId(trackId, serviceId)
                 .ifPresent(existingAssignment -> {

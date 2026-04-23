@@ -35,16 +35,12 @@ class LapTimePersistenceAdapterTest {
         List<LapTime> lapTimes = List.of(lapTime);
 
         when(repository.findById(1L)).thenReturn(Optional.of(lapTime));
-        when(repository.findAll()).thenReturn(lapTimes);
         when(repository.findByUserId(2L)).thenReturn(lapTimes);
         when(repository.findByTrackId(3L)).thenReturn(lapTimes);
-        when(repository.findByUserIdAndTrackId(2L, 3L)).thenReturn(lapTimes);
 
         assertTrue(adapter.findById(1L).isPresent());
-        assertEquals(lapTimes, adapter.findAll());
         assertEquals(lapTimes, adapter.findByUserId(2L));
         assertEquals(lapTimes, adapter.findByTrackId(3L));
-        assertEquals(lapTimes, adapter.findByUserIdAndTrackId(2L, 3L));
     }
 
     @Test

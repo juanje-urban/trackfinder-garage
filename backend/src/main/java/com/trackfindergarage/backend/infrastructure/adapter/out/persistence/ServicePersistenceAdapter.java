@@ -37,17 +37,7 @@ public class ServicePersistenceAdapter implements ServicePersistencePort {
     }
 
     @Override
-    public List<Service> findAllByAllowedForTrackTrue() {
-        return springDataServiceRepository.findAllByAllowedForTrackTrue();
-    }
-
-    @Override
     public List<Service> findAllByAllowedForOrganizerTrue() {
         return springDataServiceRepository.findAllByAllowedForOrganizerTrue();
-    }
-
-    @Override
-    public void delete(Service service) {
-        springDataServiceRepository.delete(service);
     }
 }

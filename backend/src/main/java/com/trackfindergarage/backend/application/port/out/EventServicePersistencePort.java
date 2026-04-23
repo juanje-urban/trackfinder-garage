@@ -11,8 +11,6 @@ public interface EventServicePersistencePort {
 
     Optional<EventService> findById(Long id);
 
-    List<EventService> findAll();
-
     List<EventService> findByEventId(Long eventId);
 
     List<EventService> findByOrganizerServiceId(Long organizerServiceId);

@@ -27,11 +27,6 @@ public class EventBookingPersistenceAdapter implements EventBookingPersistencePo
     }
 
     @Override
-    public List<EventBooking> findAll() {
-        return eventBookingRepository.findAll();
-    }
-
-    @Override
     public List<EventBooking> findByUserId(Long userId) {
         return eventBookingRepository.findByUserId(userId);
     }

@@ -41,19 +41,4 @@ public class TrackServiceController extends AbstractWebController {
     public List<TrackServiceResponse> getAllTrackServices() {
         return mapResponses(trackServiceUseCase.getAllTrackServices(), trackServiceWebMapper::toResponse);
     }
-
-    @GetMapping("/{id}")
-    public TrackServiceResponse getTrackServiceById(@PathVariable Long id) {
-        return trackServiceWebMapper.toResponse(trackServiceUseCase.getTrackServiceById(id));
-    }
-
-    @GetMapping("/track/{trackId}")
-    public List<TrackServiceResponse> getTrackServicesByTrackId(@PathVariable Long trackId) {
-        return mapResponses(trackServiceUseCase.getTrackServicesByTrackId(trackId), trackServiceWebMapper::toResponse);
-    }
-
-    @GetMapping("/service/{serviceId}")
-    public List<TrackServiceResponse> getTrackServicesByServiceId(@PathVariable Long serviceId) {
-        return mapResponses(trackServiceUseCase.getTrackServicesByServiceId(serviceId), trackServiceWebMapper::toResponse);
-    }
 }

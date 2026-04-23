@@ -147,21 +147,6 @@ public class UserService implements UserUseCase {
     }
 
     /**
-     * Elimina un usuario y, si procede, la información de organizador asociada.
-     *
-     * @param id identificador del usuario a eliminar
-     */
-    @Override
-    public void deleteUser(Long id) {
-        User existingUser = findUserOrThrow(id);
-
-        organizerPersistencePort.findById(id)
-                .ifPresent(organizerPersistencePort::delete);
-
-        userPersistencePort.delete(existingUser);
-    }
-
-    /**
      * Recupera todos los usuarios.
      *
      * @return listado completo de usuarios
@@ -170,18 +155,6 @@ public class UserService implements UserUseCase {
     @Transactional(readOnly = true)
     public List<User> getAllUsers() {
         return userPersistencePort.findAll();
-    }
-
-    /**
-     * Busca un usuario por su identificador.
-     *
-     * @param id identificador del usuario
-     * @return usuario encontrado
-     */
-    @Override
-    @Transactional(readOnly = true)
-    public User getUserById(Long id) {
-        return findUserOrThrow(id);
     }
 
     /**

@@ -69,8 +69,7 @@ public class EventBookingService implements EventBookingUseCase {
         this.eventPersistencePort = eventPersistencePort;
     }
 
-    @Override
-    public EventBooking createEventBooking(EventBooking eventBooking) {
+    private EventBooking createEventBooking(EventBooking eventBooking) {
         validateEventBooking(eventBooking);
 
         Long userId = extractUserId(eventBooking);
@@ -135,11 +134,6 @@ public class EventBookingService implements EventBookingUseCase {
     }
 
     @Override
-    public void deleteEventBooking(Long id) {
-        deleteEventBooking(findEventBookingOrThrow(id));
-    }
-
-    @Override
     public EventBooking updateOwnEventBookingVisibility(String authenticatedEmail, Long id, boolean isVisible) {
         EventBooking eventBooking = loadOwnedBooking(authenticatedEmail, id);
 
@@ -162,18 +156,6 @@ public class EventBookingService implements EventBookingUseCase {
                 .forEach(eventBookingServicePersistencePort::delete);
 
         eventBookingPersistencePort.delete(eventBooking);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<EventBooking> getAllEventBookings() {
-        return eventBookingPersistencePort.findAll();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public EventBooking getEventBookingById(Long id) {
-        return findEventBookingOrThrow(id);
     }
 
     @Override

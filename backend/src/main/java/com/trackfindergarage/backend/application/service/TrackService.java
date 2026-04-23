@@ -52,12 +52,6 @@ public class TrackService implements TrackUseCase {
     }
 
     @Override
-    public void deleteTrack(Long id) {
-        Track existingTrack = findTrackOrThrow(id);
-        trackPersistencePort.delete(existingTrack);
-    }
-
-    @Override
     @Transactional(readOnly = true)
     public List<Track> getAllTracks() {
         return trackPersistencePort.findAll();

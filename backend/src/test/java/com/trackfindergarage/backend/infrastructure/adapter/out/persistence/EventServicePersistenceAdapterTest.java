@@ -35,13 +35,11 @@ class EventServicePersistenceAdapterTest {
         List<EventService> eventServices = List.of(eventService);
 
         when(repository.findById(1L)).thenReturn(Optional.of(eventService));
-        when(repository.findAll()).thenReturn(eventServices);
         when(repository.findByEventId(2L)).thenReturn(eventServices);
         when(repository.findByEventIdAndTrackServiceId(2L, 3L)).thenReturn(Optional.of(eventService));
         when(repository.findByEventIdAndOrganizerServiceId(2L, 4L)).thenReturn(Optional.of(eventService));
 
         assertTrue(adapter.findById(1L).isPresent());
-        assertEquals(eventServices, adapter.findAll());
         assertEquals(eventServices, adapter.findByEventId(2L));
         assertTrue(adapter.findByEventIdAndTrackServiceId(2L, 3L).isPresent());
         assertTrue(adapter.findByEventIdAndOrganizerServiceId(2L, 4L).isPresent());

@@ -4,7 +4,6 @@ import com.trackfindergarage.backend.application.port.out.ServicePersistencePort
 import com.trackfindergarage.backend.application.port.out.TrackPersistencePort;
 import com.trackfindergarage.backend.application.port.out.TrackServicePersistencePort;
 import com.trackfindergarage.backend.common.exception.DuplicateResourceException;
-import com.trackfindergarage.backend.common.exception.ResourceNotFoundException;
 import com.trackfindergarage.backend.domain.model.Track;
 import com.trackfindergarage.backend.domain.model.TrackService;
 import org.junit.jupiter.api.Test;
@@ -102,13 +101,6 @@ class TrackServiceServiceTest {
         when(trackServicePersistencePort.findAll()).thenReturn(assignments);
 
         assertEquals(assignments, trackServiceService.getAllTrackServices());
-    }
-
-    @Test
-    void getTrackServicesByTrackIdThrowsWhenTrackDoesNotExist() {
-        when(trackPersistencePort.findById(99L)).thenReturn(Optional.empty());
-
-        assertThrows(ResourceNotFoundException.class, () -> trackServiceService.getTrackServicesByTrackId(99L));
     }
 
     private TrackService trackServiceWithIds(Long trackId, Long serviceId) {

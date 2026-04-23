@@ -188,27 +188,6 @@ class OrganizerServiceTest {
     }
 
     @Test
-    void disableOrganizerMarksOrganizerAsDisabled() {
-        Organizer existingOrganizer = organizerWithUser(3L, "promoter");
-        existingOrganizer.setEnabled(true);
-
-        when(organizerPersistencePort.findById(3L)).thenReturn(Optional.of(existingOrganizer));
-        when(organizerPersistencePort.save(existingOrganizer)).thenReturn(existingOrganizer);
-
-        Organizer disabledOrganizer = organizerService.disableOrganizer(3L);
-
-        assertEquals(Boolean.FALSE, disabledOrganizer.getEnabled());
-        verify(organizerPersistencePort).save(existingOrganizer);
-    }
-
-    @Test
-    void getOrganizerByIdThrowsWhenOrganizerDoesNotExist() {
-        when(organizerPersistencePort.findById(77L)).thenReturn(Optional.empty());
-
-        assertThrows(ResourceNotFoundException.class, () -> organizerService.getOrganizerById(77L));
-    }
-
-    @Test
     void createOrganizerThrowsWhenPhoneAlreadyExists() {
         Organizer organizer = organizerWithUser(null, "promoter");
 

@@ -40,30 +40,14 @@ public class ServiceController extends AbstractWebController {
         return serviceWebMapper.toResponse(serviceUseCase.updateService(id, serviceToUpdate));
     }
 
-    @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteService(@PathVariable Long id) {
-        serviceUseCase.deleteService(id);
-    }
-
     @GetMapping
     public List<ServiceResponse> getAllServices() {
         return mapResponses(serviceUseCase.getAllServices(), serviceWebMapper::toResponse);
     }
 
-    @GetMapping("/allowed-for-track")
-    public List<ServiceResponse> getAllServicesAllowedForTrack() {
-        return mapResponses(serviceUseCase.getAllServicesAllowedForTrack(), serviceWebMapper::toResponse);
-    }
-
     @GetMapping("/allowed-for-organizer")
     public List<ServiceResponse> getAllServicesAllowedForOrganizer() {
         return mapResponses(serviceUseCase.getAllServicesAllowedForOrganizer(), serviceWebMapper::toResponse);
-    }
-
-    @GetMapping("/{id}")
-    public ServiceResponse getServiceById(@PathVariable Long id) {
-        return serviceWebMapper.toResponse(serviceUseCase.getServiceById(id));
     }
 
     @PatchMapping("/{id}/enable")

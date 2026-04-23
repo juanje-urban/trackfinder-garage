@@ -5,8 +5,6 @@ import com.trackfindergarage.backend.domain.model.EventBookingService;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Optional;
-
 @Component
 public class EventBookingServicePersistenceAdapter implements EventBookingServicePersistencePort {
 
@@ -22,16 +20,6 @@ public class EventBookingServicePersistenceAdapter implements EventBookingServic
     }
 
     @Override
-    public Optional<EventBookingService> findById(Long id) {
-        return eventBookingServiceRepository.findById(id);
-    }
-
-    @Override
-    public List<EventBookingService> findAll() {
-        return eventBookingServiceRepository.findAll();
-    }
-
-    @Override
     public List<EventBookingService> findByEventBookingId(Long eventBookingId) {
         return eventBookingServiceRepository.findByEventBookingId(eventBookingId);
     }
@@ -42,11 +30,6 @@ public class EventBookingServicePersistenceAdapter implements EventBookingServic
     }
 
     @Override
-    public List<EventBookingService> findByEventBookingUserId(Long userId) {
-        return eventBookingServiceRepository.findByEventBookingUserId(userId);
-    }
-
-    @Override
     public List<EventBookingService> findByEventBookingEventIdAndEventBookingUserId(Long eventId, Long userId) {
         return eventBookingServiceRepository.findByEventBookingEventIdAndEventBookingUserId(eventId, userId);
     }
@@ -54,11 +37,6 @@ public class EventBookingServicePersistenceAdapter implements EventBookingServic
     @Override
     public List<EventBookingService> findByEventServiceId(Long eventServiceId) {
         return eventBookingServiceRepository.findByEventServiceId(eventServiceId);
-    }
-
-    @Override
-    public Optional<EventBookingService> findByEventBookingIdAndEventServiceId(Long eventBookingId, Long eventServiceId) {
-        return eventBookingServiceRepository.findByEventBookingIdAndEventServiceId(eventBookingId, eventServiceId);
     }
 
     @Override

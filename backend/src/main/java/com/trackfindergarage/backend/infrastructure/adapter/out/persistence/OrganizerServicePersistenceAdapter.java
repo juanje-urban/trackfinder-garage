@@ -27,27 +27,12 @@ public class OrganizerServicePersistenceAdapter implements OrganizerServicePersi
     }
 
     @Override
-    public List<OrganizerService> findAll() {
-        return organizerServiceRepository.findAll();
-    }
-
-    @Override
     public List<OrganizerService> findByOrganizerIdUser(Long organizerId) {
         return organizerServiceRepository.findByOrganizerIdUser(organizerId);
     }
 
     @Override
-    public List<OrganizerService> findByServiceId(Long serviceId) {
-        return organizerServiceRepository.findByServiceId(serviceId);
-    }
-
-    @Override
     public Optional<OrganizerService> findByOrganizerIdUserAndServiceId(Long organizerId, Long serviceId) {
         return organizerServiceRepository.findByOrganizerIdUserAndServiceId(organizerId, serviceId);
-    }
-
-    @Override
-    public void delete(OrganizerService organizerService) {
-        organizerServiceRepository.delete(organizerService);
     }
 }

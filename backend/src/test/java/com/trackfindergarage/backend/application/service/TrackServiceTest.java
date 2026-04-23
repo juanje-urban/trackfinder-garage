@@ -127,17 +127,6 @@ class TrackServiceTest {
     }
 
     @Test
-    void deleteTrackRemovesExistingTrack() {
-        Track existingTrack = trackWithId(7L, "Jarama");
-
-        when(trackPersistencePort.findById(7L)).thenReturn(Optional.of(existingTrack));
-
-        trackService.deleteTrack(7L);
-
-        verify(trackPersistencePort).delete(existingTrack);
-    }
-
-    @Test
     void getAllTracksReturnsPersistenceResult() {
         List<Track> tracks = List.of(trackWithId(1L, "Jarama"), trackWithId(2L, "Montmelo"));
 

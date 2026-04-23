@@ -27,11 +27,6 @@ public class LapTimePersistenceAdapter implements LapTimePersistencePort {
     }
 
     @Override
-    public List<LapTime> findAll() {
-        return lapTimeRepository.findAll();
-    }
-
-    @Override
     public List<LapTime> findByUserId(Long userId) {
         return lapTimeRepository.findByUserId(userId);
     }
@@ -39,11 +34,6 @@ public class LapTimePersistenceAdapter implements LapTimePersistencePort {
     @Override
     public List<LapTime> findByTrackId(Long trackId) {
         return lapTimeRepository.findByTrackId(trackId);
-    }
-
-    @Override
-    public List<LapTime> findByUserIdAndTrackId(Long userId, Long trackId) {
-        return lapTimeRepository.findByUserIdAndTrackId(userId, trackId);
     }
 
     @Override

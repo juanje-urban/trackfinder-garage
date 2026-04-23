@@ -1,28 +1,11 @@
 package com.trackfindergarage.backend.infrastructure.adapter.in.web.mapper;
 
-import com.trackfindergarage.backend.domain.model.Organizer;
 import com.trackfindergarage.backend.domain.model.OrganizerService;
-import com.trackfindergarage.backend.domain.model.Service;
-import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.CreateOrganizerServiceRequest;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.OrganizerServiceResponse;
 import org.springframework.stereotype.Component;
 
 @Component
 public class OrganizerServiceWebMapper {
-
-    public OrganizerService toDomain(CreateOrganizerServiceRequest request) {
-        Organizer organizer = new Organizer();
-        organizer.setIdUser(request.getOrganizerId());
-
-        Service service = new Service();
-        service.setId(request.getServiceId());
-
-        OrganizerService organizerService = new OrganizerService();
-        organizerService.setOrganizer(organizer);
-        organizerService.setService(service);
-
-        return organizerService;
-    }
 
     public OrganizerServiceResponse toResponse(OrganizerService organizerService) {
         return OrganizerServiceResponse.builder()

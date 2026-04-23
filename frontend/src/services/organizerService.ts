@@ -27,11 +27,6 @@ export async function enableOrganizer(id: number): Promise<Organizer> {
   return response.data
 }
 
-export async function disableOrganizer(id: number): Promise<Organizer> {
-  const response = await api.patch<Organizer>(`/organizers/${id}/disable`)
-  return response.data
-}
-
 export async function deleteOrganizer(id: number): Promise<void> {
   await api.delete(`/organizers/${id}`)
 }

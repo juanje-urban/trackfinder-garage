@@ -1,7 +1,6 @@
 package com.trackfindergarage.backend.infrastructure.adapter.in.web.mapper;
 
 import com.trackfindergarage.backend.domain.model.User;
-import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.CreateUserRequest;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.UserResponse;
 import org.springframework.stereotype.Component;
 
@@ -11,17 +10,6 @@ enabled=true y transformar el password en passwordHash.
 
 @Component
 public class UserWebMapper {
-
-    public User toDomain(CreateUserRequest request) {
-        User user = new User();
-        user.setDisplayName(request.getDisplayName());
-        user.setEmail(request.getEmail());
-        user.setName(request.getName());
-        user.setSurname(request.getSurname());
-        user.setAddress(request.getAddress());
-        user.setPhone(request.getPhone());
-        return user;
-    }
 
     public UserResponse toResponse(User user) {
         return UserResponse.builder()

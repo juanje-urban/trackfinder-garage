@@ -15,9 +15,5 @@ public interface ServicePersistencePort {
 
     List<Service> findAll();
 
-    List<Service> findAllByAllowedForTrackTrue();
-
     List<Service> findAllByAllowedForOrganizerTrue();
-
-    void delete(Service service);
 }

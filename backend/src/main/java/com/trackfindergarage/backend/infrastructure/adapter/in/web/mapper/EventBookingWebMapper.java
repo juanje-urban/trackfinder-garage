@@ -1,29 +1,11 @@
 package com.trackfindergarage.backend.infrastructure.adapter.in.web.mapper;
 
-import com.trackfindergarage.backend.domain.model.Event;
 import com.trackfindergarage.backend.domain.model.EventBooking;
-import com.trackfindergarage.backend.domain.model.User;
-import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.CreateEventBookingRequest;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.EventBookingResponse;
 import org.springframework.stereotype.Component;
 
 @Component
 public class EventBookingWebMapper {
-
-    public EventBooking toDomain(CreateEventBookingRequest request) {
-        User user = new User();
-        user.setId(request.getUserId());
-
-        Event event = new Event();
-        event.setId(request.getEventId());
-
-        EventBooking eventBooking = new EventBooking();
-        eventBooking.setUser(user);
-        eventBooking.setEvent(event);
-        eventBooking.setVisible(Boolean.TRUE.equals(request.getVisible()));
-
-        return eventBooking;
-    }
 
     public EventBookingResponse toResponse(EventBooking eventBooking) {
         return EventBookingResponse.builder()

@@ -37,22 +37,11 @@ class ServicePersistenceAdapterTest {
         when(repository.findById(1L)).thenReturn(Optional.of(service));
         when(repository.findByName("Parking")).thenReturn(Optional.of(service));
         when(repository.findAll()).thenReturn(services);
-        when(repository.findAllByAllowedForTrackTrue()).thenReturn(services);
         when(repository.findAllByAllowedForOrganizerTrue()).thenReturn(services);
 
         assertTrue(adapter.findById(1L).isPresent());
         assertTrue(adapter.findByName("Parking").isPresent());
         assertEquals(services, adapter.findAll());
-        assertEquals(services, adapter.findAllByAllowedForTrackTrue());
         assertEquals(services, adapter.findAllByAllowedForOrganizerTrue());
-    }
-
-    @Test
-    void deleteDelegatesToRepository() {
-        Service service = new Service();
-
-        adapter.delete(service);
-
-        verify(repository).delete(service);
     }
 }

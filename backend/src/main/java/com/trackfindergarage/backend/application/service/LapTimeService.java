@@ -29,9 +29,6 @@ public class LapTimeService implements LapTimeUseCase {
     private static final String USER_NOT_FOUND_WITH_EMAIL = "Usuario no encontrado con correo electrónico: ";
     private static final String TRACK_ID_REQUIRED = "El id del circuito es obligatorio";
     private static final String LAP_DATE_REQUIRED = "La fecha de la vuelta es obligatoria";
-    private static final String NO_LAP_TIMES_FOUND_FOR_TRACK_ID = "No se han encontrado tiempos de vuelta para el circuito con id: ";
-    private static final String NO_LAP_TIMES_FOUND_FOR_USER_AND_TRACK =
-            "No se han encontrado tiempos de vuelta para el usuario con id %d y el circuito con id %d";
     private static final String ONLY_LAP_TIME_OWNER_CAN_DELETE = "Solo el propietario del tiempo de vuelta puede eliminarlo";
 
     private final LapTimePersistencePort lapTimePersistencePort;
@@ -44,13 +41,6 @@ public class LapTimeService implements LapTimeUseCase {
         this.lapTimePersistencePort = lapTimePersistencePort;
         this.userPersistencePort = userPersistencePort;
         this.trackPersistencePort = trackPersistencePort;
-    }
-
-    @Override
-    public LapTime createLapTime(LapTime lapTime) {
-        validateLapTime(lapTime);
-        attachLapTimeReferences(lapTime, extractUserId(lapTime), extractTrackId(lapTime));
-        return lapTimePersistencePort.save(lapTime);
     }
 
     @Override
@@ -72,17 +62,6 @@ public class LapTimeService implements LapTimeUseCase {
     }
 
     @Override
-    public LapTime updateLapTime(Long id, LapTime lapTime) {
-        validateLapTime(lapTime);
-
-        LapTime existingLapTime = findLapTimeOrThrow(id);
-        attachLapTimeReferences(existingLapTime, extractUserId(lapTime), extractTrackId(lapTime));
-        copyLapTimeValues(existingLapTime, lapTime);
-
-        return lapTimePersistencePort.save(existingLapTime);
-    }
-
-    @Override
     public void deleteOwnLapTime(String authenticatedEmail, Long id) {
         User user = findUserByAuthenticatedEmail(authenticatedEmail);
         LapTime lapTime = findLapTimeOrThrow(id);
@@ -92,23 +71,6 @@ public class LapTimeService implements LapTimeUseCase {
         }
 
         lapTimePersistencePort.delete(lapTime);
-    }
-
-    @Override
-    public void deleteLapTime(Long id) {
-        lapTimePersistencePort.delete(findLapTimeOrThrow(id));
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<LapTime> getAllLapTimes() {
-        return lapTimePersistencePort.findAll();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public LapTime getLapTimeById(Long id) {
-        return findLapTimeOrThrow(id);
     }
 
     @Override
@@ -126,38 +88,6 @@ public class LapTimeService implements LapTimeUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public List<LapTime> getLapTimesByTrackId(Long trackId) {
-        requireTrackExists(trackId);
-        return lapTimePersistencePort.findByTrackId(trackId);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public LapTime getBestLapTimeByTrackId(Long trackId) {
-        requireTrackExists(trackId);
-
-        return lapTimePersistencePort.findByTrackId(trackId)
-                .stream()
-                .min(lapTimeComparator())
-                .orElseThrow(() -> new ResourceNotFoundException(NO_LAP_TIMES_FOUND_FOR_TRACK_ID + trackId));
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public LapTime getBestLapTimeByUserIdAndTrackId(Long userId, Long trackId) {
-        requireUserExists(userId);
-        requireTrackExists(trackId);
-
-        return lapTimePersistencePort.findByUserIdAndTrackId(userId, trackId)
-                .stream()
-                .min(lapTimeComparator())
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        NO_LAP_TIMES_FOUND_FOR_USER_AND_TRACK.formatted(userId, trackId)
-                ));
-    }
-
-    @Override
-    @Transactional(readOnly = true)
     public List<LapTime> getRankingByTrackId(Long trackId) {
         requireTrackExists(trackId);
 
@@ -165,6 +95,12 @@ public class LapTimeService implements LapTimeUseCase {
                 .stream()
                 .sorted(lapTimeComparator())
                 .toList();
+    }
+
+    private LapTime createLapTime(LapTime lapTime) {
+        validateLapTime(lapTime);
+        attachLapTimeReferences(lapTime, extractUserId(lapTime), extractTrackId(lapTime));
+        return lapTimePersistencePort.save(lapTime);
     }
 
     private void validateLapTime(LapTime lapTime) {
@@ -188,12 +124,6 @@ public class LapTimeService implements LapTimeUseCase {
     private void attachLapTimeReferences(LapTime lapTime, Long userId, Long trackId) {
         lapTime.setUser(loadUserById(userId));
         lapTime.setTrack(loadTrackById(trackId));
-    }
-
-    private void copyLapTimeValues(LapTime target, LapTime source) {
-        target.setLapDate(source.getLapDate());
-        target.setLapTimeMs(source.getLapTimeMs());
-        target.setVehicle(source.getVehicle());
     }
 
     private Track trackReference(Long trackId) {

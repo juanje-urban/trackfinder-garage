@@ -83,14 +83,6 @@ public class OrganizerServiceService implements OrganizerServiceUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public List<OrganizerService> getAllOrganizerServices() {
-        return organizerServicePersistencePort.findAll().stream()
-                .filter(this::isCatalogActive)
-                .toList();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
     public OrganizerService getOrganizerServiceById(Long id) {
         return organizerServicePersistencePort.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ORGANIZER_SERVICE_NOT_FOUND_WITH_ID + id));
@@ -103,17 +95,6 @@ public class OrganizerServiceService implements OrganizerServiceUseCase {
                 .orElseThrow(() -> new ResourceNotFoundException(ORGANIZER_NOT_FOUND_WITH_ID + organizerId));
 
         return organizerServicePersistencePort.findByOrganizerIdUser(organizerId).stream()
-                .filter(this::isCatalogActive)
-                .toList();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<OrganizerService> getOrganizerServicesByServiceId(Long serviceId) {
-        servicePersistencePort.findById(serviceId)
-                .orElseThrow(() -> new ResourceNotFoundException(SERVICE_NOT_FOUND_WITH_ID + serviceId));
-
-        return organizerServicePersistencePort.findByServiceId(serviceId).stream()
                 .filter(this::isCatalogActive)
                 .toList();
     }

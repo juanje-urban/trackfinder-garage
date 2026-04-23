@@ -51,26 +51,10 @@ public interface OrganizerUseCase {
     List<Organizer> getAllOrganizers();
 
     /**
-     * Recupera un organizador concreto por su identificador.
-     *
-     * @param id identificador del organizador
-     * @return organizador encontrado
-     */
-    Organizer getOrganizerById(Long id);
-
-    /**
      * Habilita una cuenta de organizador.
      *
      * @param id identificador del organizador
      * @return organizador habilitado
      */
     Organizer enableOrganizer(Long id);
-
-    /**
-     * Deshabilita una cuenta de organizador.
-     *
-     * @param id identificador del organizador
-     * @return organizador deshabilitado
-     */
-    Organizer disableOrganizer(Long id);
 }

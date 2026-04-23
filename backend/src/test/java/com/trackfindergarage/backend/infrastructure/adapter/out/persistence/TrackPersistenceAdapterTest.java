@@ -42,13 +42,4 @@ class TrackPersistenceAdapterTest {
         assertEquals(tracks, adapter.findAll());
         assertTrue(adapter.existsById(1L));
     }
-
-    @Test
-    void deleteDelegatesToRepository() {
-        Track track = new Track();
-
-        adapter.delete(track);
-
-        verify(repository).delete(track);
-    }
 }

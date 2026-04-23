@@ -3,7 +3,6 @@ package com.trackfindergarage.backend.infrastructure.adapter.in.web;
 import com.trackfindergarage.backend.application.port.in.EventBookingUseCase;
 import com.trackfindergarage.backend.domain.model.EventBooking;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.CheckoutEventBookingRequest;
-import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.CreateEventBookingRequest;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.EventBookingResponse;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.UpdateEventBookingVisibilityRequest;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.mapper.EventBookingWebMapper;
@@ -25,12 +24,6 @@ public class EventBookingController extends AbstractWebController {
                                   EventBookingWebMapper eventBookingWebMapper) {
         this.eventBookingUseCase = eventBookingUseCase;
         this.eventBookingWebMapper = eventBookingWebMapper;
-    }
-
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public EventBookingResponse createEventBooking(@Valid @RequestBody CreateEventBookingRequest request) {
-        return eventBookingWebMapper.toResponse(eventBookingUseCase.createEventBooking(eventBookingWebMapper.toDomain(request)));
     }
 
     @PostMapping("/checkout")
@@ -66,16 +59,6 @@ public class EventBookingController extends AbstractWebController {
         eventBookingUseCase.deleteOwnEventBooking(authenticatedEmail(authentication), id);
     }
 
-    @GetMapping
-    public List<EventBookingResponse> getAllEventBookings() {
-        return mapResponses(eventBookingUseCase.getAllEventBookings(), eventBookingWebMapper::toResponse);
-    }
-
-    @GetMapping("/{id}")
-    public EventBookingResponse getEventBookingById(@PathVariable Long id) {
-        return eventBookingWebMapper.toResponse(eventBookingUseCase.getEventBookingById(id));
-    }
-
     @GetMapping("/me")
     public List<EventBookingResponse> getCurrentUserEventBookings(Authentication authentication) {
         return mapResponses(
@@ -97,8 +80,4 @@ public class EventBookingController extends AbstractWebController {
                 .toList(), eventBookingWebMapper::toResponse);
     }
 
-    @GetMapping("/event/{eventId}")
-    public List<EventBookingResponse> getEventBookingsByEventId(@PathVariable Long eventId) {
-        return mapResponses(eventBookingUseCase.getEventBookingsByEventId(eventId), eventBookingWebMapper::toResponse);
-    }
 }

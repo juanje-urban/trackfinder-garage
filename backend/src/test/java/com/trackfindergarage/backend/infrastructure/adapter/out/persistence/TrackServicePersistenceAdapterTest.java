@@ -36,14 +36,10 @@ class TrackServicePersistenceAdapterTest {
 
         when(repository.findById(1L)).thenReturn(Optional.of(trackService));
         when(repository.findAll()).thenReturn(assignments);
-        when(repository.findByTrackId(2L)).thenReturn(assignments);
-        when(repository.findByServiceId(3L)).thenReturn(assignments);
         when(repository.findByTrackIdAndServiceId(2L, 3L)).thenReturn(Optional.of(trackService));
 
         assertTrue(adapter.findById(1L).isPresent());
         assertEquals(assignments, adapter.findAll());
-        assertEquals(assignments, adapter.findByTrackId(2L));
-        assertEquals(assignments, adapter.findByServiceId(3L));
         assertTrue(adapter.findByTrackIdAndServiceId(2L, 3L).isPresent());
     }
 

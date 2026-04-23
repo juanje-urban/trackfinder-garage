@@ -248,15 +248,6 @@ class EventServiceServiceTest {
     }
 
     @Test
-    void getAllEventServicesReturnsPersistenceResult() {
-        List<EventService> eventServices = List.of(eventServiceWithTrackService(1L, 2L));
-
-        when(eventServicePersistencePort.findAll()).thenReturn(eventServices);
-
-        assertEquals(eventServices, eventServiceService.getAllEventServices());
-    }
-
-    @Test
     void getEventServicesByEventIdReturnsPersistenceResult() {
         Event event = eventWithId(1L, 10L, 20L);
         List<EventService> eventServices = List.of(eventServiceWithTrackService(1L, 2L));
@@ -272,13 +263,6 @@ class EventServiceServiceTest {
         when(eventPersistencePort.findById(1L)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> eventServiceService.getEventServicesByEventId(1L));
-    }
-
-    @Test
-    void getEventServiceByIdThrowsWhenItDoesNotExist() {
-        when(eventServicePersistencePort.findById(99L)).thenReturn(Optional.empty());
-
-        assertThrows(ResourceNotFoundException.class, () -> eventServiceService.getEventServiceById(99L));
     }
 
     @Test
