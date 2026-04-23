@@ -27,16 +27,16 @@ public interface AuthUseCase {
     /**
      * Registra un nuevo usuario final.
      *
-     * @param command datos necesarios para crear el usuario
+     * @param registrationCommand datos necesarios para crear el usuario
      * @return respuesta de sesión del usuario creado
      */
-    AuthResponse register(AuthRegistrationCommand command);
+    AuthResponse register(AuthRegistrationCommand registrationCommand);
 
     /**
      * Registra un nuevo organizador y su usuario asociado.
      *
-     * @param command datos de alta del organizador
+     * @param organizerRegistrationCommand datos de alta del organizador
      * @return respuesta de sesión del usuario creado
      */
-    AuthResponse registerOrganizer(OrganizerRegistrationCommand command);
+    AuthResponse registerOrganizer(OrganizerRegistrationCommand organizerRegistrationCommand);
 }

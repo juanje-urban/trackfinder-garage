@@ -4,7 +4,6 @@ import com.trackfindergarage.backend.application.port.in.PublicProfileUseCase;
 import com.trackfindergarage.backend.application.port.in.UserUseCase;
 import com.trackfindergarage.backend.domain.model.User;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.CreateUserRequest;
-import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.UpdateUserRequest;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.UserResponse;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.mapper.UserWebMapper;
 import org.junit.jupiter.api.Test;
@@ -48,25 +47,6 @@ class UserControllerTest {
         assertEquals(1L, response.getId());
         assertEquals("Juanje", response.getDisplayName());
         verify(userUseCase).createUser(any(User.class), eq("secret"));
-    }
-
-    @Test
-    void updateUserDelegatesToUseCaseAndReturnsMappedResponse() {
-        UpdateUserRequest request = new UpdateUserRequest();
-        request.setDisplayName("new-user");
-        request.setEmail("new@example.com");
-        request.setName("New");
-        request.setSurname("User");
-        request.setAddress("New street");
-        request.setPhone("999");
-
-        when(userUseCase.updateUser(eq(2L), any(User.class))).thenReturn(userWithId(2L, "new-user"));
-
-        UserResponse response = userController.updateUser(2L, request);
-
-        assertEquals(2L, response.getId());
-        assertEquals("new-user", response.getDisplayName());
-        verify(userUseCase).updateUser(eq(2L), any(User.class));
     }
 
     @Test

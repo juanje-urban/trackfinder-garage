@@ -5,7 +5,6 @@ import com.trackfindergarage.backend.domain.model.Organizer;
 import com.trackfindergarage.backend.domain.model.User;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.CreateOrganizerRequest;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.OrganizerResponse;
-import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.UpdateOrganizerRequest;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.mapper.OrganizerWebMapper;
 import org.junit.jupiter.api.Test;
 
@@ -47,28 +46,6 @@ class OrganizerControllerTest {
         assertEquals(1L, response.getIdUser());
         assertEquals("org", response.getDisplayName());
         verify(organizerUseCase).createOrganizer(any(Organizer.class), eq("secret"));
-    }
-
-    @Test
-    void updateOrganizerDelegatesToUseCaseAndReturnsMappedResponse() {
-        UpdateOrganizerRequest request = new UpdateOrganizerRequest();
-        request.setDisplayName("org2");
-        request.setEmail("org2@example.com");
-        request.setName("Name");
-        request.setSurname("Surname");
-        request.setAddress("Address");
-        request.setPhone("999");
-        request.setLegalName("Legal");
-        request.setCif("B99999999");
-
-        when(organizerUseCase.updateOrganizer(eq(2L), any(Organizer.class)))
-                .thenReturn(organizerWithId(2L, "org2"));
-
-        OrganizerResponse response = organizerController.updateOrganizer(2L, request);
-
-        assertEquals(2L, response.getIdUser());
-        assertEquals("org2", response.getDisplayName());
-        verify(organizerUseCase).updateOrganizer(eq(2L), any(Organizer.class));
     }
 
     @Test

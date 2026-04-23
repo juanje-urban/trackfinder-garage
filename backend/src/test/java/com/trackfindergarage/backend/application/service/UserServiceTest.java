@@ -92,47 +92,6 @@ class UserServiceTest {
     }
 
     @Test
-    void updateUserCopiesEditableFieldsAndSaves() {
-        User existingUser = userWithId(10L, "driver");
-        existingUser.setRole(roleWithId(1L, "USER"));
-
-        User updateRequest = userWithId(null, "new-driver");
-        updateRequest.setName("New");
-        updateRequest.setSurname("Name");
-        updateRequest.setAddress("New address");
-        updateRequest.setPhone("999");
-        updateRequest.setEmail("new@example.com");
-
-        when(userPersistencePort.findById(10L)).thenReturn(Optional.of(existingUser));
-        when(userPersistencePort.findByDisplayName("new-driver")).thenReturn(Optional.empty());
-        when(userPersistencePort.findByEmail("new@example.com")).thenReturn(Optional.empty());
-        when(userPersistencePort.findByPhone("999")).thenReturn(Optional.empty());
-        when(userPersistencePort.save(existingUser)).thenReturn(existingUser);
-
-        User updatedUser = userService.updateUser(10L, updateRequest);
-
-        assertSame(existingUser, updatedUser);
-        assertEquals("new-driver", existingUser.getDisplayName());
-        assertEquals("new@example.com", existingUser.getEmail());
-        assertEquals("New", existingUser.getName());
-        assertEquals("Name", existingUser.getSurname());
-        assertEquals("New address", existingUser.getAddress());
-        assertEquals("999", existingUser.getPhone());
-        verify(userPersistencePort).save(existingUser);
-    }
-
-    @Test
-    void updateUserThrowsForOrganizerUsers() {
-        User existingUser = userWithId(10L, "organizer-user");
-        existingUser.setRole(roleWithId(2L, "ORGANIZER"));
-
-        when(userPersistencePort.findById(10L)).thenReturn(Optional.of(existingUser));
-
-        User updateRequest = new User();
-        assertThrows(IllegalArgumentException.class, () -> userService.updateUser(10L, updateRequest));
-    }
-
-    @Test
     void deleteUserDeletesOrganizerProjectionWhenPresent() {
         User existingUser = userWithId(4L, "driver");
         Organizer organizer = new Organizer();

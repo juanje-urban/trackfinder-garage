@@ -5,8 +5,9 @@ import com.trackfindergarage.backend.domain.model.Role;
 import com.trackfindergarage.backend.domain.model.User;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.CreateOrganizerRequest;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.OrganizerResponse;
-import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.UpdateOrganizerRequest;
 import org.junit.jupiter.api.Test;
+
+import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -16,85 +17,78 @@ class OrganizerWebMapperTest {
     private final OrganizerWebMapper organizerWebMapper = new OrganizerWebMapper();
 
     @Test
-    void toDomainMapsCreateRequestToOrganizerAndUser() {
+    void toDomainMapsCreateRequestToOrganizer() {
         CreateOrganizerRequest request = new CreateOrganizerRequest();
-        request.setDisplayName("org");
-        request.setEmail("org@example.com");
-        request.setName("Org");
-        request.setSurname("Owner");
-        request.setAddress("Address");
-        request.setPhone("123");
-        request.setLegalName("Org SL");
+        request.setDisplayName("promoter");
+        request.setEmail("promoter@example.com");
+        request.setName("Track");
+        request.setSurname("Events");
+        request.setAddress("Street");
+        request.setPhone("123456789");
+        request.setLegalName("Track Events S.L.");
         request.setCif("B12345678");
 
         Organizer organizer = organizerWebMapper.toDomain(request);
 
-        assertEquals("org", organizer.getUser().getDisplayName());
-        assertEquals("org@example.com", organizer.getUser().getEmail());
-        assertEquals("Org SL", organizer.getLegalName());
+        assertEquals("promoter", organizer.getUser().getDisplayName());
+        assertEquals("promoter@example.com", organizer.getUser().getEmail());
+        assertEquals("Track", organizer.getUser().getName());
+        assertEquals("Events", organizer.getUser().getSurname());
+        assertEquals("Street", organizer.getUser().getAddress());
+        assertEquals("123456789", organizer.getUser().getPhone());
+        assertEquals("Track Events S.L.", organizer.getLegalName());
         assertEquals("B12345678", organizer.getCif());
     }
 
     @Test
-    void updateDomainCreatesUserIfMissingAndMapsFields() {
-        Organizer organizer = new Organizer();
-        UpdateOrganizerRequest request = new UpdateOrganizerRequest();
-        request.setDisplayName("org2");
-        request.setEmail("org2@example.com");
-        request.setName("Name");
-        request.setSurname("Surname");
-        request.setAddress("Addr");
-        request.setPhone("456");
-        request.setLegalName("New Legal");
-        request.setCif("B99999999");
-
-        organizerWebMapper.updateDomain(organizer, request);
-
-        assertEquals("org2", organizer.getUser().getDisplayName());
-        assertEquals("org2@example.com", organizer.getUser().getEmail());
-        assertEquals("New Legal", organizer.getLegalName());
-        assertEquals("B99999999", organizer.getCif());
-    }
-
-    @Test
-    void toResponseMapsOrganizerToResponse() {
+    void toResponseMapsOrganizerToResponseIncludingRoleId() {
         Role role = new Role();
-        role.setId(3L);
+        role.setId(7L);
+        role.setRoleName("ORGANIZER");
 
         User user = new User();
-        user.setDisplayName("org");
-        user.setEmail("org@example.com");
-        user.setName("Name");
-        user.setSurname("Surname");
-        user.setAddress("Address");
-        user.setPhone("123");
+        user.setId(8L);
+        user.setDisplayName("promoter");
+        user.setEmail("promoter@example.com");
+        user.setName("Track");
+        user.setSurname("Events");
+        user.setAddress("Street");
+        user.setPhone("123456789");
+        user.setCreated(LocalDateTime.of(2026, 4, 23, 10, 0));
         user.setEnabled(true);
         user.setRole(role);
 
         Organizer organizer = new Organizer();
-        organizer.setIdUser(10L);
+        organizer.setIdUser(8L);
         organizer.setUser(user);
-        organizer.setLegalName("Legal");
-        organizer.setCif("B123");
+        organizer.setLegalName("Track Events S.L.");
+        organizer.setCif("B12345678");
         organizer.setEnabled(false);
 
         OrganizerResponse response = organizerWebMapper.toResponse(organizer);
 
-        assertEquals(10L, response.getIdUser());
-        assertEquals("org", response.getDisplayName());
-        assertEquals(3L, response.getRoleId());
+        assertEquals(8L, response.getIdUser());
+        assertEquals("promoter", response.getDisplayName());
+        assertEquals("promoter@example.com", response.getEmail());
+        assertEquals(7L, response.getRoleId());
+        assertEquals("ORGANIZER", response.getRoleName());
+        assertEquals("Track Events S.L.", response.getLegalName());
+        assertEquals("B12345678", response.getCif());
         assertEquals(Boolean.FALSE, response.getOrganizerEnabled());
     }
 
     @Test
-    void toResponseHandlesMissingUserGracefully() {
+    void toResponseLeavesRoleFieldsNullWhenUserRoleIsMissing() {
+        User user = new User();
+        user.setId(1L);
+
         Organizer organizer = new Organizer();
-        organizer.setIdUser(11L);
+        organizer.setIdUser(1L);
+        organizer.setUser(user);
 
         OrganizerResponse response = organizerWebMapper.toResponse(organizer);
 
-        assertEquals(11L, response.getIdUser());
-        assertNull(response.getDisplayName());
         assertNull(response.getRoleId());
+        assertNull(response.getRoleName());
     }
 }

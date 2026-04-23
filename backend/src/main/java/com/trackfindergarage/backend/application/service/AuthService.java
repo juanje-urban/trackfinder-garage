@@ -20,8 +20,8 @@ import java.util.Locale;
  * Implementa la lógica de autenticación y registro de usuarios.
  *
  * <p>Este servicio centraliza el login, la recuperación de la sesión actual y los flujos de alta tanto de usuarios
- * normales (USER) como de organizadores (ORGANIZER). Además, normaliza los datos de entrada y construye la respuesta de
- * autenticación que consume el frontend.</p>
+ * normales ({@code USER}) como de organizadores ({@code ORGANIZER}). Además, normaliza los datos de entrada y construye
+ * la respuesta de autenticación que consume el frontend.</p>
  */
 @Service
 @Transactional
@@ -80,36 +80,39 @@ public class AuthService implements AuthUseCase {
     /**
      * Registra un nuevo usuario final.
      *
-     * @param command datos de alta normalizados desde la capa web
+     * @param registrationCommand datos de alta normalizados desde la capa web
      * @return sesión inicial del usuario creado
      */
     @Override
-    public AuthResponse register(AuthRegistrationCommand command) {
-        String normalizedEmail = normalizeEmail(command.email());
-        User createdUser = userUseCase.createUser(buildUser(command, normalizedEmail), command.rawPassword());
+    public AuthResponse register(AuthRegistrationCommand registrationCommand) {
+        String normalizedEmail = normalizeEmail(registrationCommand.email());
+        User createdUser = userUseCase.createUser(
+                buildUser(registrationCommand, normalizedEmail),
+                registrationCommand.rawPassword()
+        );
         return buildAuthResponse(createdUser);
     }
 
     /**
      * Registra un nuevo organizador con sus datos específicos.
      *
-     * <p>El usuario asociado al organizador se crea con los mismos criterios que un registro normal, pero se completa
-     * con la razón social y el CIF necesarios para la entidad organizadora.</p>
+     * <p>El usuario asociado al organizador se crea con los mismos criterios que un registro normal, pero se
+     * completa con la razón social y el CIF necesarios para la entidad organizadora.</p>
      *
-     * @param command datos de alta del organizador y de su usuario asociado
+     * @param organizerRegistrationCommand datos de alta del organizador y de su usuario asociado
      * @return sesión inicial del usuario del organizador
      */
     @Override
-    public AuthResponse registerOrganizer(OrganizerRegistrationCommand command) {
-        AuthRegistrationCommand authRegistration = command.authRegistration();
-        String normalizedEmail = normalizeEmail(authRegistration.email());
+    public AuthResponse registerOrganizer(OrganizerRegistrationCommand organizerRegistrationCommand) {
+        AuthRegistrationCommand registrationCommand = organizerRegistrationCommand.authRegistration();
+        String normalizedEmail = normalizeEmail(registrationCommand.email());
 
         Organizer organizer = new Organizer();
-        organizer.setUser(buildUser(authRegistration, normalizedEmail));
-        organizer.setLegalName(normalizeText(command.legalName()));
-        organizer.setCif(normalizeText(command.cif()));
+        organizer.setUser(buildUser(registrationCommand, normalizedEmail));
+        organizer.setLegalName(normalizeText(organizerRegistrationCommand.legalName()));
+        organizer.setCif(normalizeText(organizerRegistrationCommand.cif()));
 
-        Organizer createdOrganizer = organizerUseCase.createOrganizer(organizer, authRegistration.rawPassword());
+        Organizer createdOrganizer = organizerUseCase.createOrganizer(organizer, registrationCommand.rawPassword());
         return buildAuthResponse(createdOrganizer.getUser());
     }
 
@@ -119,14 +122,14 @@ public class AuthService implements AuthUseCase {
                 .orElseThrow(() -> new InvalidCredentialsException(INVALID_CREDENTIALS_MESSAGE));
     }
 
-    private User buildUser(AuthRegistrationCommand command, String normalizedEmail) {
+    private User buildUser(AuthRegistrationCommand registrationCommand, String normalizedEmail) {
         User user = new User();
-        user.setDisplayName(normalizeText(command.displayName()));
+        user.setDisplayName(normalizeText(registrationCommand.displayName()));
         user.setEmail(normalizedEmail);
-        user.setName(normalizeText(command.name()));
-        user.setSurname(normalizeText(command.surname()));
-        user.setAddress(normalizeText(command.address()));
-        user.setPhone(normalizeText(command.phone()));
+        user.setName(normalizeText(registrationCommand.name()));
+        user.setSurname(normalizeText(registrationCommand.surname()));
+        user.setAddress(normalizeText(registrationCommand.address()));
+        user.setPhone(normalizeText(registrationCommand.phone()));
         return user;
     }
 

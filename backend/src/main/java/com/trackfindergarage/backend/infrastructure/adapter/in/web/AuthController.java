@@ -20,9 +20,8 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * Expone los endpoints de autenticacion de la API.
  *
- * <p>El sistema de login y sesión está basado en Basic Auth. No hay expiración de sesión y está altamente acoplado al
- * email y contraseña del usuario. Convendría estudiar el uso de JWT u otra alternativa</p>
- *
+ * <p>El sistema de login y sesión está basado en Basic Auth. No hay expiración de sesión y está altamente acoplado
+ * al email y contraseña del usuario. Convendría estudiar el uso de JWT u otra alternativa.</p>
  */
 @RestController
 @RequestMapping("/auth")
@@ -37,7 +36,7 @@ public class AuthController extends AbstractWebController {
     /**
      * Autentica a un usuario mediante su email y contraseña.
      *
-     * <p>Valida la entrada gracias a @Valid y las restricciones incluídas en el DTO de entrada</p>
+     * <p>Valida la entrada gracias a {@code @Valid} y las restricciones incluidas en el DTO de entrada.</p>
      *
      * @param request credenciales enviadas desde el cliente
      * @return datos básicos de sesión del usuario autenticado
@@ -50,8 +49,7 @@ public class AuthController extends AbstractWebController {
     /**
      * Devuelve la sesión actual del usuario autenticado.
      *
-     * <p>Permite al frontend reconstruir su estado de sesión a partir del usuario autenticado y de la cabecera
-     * Authorization con la que se realizó la petición.</p>
+     * <p>Permite al frontend reconstruir su estado de sesión a partir del usuario autenticado por Spring Security.</p>
      *
      * @param authentication autenticación resuelta por Spring Security
      * @return información de la sesión activa
@@ -84,8 +82,8 @@ public class AuthController extends AbstractWebController {
     /**
      * Registra una solicitud de cuenta de organizador.
      *
-     * <p>La información común del usuario se encapsula en un {@link AuthRegistrationCommand} y los datos propios del
-     * organizador se añaden en un {@link OrganizerRegistrationCommand}.</p>
+     * <p>La información común del usuario se encapsula en un {@link AuthRegistrationCommand} y los datos propios
+     * del organizador se añaden en un {@link OrganizerRegistrationCommand}.</p>
      *
      * @param request datos de alta del organizador
      * @return sesión inicial asociada al usuario creado

@@ -35,7 +35,7 @@ class EventControllerTest {
         createRequest.setEventDate(LocalDate.now().plusDays(10));
         createRequest.setBasePrice(new BigDecimal("30.00"));
         createRequest.setMaxParticipants(20);
-        createRequest.setDescription("Evento publico con tandas por grupos y acceso a paddock.");
+        createRequest.setDescription("Evento público con tandas por grupos y acceso a paddock.");
 
         UpdateEventRequest updateRequest = new UpdateEventRequest();
         updateRequest.setOrganizerId(1L);
@@ -43,7 +43,7 @@ class EventControllerTest {
         updateRequest.setEventDate(LocalDate.now().plusDays(20));
         updateRequest.setBasePrice(new BigDecimal("35.00"));
         updateRequest.setMaxParticipants(25);
-        updateRequest.setDescription("Nueva edicion con horario ampliado y briefing tecnico.");
+        updateRequest.setDescription("Nueva edición con horario ampliado y briefing técnico.");
 
         Event event = eventWithId(10L, 1L, 2L);
 
@@ -58,8 +58,8 @@ class EventControllerTest {
         assertEquals(10L, updated.getId());
         assertEquals(14, created.getRemainingCapacity());
         assertEquals(14, updated.getRemainingCapacity());
-        assertEquals("Track day demo con descripcion larga para pruebas.", created.getDescription());
-        assertEquals("Track day demo con descripcion larga para pruebas.", updated.getDescription());
+        assertEquals("Track day demo con descripción larga para pruebas.", created.getDescription());
+        assertEquals("Track day demo con descripción larga para pruebas.", updated.getDescription());
         assertEquals("track_demo", created.getTrackShortName());
     }
 
@@ -109,7 +109,7 @@ class EventControllerTest {
         event.setEventDate(LocalDate.now().plusDays(5));
         event.setBasePrice(new BigDecimal("30.00"));
         event.setMaxParticipants(20);
-        event.setDescription("Track day demo con descripcion larga para pruebas.");
+        event.setDescription("Track day demo con descripción larga para pruebas.");
         return event;
     }
 }

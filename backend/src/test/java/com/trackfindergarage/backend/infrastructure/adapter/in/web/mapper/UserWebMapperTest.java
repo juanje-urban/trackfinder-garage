@@ -3,7 +3,6 @@ package com.trackfindergarage.backend.infrastructure.adapter.in.web.mapper;
 import com.trackfindergarage.backend.domain.model.Role;
 import com.trackfindergarage.backend.domain.model.User;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.CreateUserRequest;
-import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.UpdateUserRequest;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.UserResponse;
 import org.junit.jupiter.api.Test;
 
@@ -34,27 +33,6 @@ class UserWebMapperTest {
         assertEquals("Urban", user.getSurname());
         assertEquals("Street", user.getAddress());
         assertEquals("123", user.getPhone());
-    }
-
-    @Test
-    void updateDomainMapsUpdateRequestToExistingUser() {
-        User user = new User();
-        UpdateUserRequest request = new UpdateUserRequest();
-        request.setDisplayName("new-user");
-        request.setEmail("new@example.com");
-        request.setName("New");
-        request.setSurname("User");
-        request.setAddress("New street");
-        request.setPhone("999");
-
-        userWebMapper.updateDomain(user, request);
-
-        assertEquals("new-user", user.getDisplayName());
-        assertEquals("new@example.com", user.getEmail());
-        assertEquals("New", user.getName());
-        assertEquals("User", user.getSurname());
-        assertEquals("New street", user.getAddress());
-        assertEquals("999", user.getPhone());
     }
 
     @Test

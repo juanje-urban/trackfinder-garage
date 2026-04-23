@@ -4,7 +4,6 @@ import com.trackfindergarage.backend.domain.model.Organizer;
 import com.trackfindergarage.backend.domain.model.User;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.CreateOrganizerRequest;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.OrganizerResponse;
-import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.UpdateOrganizerRequest;
 import org.springframework.stereotype.Component;
 
 /* Nota: el servicio debe fijar el rol ORGANIZER, añadir la fecha de creación del user,
@@ -30,24 +29,6 @@ public class OrganizerWebMapper {
         organizer.setCif(request.getCif());
 
         return organizer;
-    }
-
-    public void updateDomain(Organizer organizer, UpdateOrganizerRequest request) {
-        User user = organizer.getUser();
-        if (user == null) {
-            user = new User();
-            organizer.setUser(user);
-        }
-
-        user.setDisplayName(request.getDisplayName());
-        user.setEmail(request.getEmail());
-        user.setName(request.getName());
-        user.setSurname(request.getSurname());
-        user.setAddress(request.getAddress());
-        user.setPhone(request.getPhone());
-
-        organizer.setLegalName(request.getLegalName());
-        organizer.setCif(request.getCif());
     }
 
     public OrganizerResponse toResponse(Organizer organizer) {

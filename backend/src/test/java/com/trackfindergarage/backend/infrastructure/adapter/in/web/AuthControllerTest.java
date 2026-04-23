@@ -61,7 +61,7 @@ class AuthControllerTest {
         request.setPhone("666555444");
 
         AuthResponse expected = response(5L, "latebraker", "driver@example.com");
-        AuthRegistrationCommand command = new AuthRegistrationCommand(
+        AuthRegistrationCommand registrationCommand = new AuthRegistrationCommand(
                 "latebraker",
                 "driver@example.com",
                 "secret",
@@ -70,13 +70,13 @@ class AuthControllerTest {
                 "Calle Box 27",
                 "666555444"
         );
-        when(authUseCase.register(command)).thenReturn(expected);
+        when(authUseCase.register(registrationCommand)).thenReturn(expected);
 
         AuthResponse response = authController.register(request);
 
         assertEquals(expected.getUserId(), response.getUserId());
         assertEquals(expected.getEmail(), response.getEmail());
-        verify(authUseCase).register(command);
+        verify(authUseCase).register(registrationCommand);
     }
 
     @Test
@@ -94,7 +94,7 @@ class AuthControllerTest {
 
         AuthResponse expected = response(8L, "tracklimits", "tracklimits@example.com");
         expected.setRoleName("ORGANIZER");
-        OrganizerRegistrationCommand command = new OrganizerRegistrationCommand(
+        OrganizerRegistrationCommand organizerRegistrationCommand = new OrganizerRegistrationCommand(
                 new AuthRegistrationCommand(
                         "tracklimits",
                         "tracklimits@example.com",
@@ -107,13 +107,13 @@ class AuthControllerTest {
                 "Track Limits Iberia S.L.",
                 "B12345678"
         );
-        when(authUseCase.registerOrganizer(command)).thenReturn(expected);
+        when(authUseCase.registerOrganizer(organizerRegistrationCommand)).thenReturn(expected);
 
         AuthResponse response = authController.registerOrganizer(request);
 
         assertEquals(expected.getUserId(), response.getUserId());
         assertEquals(expected.getRoleName(), response.getRoleName());
-        verify(authUseCase).registerOrganizer(command);
+        verify(authUseCase).registerOrganizer(organizerRegistrationCommand);
     }
 
     private AuthResponse response(Long id, String displayName, String email) {

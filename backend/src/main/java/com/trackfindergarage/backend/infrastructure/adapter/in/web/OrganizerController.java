@@ -4,7 +4,6 @@ import com.trackfindergarage.backend.application.port.in.OrganizerUseCase;
 import com.trackfindergarage.backend.domain.model.Organizer;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.CreateOrganizerRequest;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.OrganizerResponse;
-import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.UpdateOrganizerRequest;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.mapper.OrganizerWebMapper;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -31,14 +30,6 @@ public class OrganizerController extends AbstractWebController {
     public OrganizerResponse createOrganizer(@Valid @RequestBody CreateOrganizerRequest request) {
         Organizer organizerToCreate = organizerWebMapper.toDomain(request);
         return organizerWebMapper.toResponse(organizerUseCase.createOrganizer(organizerToCreate, request.getPassword()));
-    }
-
-    @PutMapping("/{id}")
-    public OrganizerResponse updateOrganizer(@PathVariable Long id,
-                                             @Valid @RequestBody UpdateOrganizerRequest request) {
-        Organizer organizerToUpdate = new Organizer();
-        organizerWebMapper.updateDomain(organizerToUpdate, request);
-        return organizerWebMapper.toResponse(organizerUseCase.updateOrganizer(id, organizerToUpdate));
     }
 
     @DeleteMapping("/{id}")

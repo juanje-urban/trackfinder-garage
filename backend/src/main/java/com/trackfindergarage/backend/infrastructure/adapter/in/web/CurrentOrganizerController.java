@@ -14,6 +14,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * Expone la API de autoservicio del organizador autenticado.
+ */
 @RestController
 @RequestMapping("/organizers")
 public class CurrentOrganizerController extends AbstractWebController {
@@ -27,12 +30,25 @@ public class CurrentOrganizerController extends AbstractWebController {
         this.organizerWebMapper = organizerWebMapper;
     }
 
+    /**
+     * Recupera el perfil completo del organizador autenticado.
+     *
+     * @param authentication autenticación resuelta por Spring Security
+     * @return organizador autenticado
+     */
     @GetMapping("/me")
     @PreAuthorize("hasRole('ORGANIZER')")
     public OrganizerResponse getCurrentOrganizer(Authentication authentication) {
         return organizerWebMapper.toResponse(organizerUseCase.getCurrentOrganizer(authenticatedEmail(authentication)));
     }
 
+    /**
+     * Actualiza el perfil del organizador autenticado.
+     *
+     * @param authentication autenticación resuelta por Spring Security
+     * @param request nuevos datos del perfil
+     * @return organizador actualizado
+     */
     @PutMapping("/me")
     @PreAuthorize("hasRole('ORGANIZER')")
     public OrganizerResponse updateCurrentOrganizer(Authentication authentication,

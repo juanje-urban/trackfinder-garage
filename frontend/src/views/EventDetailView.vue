@@ -525,7 +525,7 @@ function handleMediaDialogKeydown(event: KeyboardEvent) {
     <section v-if="loading" class="panel panel-pad-lg panel-stack-sm">
       <p class="ui-eyebrow">Cargando</p>
       <h1 class="ui-title-section">Preparando el detalle del evento</h1>
-      <p class="ui-copy-muted">Un momento, estamos reuniendo la informacion del track day.</p>
+      <p class="ui-copy-muted">Un momento, estamos reuniendo la información del track day.</p>
     </section>
 
     <section

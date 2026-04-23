@@ -2,7 +2,6 @@ package com.trackfindergarage.backend.infrastructure.adapter.in.web.mapper;
 
 import com.trackfindergarage.backend.domain.model.User;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.CreateUserRequest;
-import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.UpdateUserRequest;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.UserResponse;
 import org.springframework.stereotype.Component;
 
@@ -22,15 +21,6 @@ public class UserWebMapper {
         user.setAddress(request.getAddress());
         user.setPhone(request.getPhone());
         return user;
-    }
-
-    public void updateDomain(User user, UpdateUserRequest request) {
-        user.setDisplayName(request.getDisplayName());
-        user.setEmail(request.getEmail());
-        user.setName(request.getName());
-        user.setSurname(request.getSurname());
-        user.setAddress(request.getAddress());
-        user.setPhone(request.getPhone());
     }
 
     public UserResponse toResponse(User user) {

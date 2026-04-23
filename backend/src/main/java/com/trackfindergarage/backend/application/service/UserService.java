@@ -17,6 +17,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
+/**
+ * Implementa la lógica de gestion de usuarios no organizadores.
+ *
+ * <p>Se encarga de altas, consultas, actualizaciones, habilitación y deshabilitación de cuentas, asi como de las
+ * validaciones de unicidad sobre alias, email y teléfono.</p>
+ */
 @Service
 @Transactional
 public class UserService implements UserUseCase {
@@ -48,6 +54,13 @@ public class UserService implements UserUseCase {
         this.passwordEncoder = passwordEncoder;
     }
 
+    /**
+     * Crea un nuevo usuario final con su rol, contraseña codificada y fecha de alta.
+     *
+     * @param user datos del usuario
+     * @param rawPassword contraseña en texto plano
+     * @return usuario persistido
+     */
     @Override
     public User createUser(User user, String rawPassword) {
         String normalizedDisplayName = normalizeText(user.getDisplayName());
@@ -78,12 +91,33 @@ public class UserService implements UserUseCase {
         return userPersistencePort.save(user);
     }
 
+    /**
+     * Obtiene el usuario autenticado en la petición actual.
+     *
+     * @param authenticatedEmail email resuelto por la capa de seguridad
+     * @return usuario autenticado
+     */
     @Override
     @Transactional(readOnly = true)
     public User getCurrentUser(String authenticatedEmail) {
         return findUserByAuthenticatedEmail(authenticatedEmail);
     }
 
+    /**
+     * Actualiza el perfil del usuario autenticado.
+     *
+     * <p>Este flujo está reservado a usuarios finales. Si la cuenta pertenece a un organizador, la actualización
+     * debe pasar por {@code OrganizerService}.</p>
+     *
+     * @param authenticatedEmail email del usuario autenticado
+     * @param name nombre actualizado
+     * @param surname apellidos actualizados
+     * @param email email actualizado
+     * @param address dirección actualizada
+     * @param phone teléfono actualizado
+     * @param rawPassword nueva contraseña opcional
+     * @return usuario actualizado
+     */
     @Override
     public User updateCurrentUserProfile(String authenticatedEmail,
                                          String name,
@@ -112,34 +146,11 @@ public class UserService implements UserUseCase {
         return userPersistencePort.save(existingUser);
     }
 
-    @Override
-    public User updateUser(Long id, User user) {
-        User existingUser = findUserOrThrow(id);
-        requireNonOrganizerUser(existingUser);
-
-        String normalizedDisplayName = normalizeText(user.getDisplayName());
-        String normalizedEmail = normalizeEmail(user.getEmail());
-        String normalizedName = normalizeText(user.getName());
-        String normalizedSurname = normalizeText(user.getSurname());
-        String normalizedAddress = normalizeText(user.getAddress());
-        String normalizedPhone = normalizeText(user.getPhone());
-
-        validateDisplayNameForUpdate(id, normalizedDisplayName);
-        validateEmailForUpdate(id, normalizedEmail);
-        validatePhoneForUpdate(id, normalizedPhone);
-        applyUserIdentity(
-                existingUser,
-                normalizedDisplayName,
-                normalizedEmail,
-                normalizedName,
-                normalizedSurname,
-                normalizedAddress,
-                normalizedPhone
-        );
-
-        return userPersistencePort.save(existingUser);
-    }
-
+    /**
+     * Elimina un usuario y, si procede, la información de organizador asociada.
+     *
+     * @param id identificador del usuario a eliminar
+     */
     @Override
     public void deleteUser(Long id) {
         User existingUser = findUserOrThrow(id);
@@ -150,18 +161,35 @@ public class UserService implements UserUseCase {
         userPersistencePort.delete(existingUser);
     }
 
+    /**
+     * Recupera todos los usuarios.
+     *
+     * @return listado completo de usuarios
+     */
     @Override
     @Transactional(readOnly = true)
     public List<User> getAllUsers() {
         return userPersistencePort.findAll();
     }
 
+    /**
+     * Busca un usuario por su identificador.
+     *
+     * @param id identificador del usuario
+     * @return usuario encontrado
+     */
     @Override
     @Transactional(readOnly = true)
     public User getUserById(Long id) {
         return findUserOrThrow(id);
     }
 
+    /**
+     * Habilita una cuenta de usuario.
+     *
+     * @param id identificador del usuario
+     * @return usuario habilitado
+     */
     @Override
     public User enableUser(Long id) {
         User existingUser = findUserOrThrow(id);
@@ -169,6 +197,15 @@ public class UserService implements UserUseCase {
         return userPersistencePort.save(existingUser);
     }
 
+    /**
+     * Deshabilita una cuenta de usuario.
+     *
+     * <p>La cuenta de administrador por defecto queda protegida y, si el usuario tiene información de organizador
+     * asociada, esta también se deshabilita.</p>
+     *
+     * @param id identificador del usuario
+     * @return usuario deshabilitado
+     */
     @Override
     public User disableUser(Long id) {
         User existingUser = findUserOrThrow(id);

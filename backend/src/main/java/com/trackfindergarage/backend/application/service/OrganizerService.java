@@ -19,6 +19,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
+/**
+ * Implementa la lógica de gestion de organizadores.
+ *
+ * <p>Coordina la creación y actualización del organizador junto con su usuario asociado, aplicando validaciones
+ * tanto sobre los datos comunes del usuario como sobre los datos legales propios del organizador.</p>
+ */
 @Service
 @Transactional
 public class OrganizerService implements OrganizerUseCase {
@@ -47,6 +53,16 @@ public class OrganizerService implements OrganizerUseCase {
         this.passwordEncoder = passwordEncoder;
     }
 
+    /**
+     * Crea un nuevo organizador y el usuario asociado.
+     *
+     * <p>La cuenta de usuario se crea con rol {@code ORGANIZER}, contraseña codificada y estado habilitado. En
+     * cambio, la ficha de organizador nace deshabilitada para reflejar la pendiente de aprobación.</p>
+     *
+     * @param organizer datos del organizador
+     * @param rawPassword contraseña en texto plano del usuario asociado
+     * @return organizador persistido
+     */
     @Override
     public Organizer createOrganizer(Organizer organizer, String rawPassword) {
         User user = organizer.getUser();
@@ -89,25 +105,38 @@ public class OrganizerService implements OrganizerUseCase {
         return organizerPersistencePort.save(organizer);
     }
 
+    /**
+     * Recupera el organizador vinculado al usuario autenticado.
+     *
+     * @param authenticatedEmail email resuelto por la capa de seguridad
+     * @return organizador autenticado
+     */
     @Override
     @Transactional(readOnly = true)
     public Organizer getCurrentOrganizer(String authenticatedEmail) {
         return findOrganizerByAuthenticatedEmail(authenticatedEmail);
     }
 
+    /**
+     * Actualiza el perfil del organizador autenticado y de su usuario asociado.
+     *
+     * @param authenticatedEmail email del usuario autenticado
+     * @param profileCommand comando con los nuevos datos del perfil
+     * @return organizador actualizado
+     */
     @Override
     public Organizer updateCurrentOrganizerProfile(String authenticatedEmail,
-                                                   UpdateCurrentOrganizerProfileCommand command) {
+                                                   UpdateCurrentOrganizerProfileCommand profileCommand) {
         Organizer existingOrganizer = findOrganizerByAuthenticatedEmail(authenticatedEmail);
         User existingUser = existingOrganizer.getUser();
 
-        String normalizedName = normalizeText(command.name());
-        String normalizedSurname = normalizeText(command.surname());
-        String normalizedEmail = normalizeEmail(command.email());
-        String normalizedAddress = normalizeText(command.address());
-        String normalizedPhone = normalizeText(command.phone());
-        String normalizedLegalName = normalizeText(command.legalName());
-        String normalizedCif = normalizeText(command.cif());
+        String normalizedName = normalizeText(profileCommand.name());
+        String normalizedSurname = normalizeText(profileCommand.surname());
+        String normalizedEmail = normalizeEmail(profileCommand.email());
+        String normalizedAddress = normalizeText(profileCommand.address());
+        String normalizedPhone = normalizeText(profileCommand.phone());
+        String normalizedLegalName = normalizeText(profileCommand.legalName());
+        String normalizedCif = normalizeText(profileCommand.cif());
 
         validateEmailForUpdate(existingUser.getId(), normalizedEmail);
         validatePhoneForUpdate(existingUser.getId(), normalizedPhone);
@@ -115,8 +144,8 @@ public class OrganizerService implements OrganizerUseCase {
         validateCifForUpdate(existingOrganizer.getIdUser(), normalizedCif);
 
         applyUserProfile(existingUser, normalizedName, normalizedSurname, normalizedEmail, normalizedAddress, normalizedPhone);
-        if (command.rawPassword() != null && !command.rawPassword().isBlank()) {
-            existingUser.setPasswordHash(passwordEncoder.encode(command.rawPassword().trim()));
+        if (profileCommand.rawPassword() != null && !profileCommand.rawPassword().isBlank()) {
+            existingUser.setPasswordHash(passwordEncoder.encode(profileCommand.rawPassword().trim()));
         }
 
         applyOrganizerIdentity(existingOrganizer, normalizedLegalName, normalizedCif);
@@ -124,42 +153,11 @@ public class OrganizerService implements OrganizerUseCase {
         return organizerPersistencePort.save(existingOrganizer);
     }
 
-    @Override
-    public Organizer updateOrganizer(Long id, Organizer organizer) {
-        Organizer existingOrganizer = findOrganizerOrThrow(id);
-        User existingUser = existingOrganizer.getUser();
-        User user = organizer.getUser();
-
-        String normalizedDisplayName = normalizeText(user.getDisplayName());
-        String normalizedEmail = normalizeEmail(user.getEmail());
-        String normalizedName = normalizeText(user.getName());
-        String normalizedSurname = normalizeText(user.getSurname());
-        String normalizedAddress = normalizeText(user.getAddress());
-        String normalizedPhone = normalizeText(user.getPhone());
-        String normalizedLegalName = normalizeText(organizer.getLegalName());
-        String normalizedCif = normalizeText(organizer.getCif());
-
-        validateDisplayNameForUpdate(id, normalizedDisplayName);
-        validateEmailForUpdate(id, normalizedEmail);
-        validatePhoneForUpdate(id, normalizedPhone);
-        validateLegalNameForUpdate(id, normalizedLegalName);
-        validateCifForUpdate(id, normalizedCif);
-
-        applyUserIdentity(
-                existingUser,
-                normalizedDisplayName,
-                normalizedEmail,
-                normalizedName,
-                normalizedSurname,
-                normalizedAddress,
-                normalizedPhone
-        );
-        applyOrganizerIdentity(existingOrganizer, normalizedLegalName, normalizedCif);
-
-        userPersistencePort.save(existingUser);
-        return organizerPersistencePort.save(existingOrganizer);
-    }
-
+    /**
+     * Elimina un organizador y el usuario asociado a su cuenta.
+     *
+     * @param id identificador del organizador
+     */
     @Override
     public void deleteOrganizer(Long id) {
         Organizer existingOrganizer = findOrganizerOrThrow(id);
@@ -169,18 +167,35 @@ public class OrganizerService implements OrganizerUseCase {
         userPersistencePort.delete(existingUser);
     }
 
+    /**
+     * Recupera todos los organizadores registrados.
+     *
+     * @return listado completo de organizadores
+     */
     @Override
     @Transactional(readOnly = true)
     public List<Organizer> getAllOrganizers() {
         return organizerPersistencePort.findAll();
     }
 
+    /**
+     * Busca un organizador por su identificador.
+     *
+     * @param id identificador del organizador
+     * @return organizador encontrado
+     */
     @Override
     @Transactional(readOnly = true)
     public Organizer getOrganizerById(Long id) {
         return findOrganizerOrThrow(id);
     }
 
+    /**
+     * Habilita una cuenta de organizador.
+     *
+     * @param id identificador del organizador
+     * @return organizador habilitado
+     */
     @Override
     public Organizer enableOrganizer(Long id) {
         Organizer existingOrganizer = findOrganizerOrThrow(id);
@@ -188,6 +203,12 @@ public class OrganizerService implements OrganizerUseCase {
         return organizerPersistencePort.save(existingOrganizer);
     }
 
+    /**
+     * Deshabilita una cuenta de organizador.
+     *
+     * @param id identificador del organizador
+     * @return organizador deshabilitado
+     */
     @Override
     public Organizer disableOrganizer(Long id) {
         Organizer existingOrganizer = findOrganizerOrThrow(id);

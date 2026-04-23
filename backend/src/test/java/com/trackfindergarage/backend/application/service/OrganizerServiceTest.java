@@ -97,43 +97,6 @@ class OrganizerServiceTest {
     }
 
     @Test
-    void updateOrganizerCopiesFieldsAcrossOrganizerAndUser() {
-        Organizer existingOrganizer = organizerWithUser(5L, "promoter");
-        User existingUser = existingOrganizer.getUser();
-
-        Organizer updateRequest = organizerWithUser(null, "new-promoter");
-        updateRequest.getUser().setEmail("new@example.com");
-        updateRequest.getUser().setName("New");
-        updateRequest.getUser().setSurname("Organizer");
-        updateRequest.getUser().setAddress("New address");
-        updateRequest.getUser().setPhone("777");
-        updateRequest.setLegalName("New Legal");
-        updateRequest.setCif("B99999999");
-
-        when(organizerPersistencePort.findById(5L)).thenReturn(Optional.of(existingOrganizer));
-        when(userPersistencePort.findByDisplayName("new-promoter")).thenReturn(Optional.empty());
-        when(userPersistencePort.findByEmail("new@example.com")).thenReturn(Optional.empty());
-        when(userPersistencePort.findByPhone("777")).thenReturn(Optional.empty());
-        when(organizerPersistencePort.findByLegalName("New Legal")).thenReturn(Optional.empty());
-        when(organizerPersistencePort.findByCif("B99999999")).thenReturn(Optional.empty());
-        when(organizerPersistencePort.save(existingOrganizer)).thenReturn(existingOrganizer);
-
-        Organizer updatedOrganizer = organizerService.updateOrganizer(5L, updateRequest);
-
-        assertSame(existingOrganizer, updatedOrganizer);
-        assertEquals("new-promoter", existingUser.getDisplayName());
-        assertEquals("new@example.com", existingUser.getEmail());
-        assertEquals("New", existingUser.getName());
-        assertEquals("Organizer", existingUser.getSurname());
-        assertEquals("New address", existingUser.getAddress());
-        assertEquals("777", existingUser.getPhone());
-        assertEquals("New Legal", existingOrganizer.getLegalName());
-        assertEquals("B99999999", existingOrganizer.getCif());
-        verify(userPersistencePort).save(existingUser);
-        verify(organizerPersistencePort).save(existingOrganizer);
-    }
-
-    @Test
     void getCurrentOrganizerReturnsOrganizerForAuthenticatedEmail() {
         Organizer existingOrganizer = organizerWithUser(5L, "promoter");
         existingOrganizer.getUser().setEmail("promoter@example.com");
