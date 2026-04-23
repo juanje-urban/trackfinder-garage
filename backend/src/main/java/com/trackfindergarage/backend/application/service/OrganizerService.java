@@ -236,14 +236,6 @@ public class OrganizerService implements OrganizerUseCase {
         );
     }
 
-    private void validateDisplayNameForUpdate(Long organizerId, String displayName) {
-        validateUniqueUser(
-                userPersistencePort.findByDisplayName(displayName),
-                organizerId,
-                USER_DISPLAY_NAME_ALREADY_EXISTS.formatted(displayName)
-        );
-    }
-
     private void validateEmailForUpdate(Long organizerId, String email) {
         validateUniqueUser(
                 userPersistencePort.findByEmail(email),

@@ -4,7 +4,6 @@ import com.trackfindergarage.backend.application.port.out.OrganizerPersistencePo
 import com.trackfindergarage.backend.application.port.out.RolePersistencePort;
 import com.trackfindergarage.backend.application.port.out.UserPersistencePort;
 import com.trackfindergarage.backend.common.exception.DuplicateResourceException;
-import com.trackfindergarage.backend.common.exception.ResourceNotFoundException;
 import com.trackfindergarage.backend.application.port.in.UpdateCurrentOrganizerProfileCommand;
 import com.trackfindergarage.backend.domain.model.Organizer;
 import com.trackfindergarage.backend.domain.model.Role;

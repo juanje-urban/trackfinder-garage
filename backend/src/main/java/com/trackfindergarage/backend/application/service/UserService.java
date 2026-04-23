@@ -242,14 +242,6 @@ public class UserService implements UserUseCase {
         );
     }
 
-    private void validateDisplayNameForUpdate(Long userId, String displayName) {
-        validateUniqueUser(
-                userPersistencePort.findByDisplayName(displayName),
-                userId,
-                USER_DISPLAY_NAME_ALREADY_EXISTS.formatted(displayName)
-        );
-    }
-
     private void validateEmailForUpdate(Long userId, String email) {
         validateUniqueUser(
                 userPersistencePort.findByEmail(email),
