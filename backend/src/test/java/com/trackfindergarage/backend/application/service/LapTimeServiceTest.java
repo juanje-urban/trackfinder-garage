@@ -70,6 +70,7 @@ class LapTimeServiceTest {
     @Test
     void createLapTimeForAuthenticatedUserRejectsFutureDates() {
         User user = user(1L, "driver");
+        LocalDate futureLapDate = LocalDate.now().plusDays(1);
         when(userPersistencePort.findByEmail("driver@example.com")).thenReturn(Optional.of(user));
 
         assertThrows(
@@ -77,7 +78,7 @@ class LapTimeServiceTest {
                 () -> lapTimeService.createLapTimeForAuthenticatedUser(
                         "driver@example.com",
                         7L,
-                        LocalDate.now().plusDays(1),
+                        futureLapDate,
                         91234L,
                         "BMW M4"
                 )

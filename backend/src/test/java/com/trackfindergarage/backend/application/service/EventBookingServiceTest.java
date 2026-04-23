@@ -105,12 +105,13 @@ class EventBookingServiceTest {
     @Test
     void checkoutEventBookingRejectsNonStandardUsers() {
         User organizerUser = user(1L, "organizer", "ORGANIZER");
+        List<Long> eventServiceIds = List.of();
 
         when(userPersistencePort.findByEmail("organizer@example.com")).thenReturn(Optional.of(organizerUser));
 
         assertThrows(
                 AccessDeniedException.class,
-                () -> eventBookingService.checkoutEventBooking("organizer@example.com", 5L, List.of(), true)
+                () -> eventBookingService.checkoutEventBooking("organizer@example.com", 5L, eventServiceIds, true)
         );
         verify(eventBookingPersistencePort, never()).save(any(EventBooking.class));
     }
@@ -120,6 +121,7 @@ class EventBookingServiceTest {
         User user = user(1L, "driver", "USER");
         Event event = event(5L, LocalDate.now().plusDays(20), 10);
         EventBooking existingBooking = booking(80L, user, event, true);
+        List<Long> eventServiceIds = List.of();
 
         when(userPersistencePort.findByEmail("driver@example.com")).thenReturn(Optional.of(user));
         when(userPersistencePort.findById(1L)).thenReturn(Optional.of(user));
@@ -128,7 +130,7 @@ class EventBookingServiceTest {
 
         assertThrows(
                 DuplicateResourceException.class,
-                () -> eventBookingService.checkoutEventBooking("driver@example.com", 5L, List.of(), true)
+                () -> eventBookingService.checkoutEventBooking("driver@example.com", 5L, eventServiceIds, true)
         );
     }
 
@@ -136,6 +138,7 @@ class EventBookingServiceTest {
     void checkoutEventBookingRejectsFullEvents() {
         User user = user(1L, "driver", "USER");
         Event event = event(5L, LocalDate.now().plusDays(20), 1);
+        List<Long> eventServiceIds = List.of();
 
         when(userPersistencePort.findByEmail("driver@example.com")).thenReturn(Optional.of(user));
         when(userPersistencePort.findById(1L)).thenReturn(Optional.of(user));
@@ -145,7 +148,7 @@ class EventBookingServiceTest {
 
         assertThrows(
                 ConflictException.class,
-                () -> eventBookingService.checkoutEventBooking("driver@example.com", 5L, List.of(), true)
+                () -> eventBookingService.checkoutEventBooking("driver@example.com", 5L, eventServiceIds, true)
         );
     }
 
@@ -155,6 +158,7 @@ class EventBookingServiceTest {
         Event targetEvent = event(5L, LocalDate.now().plusDays(20), 10);
         Event otherEvent = event(9L, LocalDate.now().plusDays(30), 10);
         EventService wrongService = eventService(11L, otherEvent, "25.00");
+        List<Long> eventServiceIds = List.of(11L);
 
         when(userPersistencePort.findByEmail("driver@example.com")).thenReturn(Optional.of(user));
         when(userPersistencePort.findById(1L)).thenReturn(Optional.of(user));
@@ -166,7 +170,7 @@ class EventBookingServiceTest {
 
         assertThrows(
                 IllegalArgumentException.class,
-                () -> eventBookingService.checkoutEventBooking("driver@example.com", 5L, List.of(11L), true)
+                () -> eventBookingService.checkoutEventBooking("driver@example.com", 5L, eventServiceIds, true)
         );
         verify(eventBookingServicePersistencePort, never())
                 .save(any(com.trackfindergarage.backend.domain.model.EventBookingService.class));
