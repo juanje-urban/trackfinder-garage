@@ -106,15 +106,6 @@ class ServiceServiceTest {
     }
 
     @Test
-    void getAllServicesAllowedForOrganizerReturnsPersistenceResult() {
-        List<Service> services = List.of(serviceWithId(2L, "Camping"));
-
-        when(servicePersistencePort.findAllByAllowedForOrganizerTrue()).thenReturn(services);
-
-        assertEquals(services, serviceService.getAllServicesAllowedForOrganizer());
-    }
-
-    @Test
     void enableServiceMarksServiceAsEnabled() {
         Service existingService = serviceWithId(4L, "Parking");
         existingService.setEnabled(false);

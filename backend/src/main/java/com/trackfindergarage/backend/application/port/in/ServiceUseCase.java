@@ -12,8 +12,6 @@ public interface ServiceUseCase {
 
     List<Service> getAllServices();
 
-    List<Service> getAllServicesAllowedForOrganizer();
-
     Service enableService(Long id);
 
     Service disableService(Long id);

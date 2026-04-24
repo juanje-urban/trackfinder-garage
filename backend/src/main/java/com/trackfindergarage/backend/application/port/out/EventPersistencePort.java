@@ -12,15 +12,9 @@ public interface EventPersistencePort {
 
     Optional<Event> findById(Long id);
 
-    List<Event> findAll();
-
     List<Event> findFutureEvents(LocalDate fromDate);
 
     List<Event> findByOrganizerIdUser(Long organizerId);
-
-    List<Event> findByTrackId(Long trackId);
-
-    List<Event> findByEventDateBetween(LocalDate startDate, LocalDate endDate);
 
     Optional<Event> findByTrackIdAndEventDate(Long trackId, LocalDate eventDate);
 

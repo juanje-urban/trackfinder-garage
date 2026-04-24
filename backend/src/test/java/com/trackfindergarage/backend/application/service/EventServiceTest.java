@@ -239,15 +239,6 @@ class EventServiceTest {
     }
 
     @Test
-    void getAllEventsReturnsPersistenceResult() {
-        List<Event> events = List.of(eventWithIds(1L, 2L, LocalDate.now().plusDays(10), new BigDecimal("30.00")));
-
-        when(eventPersistencePort.findAll()).thenReturn(events);
-
-        assertEquals(events, eventService.getAllEvents());
-    }
-
-    @Test
     void getFutureEventsReturnsPersistenceResultFromTodayOnward() {
         List<Event> events = List.of(eventWithIds(1L, 2L, LocalDate.now().plusDays(10), new BigDecimal("30.00")));
 
@@ -255,74 +246,6 @@ class EventServiceTest {
 
         assertEquals(events, eventService.getFutureEvents());
         verify(eventPersistencePort).findFutureEvents(any(LocalDate.class));
-    }
-
-    @Test
-    void getEventsByOrganizerIdReturnsPersistenceResultWhenOrganizerExists() {
-        List<Event> events = List.of(eventWithIds(1L, 2L, LocalDate.now().plusDays(10), new BigDecimal("30.00")));
-
-        when(organizerPersistencePort.findById(1L)).thenReturn(Optional.of(organizerWithId(1L)));
-        when(eventPersistencePort.findByOrganizerIdUser(1L)).thenReturn(events);
-
-        assertEquals(events, eventService.getEventsByOrganizerId(1L));
-    }
-
-    @Test
-    void getEventsByOrganizerIdThrowsWhenOrganizerDoesNotExist() {
-        when(organizerPersistencePort.findById(1L)).thenReturn(Optional.empty());
-
-        assertThrows(ResourceNotFoundException.class, () -> eventService.getEventsByOrganizerId(1L));
-    }
-
-    @Test
-    void getEventsByTrackIdReturnsPersistenceResultWhenTrackExists() {
-        List<Event> events = List.of(eventWithIds(1L, 2L, LocalDate.now().plusDays(10), new BigDecimal("30.00")));
-
-        when(trackPersistencePort.findById(2L)).thenReturn(Optional.of(trackWithId(2L)));
-        when(eventPersistencePort.findByTrackId(2L)).thenReturn(events);
-
-        assertEquals(events, eventService.getEventsByTrackId(2L));
-    }
-
-    @Test
-    void getEventsByTrackIdThrowsWhenTrackDoesNotExist() {
-        when(trackPersistencePort.findById(2L)).thenReturn(Optional.empty());
-
-        assertThrows(ResourceNotFoundException.class, () -> eventService.getEventsByTrackId(2L));
-    }
-
-    @Test
-    void getEventsByDateRangeReturnsPersistenceResult() {
-        List<Event> events = List.of(eventWithIds(1L, 2L, LocalDate.now().plusDays(10), new BigDecimal("30.00")));
-        LocalDate start = LocalDate.now().plusDays(1);
-        LocalDate end = LocalDate.now().plusDays(30);
-
-        when(eventPersistencePort.findByEventDateBetween(start, end)).thenReturn(events);
-
-        assertEquals(events, eventService.getEventsByDateRange(start, end));
-    }
-
-    @Test
-    void getEventsByDateRangeThrowsWhenStartDateIsNull() {
-        LocalDate endDate = LocalDate.now().plusDays(1);
-
-        assertThrows(IllegalArgumentException.class, () -> eventService.getEventsByDateRange(null, endDate));
-    }
-
-    @Test
-    void getEventsByDateRangeThrowsWhenEndDateIsNull() {
-        LocalDate startDate = LocalDate.now();
-
-        assertThrows(IllegalArgumentException.class, () -> eventService.getEventsByDateRange(startDate, null));
-    }
-
-    @Test
-    void getEventsByDateRangeThrowsWhenStartDateIsAfterEndDate() {
-        LocalDate startDate = LocalDate.now().plusDays(3);
-        LocalDate endDate = LocalDate.now().plusDays(1);
-
-        assertThrows(IllegalArgumentException.class,
-                () -> eventService.getEventsByDateRange(startDate, endDate));
     }
 
     @Test

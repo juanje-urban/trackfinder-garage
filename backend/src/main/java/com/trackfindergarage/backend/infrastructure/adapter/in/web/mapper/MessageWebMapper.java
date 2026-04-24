@@ -2,29 +2,12 @@ package com.trackfindergarage.backend.infrastructure.adapter.in.web.mapper;
 
 import com.trackfindergarage.backend.domain.model.Message;
 import com.trackfindergarage.backend.domain.model.User;
-import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.CreateMessageRequest;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.MessageContactResponse;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.MessageResponse;
 import org.springframework.stereotype.Component;
 
 @Component
 public class MessageWebMapper {
-
-    public Message toDomain(CreateMessageRequest request) {
-        User sender = new User();
-        sender.setId(request.getSenderId());
-
-        User receiver = new User();
-        receiver.setId(request.getReceiverId());
-
-        Message message = new Message();
-        message.setSender(sender);
-        message.setReceiver(receiver);
-        message.setSubject(request.getSubject());
-        message.setContent(request.getMessage());
-
-        return message;
-    }
 
     public MessageResponse toResponse(Message message) {
         return MessageResponse.builder()

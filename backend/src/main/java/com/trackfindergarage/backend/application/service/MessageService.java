@@ -72,7 +72,10 @@ public class MessageService implements MessageUseCase {
     @Override
     public Message markOwnMessageAsRead(String authenticatedEmail, Long id) {
         User currentUser = loadAuthenticatedUser(authenticatedEmail);
-        return updateReadStatus(id, currentUser.getId(), true);
+        Message message = findMessageOrThrow(id);
+        validateReceiverAccess(message, currentUser.getId());
+        message.setIsRead(true);
+        return messagePersistencePort.save(message);
     }
 
     @Override
@@ -142,10 +145,4 @@ public class MessageService implements MessageUseCase {
                 .orElseThrow(() -> new ResourceNotFoundException(MESSAGE_NOT_FOUND_WITH_ID + id));
     }
 
-    private Message updateReadStatus(Long id, Long userId, boolean isRead) {
-        Message message = findMessageOrThrow(id);
-        validateReceiverAccess(message, userId);
-        message.setIsRead(isRead);
-        return messagePersistencePort.save(message);
-    }
 }

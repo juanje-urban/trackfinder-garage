@@ -72,8 +72,8 @@ public class EventBookingService implements EventBookingUseCase {
     private EventBooking createEventBooking(EventBooking eventBooking) {
         validateEventBooking(eventBooking);
 
-        Long userId = extractUserId(eventBooking);
-        Long eventId = extractEventId(eventBooking);
+        Long userId = eventBooking.getUser().getId();
+        Long eventId = eventBooking.getEvent().getId();
 
         User user = userPersistencePort.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND_WITH_ID + userId));
@@ -194,19 +194,6 @@ public class EventBookingService implements EventBookingUseCase {
         }
     }
 
-    private Long extractUserId(EventBooking eventBooking) {
-        return eventBooking.getUser().getId();
-    }
-
-    private Long extractEventId(EventBooking eventBooking) {
-        return eventBooking.getEvent().getId();
-    }
-
-    private EventBooking findEventBookingOrThrow(Long id) {
-        return eventBookingPersistencePort.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(EVENT_BOOKING_NOT_FOUND_WITH_ID + id));
-    }
-
     private User loadAuthenticatedUser(String authenticatedEmail) {
         if (authenticatedEmail == null || authenticatedEmail.isBlank()) {
             throw new IllegalArgumentException(AUTHENTICATED_EMAIL_REQUIRED);
@@ -227,7 +214,8 @@ public class EventBookingService implements EventBookingUseCase {
 
     private EventBooking loadOwnedBooking(String authenticatedEmail, Long bookingId) {
         User currentUser = loadAuthenticatedUser(authenticatedEmail);
-        EventBooking eventBooking = findEventBookingOrThrow(bookingId);
+        EventBooking eventBooking = eventBookingPersistencePort.findById(bookingId)
+                .orElseThrow(() -> new ResourceNotFoundException(EVENT_BOOKING_NOT_FOUND_WITH_ID + bookingId));
 
         if (eventBooking.getUser() == null
                 || eventBooking.getUser().getEmail() == null

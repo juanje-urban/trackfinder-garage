@@ -37,19 +37,13 @@ class EventPersistenceAdapterTest {
         LocalDate date = LocalDate.now().plusDays(10);
 
         when(repository.findById(1L)).thenReturn(Optional.of(event));
-        when(repository.findAll()).thenReturn(events);
         when(repository.findByEventDateGreaterThanEqualOrderByEventDateAsc(date)).thenReturn(events);
         when(repository.findByOrganizerIdUser(2L)).thenReturn(events);
-        when(repository.findByTrackId(3L)).thenReturn(events);
-        when(repository.findByEventDateBetween(date, date.plusDays(1))).thenReturn(events);
         when(repository.findByTrackIdAndEventDate(3L, date)).thenReturn(Optional.of(event));
 
         assertTrue(adapter.findById(1L).isPresent());
-        assertEquals(events, adapter.findAll());
         assertEquals(events, adapter.findFutureEvents(date));
         assertEquals(events, adapter.findByOrganizerIdUser(2L));
-        assertEquals(events, adapter.findByTrackId(3L));
-        assertEquals(events, adapter.findByEventDateBetween(date, date.plusDays(1)));
         assertTrue(adapter.findByTrackIdAndEventDate(3L, date).isPresent());
     }
 

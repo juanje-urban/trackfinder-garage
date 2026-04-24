@@ -59,12 +59,6 @@ public class ServiceService implements ServiceUseCase {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<Service> getAllServicesAllowedForOrganizer() {
-        return servicePersistencePort.findAllByAllowedForOrganizerTrue();
-    }
-
-    @Override
     public Service enableService(Long id) {
         Service existingService = findServiceOrThrow(id);
         existingService.setEnabled(true);

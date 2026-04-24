@@ -28,11 +28,6 @@ public class EventPersistenceAdapter implements EventPersistencePort {
     }
 
     @Override
-    public List<Event> findAll() {
-        return eventRepository.findAll();
-    }
-
-    @Override
     public List<Event> findFutureEvents(LocalDate fromDate) {
         return eventRepository.findByEventDateGreaterThanEqualOrderByEventDateAsc(fromDate);
     }
@@ -40,16 +35,6 @@ public class EventPersistenceAdapter implements EventPersistencePort {
     @Override
     public List<Event> findByOrganizerIdUser(Long organizerId) {
         return eventRepository.findByOrganizerIdUser(organizerId);
-    }
-
-    @Override
-    public List<Event> findByTrackId(Long trackId) {
-        return eventRepository.findByTrackId(trackId);
-    }
-
-    @Override
-    public List<Event> findByEventDateBetween(LocalDate startDate, LocalDate endDate) {
-        return eventRepository.findByEventDateBetween(startDate, endDate);
     }
 
     @Override

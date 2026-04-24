@@ -5,12 +5,13 @@ import com.trackfindergarage.backend.application.port.in.EventUseCase;
 import com.trackfindergarage.backend.application.port.in.OrganizerEventDraft;
 import com.trackfindergarage.backend.application.port.in.OrganizerEventServiceDraft;
 import com.trackfindergarage.backend.application.port.in.OrganizerServiceUseCase;
-import com.trackfindergarage.backend.application.port.in.ServiceUseCase;
 import com.trackfindergarage.backend.application.port.in.TrackServiceUseCase;
 import com.trackfindergarage.backend.application.port.out.EventBookingPersistencePort;
 import com.trackfindergarage.backend.application.port.out.EventBookingServicePersistencePort;
+import com.trackfindergarage.backend.application.port.out.EventPersistencePort;
 import com.trackfindergarage.backend.application.port.out.EventServicePersistencePort;
 import com.trackfindergarage.backend.application.port.out.OrganizerPersistencePort;
+import com.trackfindergarage.backend.application.port.out.ServicePersistencePort;
 import com.trackfindergarage.backend.application.port.out.TrackPersistencePort;
 import com.trackfindergarage.backend.application.port.out.UserPersistencePort;
 import com.trackfindergarage.backend.common.exception.ConflictException;
@@ -57,6 +58,9 @@ class OrganizerWorkspaceServiceTest {
     private OrganizerPersistencePort organizerPersistencePort;
 
     @Mock
+    private EventPersistencePort eventPersistencePort;
+
+    @Mock
     private EventServicePersistencePort eventServicePersistencePort;
 
     @Mock
@@ -69,7 +73,7 @@ class OrganizerWorkspaceServiceTest {
     private TrackPersistencePort trackPersistencePort;
 
     @Mock
-    private ServiceUseCase serviceUseCase;
+    private ServicePersistencePort servicePersistencePort;
 
     @Mock
     private TrackServiceUseCase trackServiceUseCase;
@@ -93,7 +97,7 @@ class OrganizerWorkspaceServiceTest {
         Service enabledAlpha = serviceWithId(1L, "Alpha coaching", true);
         Service disabledService = serviceWithId(2L, "Disabled wash", false);
         Service enabledZulu = serviceWithId(3L, "Zulu photos", true);
-        when(serviceUseCase.getAllServicesAllowedForOrganizer())
+        when(servicePersistencePort.findAllByAllowedForOrganizerTrue())
                 .thenReturn(List.of(enabledZulu, disabledService, enabledAlpha));
 
         when(organizerServiceUseCase.getOrganizerServicesByOrganizerId(ORGANIZER_ID))
@@ -113,7 +117,7 @@ class OrganizerWorkspaceServiceTest {
 
         Event futureEvent = eventWithId(101L, LocalDate.now().plusDays(20), "Jarama", new BigDecimal("120.00"), 20, organizer);
         Event pastEvent = eventWithId(102L, LocalDate.now().minusDays(5), "Calafat", new BigDecimal("90.00"), 10, organizer);
-        when(eventUseCase.getEventsByOrganizerId(ORGANIZER_ID)).thenReturn(List.of(futureEvent, pastEvent));
+        when(eventPersistencePort.findByOrganizerIdUser(ORGANIZER_ID)).thenReturn(List.of(futureEvent, pastEvent));
 
         when(eventServiceUseCase.getEventServicesByEventId(101L))
                 .thenReturn(List.of(eventServiceWithTrackService(61L, futureEvent, 32L, "Fuel", new BigDecimal("15.00"))));
@@ -394,11 +398,11 @@ class OrganizerWorkspaceServiceTest {
     }
 
     private void stubWorkspaceSnapshotDependencies() {
-        when(serviceUseCase.getAllServicesAllowedForOrganizer()).thenReturn(List.of());
+        when(servicePersistencePort.findAllByAllowedForOrganizerTrue()).thenReturn(List.of());
         when(organizerServiceUseCase.getOrganizerServicesByOrganizerId(ORGANIZER_ID)).thenReturn(List.of());
         when(trackPersistencePort.findAll()).thenReturn(List.of());
         when(trackServiceUseCase.getAllTrackServices()).thenReturn(List.of());
-        when(eventUseCase.getEventsByOrganizerId(ORGANIZER_ID)).thenReturn(List.of());
+        when(eventPersistencePort.findByOrganizerIdUser(ORGANIZER_ID)).thenReturn(List.of());
     }
 
     private User userWithOrganizerRole() {

@@ -45,11 +45,6 @@ public class ServiceController extends AbstractWebController {
         return mapResponses(serviceUseCase.getAllServices(), serviceWebMapper::toResponse);
     }
 
-    @GetMapping("/allowed-for-organizer")
-    public List<ServiceResponse> getAllServicesAllowedForOrganizer() {
-        return mapResponses(serviceUseCase.getAllServicesAllowedForOrganizer(), serviceWebMapper::toResponse);
-    }
-
     @PatchMapping("/{id}/enable")
     public ServiceResponse enableService(@PathVariable Long id) {
         return serviceWebMapper.toResponse(serviceUseCase.enableService(id));

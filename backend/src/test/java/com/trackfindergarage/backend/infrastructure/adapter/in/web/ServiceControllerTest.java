@@ -69,19 +69,15 @@ class ServiceControllerTest {
     @Test
     void listingAndToggleEndpointsMapResponses() {
         when(serviceUseCase.getAllServices()).thenReturn(List.of(service(1L, "A", true, false, true)));
-        when(serviceUseCase.getAllServicesAllowedForOrganizer()).thenReturn(List.of(service(2L, "B", false, true, true)));
         when(serviceUseCase.enableService(3L)).thenReturn(service(3L, "C", true, true, true));
         when(serviceUseCase.disableService(4L)).thenReturn(service(4L, "D", true, true, false));
 
         List<ServiceResponse> allServices = serviceController.getAllServices();
-        List<ServiceResponse> organizerServices = serviceController.getAllServicesAllowedForOrganizer();
         ServiceResponse enabled = serviceController.enableService(3L);
         ServiceResponse disabled = serviceController.disableService(4L);
 
         assertEquals(1, allServices.size());
         assertEquals("A", allServices.get(0).getName());
-        assertEquals(1, organizerServices.size());
-        assertEquals("B", organizerServices.get(0).getName());
         assertEquals(true, enabled.getEnabled());
         assertEquals(false, disabled.getEnabled());
     }

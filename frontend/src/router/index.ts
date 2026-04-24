@@ -39,10 +39,6 @@ router.beforeEach((to) => {
     return { name: 'profile' }
   }
 
-  if (to.meta.requiresUser && !isUserRole(session?.roleName)) {
-    return { name: 'home' }
-  }
-
   if (to.meta.requiresProfile && !session) {
     return { name: 'home' }
   }

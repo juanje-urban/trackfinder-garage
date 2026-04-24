@@ -1,48 +1,11 @@
 package com.trackfindergarage.backend.infrastructure.adapter.in.web.mapper;
 
 import com.trackfindergarage.backend.domain.model.Event;
-import com.trackfindergarage.backend.domain.model.Organizer;
-import com.trackfindergarage.backend.domain.model.Track;
-import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.CreateEventRequest;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.EventResponse;
-import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.UpdateEventRequest;
 import org.springframework.stereotype.Component;
 
 @Component
 public class EventWebMapper {
-
-    public Event toDomain(CreateEventRequest request) {
-        Organizer organizer = new Organizer();
-        organizer.setIdUser(request.getOrganizerId());
-
-        Track track = new Track();
-        track.setId(request.getTrackId());
-
-        Event event = new Event();
-        event.setOrganizer(organizer);
-        event.setTrack(track);
-        event.setEventDate(request.getEventDate());
-        event.setBasePrice(request.getBasePrice());
-        event.setMaxParticipants(request.getMaxParticipants());
-        event.setDescription(normalizeDescription(request.getDescription()));
-
-        return event;
-    }
-
-    public void updateDomain(Event event, UpdateEventRequest request) {
-        Organizer organizer = new Organizer();
-        organizer.setIdUser(request.getOrganizerId());
-
-        Track track = new Track();
-        track.setId(request.getTrackId());
-
-        event.setOrganizer(organizer);
-        event.setTrack(track);
-        event.setEventDate(request.getEventDate());
-        event.setBasePrice(request.getBasePrice());
-        event.setMaxParticipants(request.getMaxParticipants());
-        event.setDescription(normalizeDescription(request.getDescription()));
-    }
 
     public EventResponse toResponse(Event event, int remainingCapacity) {
         return EventResponse.builder()
@@ -58,9 +21,5 @@ public class EventWebMapper {
                 .remainingCapacity(remainingCapacity)
                 .description(event.getDescription())
                 .build();
-    }
-
-    private String normalizeDescription(String description) {
-        return description == null ? null : description.trim();
     }
 }

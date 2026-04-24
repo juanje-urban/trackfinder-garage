@@ -2,7 +2,7 @@ package com.trackfindergarage.backend.infrastructure.adapter.in.web.mapper;
 
 import com.trackfindergarage.backend.domain.model.Message;
 import com.trackfindergarage.backend.domain.model.User;
-import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.CreateMessageRequest;
+import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.MessageContactResponse;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.MessageResponse;
 import org.junit.jupiter.api.Test;
 
@@ -13,22 +13,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class MessageWebMapperTest {
 
     private final MessageWebMapper messageWebMapper = new MessageWebMapper();
-
-    @Test
-    void toDomainMapsCreateRequestToMessage() {
-        CreateMessageRequest request = new CreateMessageRequest();
-        request.setSenderId(1L);
-        request.setReceiverId(2L);
-        request.setSubject("Hola");
-        request.setMessage("Mensaje");
-
-        Message message = messageWebMapper.toDomain(request);
-
-        assertEquals(1L, message.getSender().getId());
-        assertEquals(2L, message.getReceiver().getId());
-        assertEquals("Hola", message.getSubject());
-        assertEquals("Mensaje", message.getContent());
-    }
 
     @Test
     void toResponseMapsMessageToResponse() {
@@ -58,5 +42,17 @@ class MessageWebMapperTest {
         assertEquals("receiver", response.getReceiverDisplayName());
         assertEquals("Hola", response.getSubject());
         assertEquals("Mensaje", response.getMessage());
+    }
+
+    @Test
+    void toContactResponseMapsUserToContactResponse() {
+        User user = new User();
+        user.setId(3L);
+        user.setDisplayName("pilot");
+
+        MessageContactResponse response = messageWebMapper.toContactResponse(user);
+
+        assertEquals(3L, response.getId());
+        assertEquals("pilot", response.getDisplayName());
     }
 }

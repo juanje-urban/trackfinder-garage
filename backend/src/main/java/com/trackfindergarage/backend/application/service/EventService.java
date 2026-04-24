@@ -36,10 +36,6 @@ public class EventService implements EventUseCase {
     private static final String DESCRIPTION_REQUIRED = "La descripción es obligatoria";
     private static final String MAX_PARTICIPANTS_CANNOT_BE_LESS_THAN_CURRENT_BOOKINGS =
             "El número máximo de participantes no puede ser menor que el número actual de reservas (%d)";
-    private static final String START_DATE_REQUIRED = "La fecha de inicio es obligatoria";
-    private static final String END_DATE_REQUIRED = "La fecha de fin es obligatoria";
-    private static final String START_DATE_MUST_BE_BEFORE_OR_EQUAL_END_DATE =
-            "La fecha de inicio debe ser anterior o igual a la fecha de fin";
 
     private final EventBookingPersistencePort eventBookingPersistencePort;
     private final EventPersistencePort eventPersistencePort;
@@ -60,8 +56,8 @@ public class EventService implements EventUseCase {
     public Event createEvent(Event event) {
         validateEvent(event);
 
-        Long organizerId = extractOrganizerId(event);
-        Long trackId = extractTrackId(event);
+        Long organizerId = event.getOrganizer().getIdUser();
+        Long trackId = event.getTrack().getId();
 
         Organizer organizer = organizerPersistencePort.findById(organizerId)
                 .orElseThrow(() -> new ResourceNotFoundException(ORGANIZER_NOT_FOUND_WITH_ID + organizerId));
@@ -87,8 +83,8 @@ public class EventService implements EventUseCase {
             throw new IllegalArgumentException("Past events cannot be modified");
         }
 
-        Long organizerId = extractOrganizerId(event);
-        Long trackId = extractTrackId(event);
+        Long organizerId = event.getOrganizer().getIdUser();
+        Long trackId = event.getTrack().getId();
 
         Organizer organizer = organizerPersistencePort.findById(organizerId)
                 .orElseThrow(() -> new ResourceNotFoundException(ORGANIZER_NOT_FOUND_WITH_ID + organizerId));
@@ -116,12 +112,6 @@ public class EventService implements EventUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Event> getAllEvents() {
-        return eventPersistencePort.findAll();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
     public List<Event> getFutureEvents() {
         return eventPersistencePort.findFutureEvents(LocalDate.now());
     }
@@ -140,31 +130,6 @@ public class EventService implements EventUseCase {
 
         int currentBookings = Math.toIntExact(eventBookingPersistencePort.countByEventId(eventId));
         return Math.max(0, event.getMaxParticipants() - currentBookings);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<Event> getEventsByOrganizerId(Long organizerId) {
-        organizerPersistencePort.findById(organizerId)
-                .orElseThrow(() -> new ResourceNotFoundException(ORGANIZER_NOT_FOUND_WITH_ID + organizerId));
-
-        return eventPersistencePort.findByOrganizerIdUser(organizerId);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<Event> getEventsByTrackId(Long trackId) {
-        trackPersistencePort.findById(trackId)
-                .orElseThrow(() -> new ResourceNotFoundException(TRACK_NOT_FOUND_WITH_ID + trackId));
-
-        return eventPersistencePort.findByTrackId(trackId);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<Event> getEventsByDateRange(LocalDate startDate, LocalDate endDate) {
-        validateDateRange(startDate, endDate);
-        return eventPersistencePort.findByEventDateBetween(startDate, endDate);
     }
 
     private void validateEvent(Event event) {
@@ -197,18 +162,6 @@ public class EventService implements EventUseCase {
         }
     }
 
-    private void validateDateRange(LocalDate startDate, LocalDate endDate) {
-        if (startDate == null) {
-            throw new IllegalArgumentException(START_DATE_REQUIRED);
-        }
-        if (endDate == null) {
-            throw new IllegalArgumentException(END_DATE_REQUIRED);
-        }
-        if (startDate.isAfter(endDate)) {
-            throw new IllegalArgumentException(START_DATE_MUST_BE_BEFORE_OR_EQUAL_END_DATE);
-        }
-    }
-
     private void validateTrackAndDateUniqueness(Long trackId, LocalDate eventDate, Long currentEventId) {
         eventPersistencePort.findByTrackIdAndEventDate(trackId, eventDate)
                 .ifPresent(existingEvent -> {
@@ -218,14 +171,6 @@ public class EventService implements EventUseCase {
                         );
                     }
                 });
-    }
-
-    private Long extractOrganizerId(Event event) {
-        return event.getOrganizer().getIdUser();
-    }
-
-    private Long extractTrackId(Event event) {
-        return event.getTrack().getId();
     }
 
     private void validateMaxParticipantsAgainstBookings(Long eventId, Integer maxParticipants) {

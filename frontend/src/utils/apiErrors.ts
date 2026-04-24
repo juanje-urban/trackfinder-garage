@@ -11,7 +11,7 @@ type ResolveApiErrorOptions = {
   matches?: ApiErrorMatch[]
 }
 
-export function getBackendErrorMessage(error: unknown): string | null {
+function getBackendErrorMessage(error: unknown): string | null {
   if (!isAxiosError(error)) {
     return null
   }

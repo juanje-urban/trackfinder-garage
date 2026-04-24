@@ -12,20 +12,10 @@ public interface SpringDataEventRepository extends JpaRepository<Event, Long> {
 
     @Override
     @EntityGraph(attributePaths = {"organizer", "track"})
-    List<Event> findAll();
-
-    @Override
-    @EntityGraph(attributePaths = {"organizer", "track"})
     Optional<Event> findById(Long id);
 
     @EntityGraph(attributePaths = {"organizer", "track"})
     List<Event> findByOrganizerIdUser(Long organizerId);
-
-    @EntityGraph(attributePaths = {"organizer", "track"})
-    List<Event> findByTrackId(Long trackId);
-
-    @EntityGraph(attributePaths = {"organizer", "track"})
-    List<Event> findByEventDateBetween(LocalDate startDate, LocalDate endDate);
 
     @EntityGraph(attributePaths = {"organizer", "track"})
     Optional<Event> findByTrackIdAndEventDate(Long trackId, LocalDate eventDate);
