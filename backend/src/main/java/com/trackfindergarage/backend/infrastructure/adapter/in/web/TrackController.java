@@ -16,6 +16,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Expone los endpoints HTTP relacionados con el catálogo de circuitos.
+ *
+ * <p>Combina operaciones administrativas de alta y edición con consultas públicas y con la consulta
+ * del ranking de tiempos por circuito.</p>
+ */
 @RestController
 @RequestMapping("/tracks")
 public class TrackController extends AbstractWebController {
@@ -35,6 +41,12 @@ public class TrackController extends AbstractWebController {
         this.trackRecordWebMapper = trackRecordWebMapper;
     }
 
+    /**
+     * Crea un nuevo circuito (solo administrador).
+     *
+     * @param request datos del circuito a crear
+     * @return circuito creado
+     */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasRole('ADMIN')")
@@ -42,6 +54,13 @@ public class TrackController extends AbstractWebController {
         return trackWebMapper.toResponse(trackUseCase.createTrack(trackWebMapper.toDomain(request)));
     }
 
+    /**
+     * Actualiza un circuito existente.
+     *
+     * @param id identificador del circuito
+     * @param request nuevos datos del circuito
+     * @return circuito actualizado
+     */
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public TrackResponse updateTrack(@PathVariable Long id,
@@ -51,16 +70,34 @@ public class TrackController extends AbstractWebController {
         return trackWebMapper.toResponse(trackUseCase.updateTrack(id, trackToUpdate));
     }
 
+    /**
+     * Recupera todos los circuitos del catálogo.
+     *
+     * @return listado de circuitos
+     */
     @GetMapping
     public List<TrackResponse> getAllTracks() {
         return mapResponses(trackUseCase.getAllTracks(), trackWebMapper::toResponse);
     }
 
+    /**
+     * Recupera un circuito concreto por su identificador.
+     *
+     * @param id identificador del circuito
+     * @return circuito encontrado
+     */
     @GetMapping("/{id}")
     public TrackResponse getTrackById(@PathVariable Long id) {
         return trackWebMapper.toResponse(trackUseCase.getTrackById(id));
     }
 
+    /**
+     * Recupera el ranking de vueltas para un circuito, limitado a los primeros resultados.
+     *
+     * @param id identificador del circuito
+     * @param limit numero máximo de registros a devolver
+     * @return ranking resumido del circuito
+     */
     @GetMapping("/{id}/ranking")
     public List<TrackRecordResponse> getTrackRanking(@PathVariable Long id,
                                                      @RequestParam(defaultValue = "3") int limit) {

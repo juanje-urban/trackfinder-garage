@@ -13,6 +13,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+/**
+ * Implementa la lógica de asignación de servicios a circuitos.
+ *
+ * <p>Se asegura de que la combinación del circuito-servicio no se repita y de que el servicio elegido esté
+ * permitido para pistas antes de persistir la relación.</p>
+ */
 @org.springframework.stereotype.Service
 @Transactional
 public class TrackServiceService implements TrackServiceUseCase {
@@ -39,6 +45,12 @@ public class TrackServiceService implements TrackServiceUseCase {
         this.servicePersistencePort = servicePersistencePort;
     }
 
+    /**
+     * Crea una nueva relación de servicio para un circuito.
+     *
+     * @param trackService relación a crear
+     * @return asignación persistida
+     */
     @Override
     public TrackService createTrackService(TrackService trackService) {
         Long trackId = extractTrackId(trackService);
@@ -53,17 +65,28 @@ public class TrackServiceService implements TrackServiceUseCase {
         return trackServicePersistencePort.save(trackService);
     }
 
+    /**
+     * Elimina una relación existente entre circuito y servicio.
+     *
+     * @param id identificador de la relación
+     */
     @Override
     public void deleteTrackService(Long id) {
         trackServicePersistencePort.delete(findTrackServiceOrThrow(id));
     }
 
+    /**
+     * Recupera todas las asignaciones entre circuitos y servicios.
+     *
+     * @return listado de asignaciones
+     */
     @Override
     @Transactional(readOnly = true)
     public List<TrackService> getAllTrackServices() {
         return trackServicePersistencePort.findAll();
     }
 
+    //Métodos auxiliares para recuperar circuitos y servicios
     private void ensureTrackServiceDoesNotExist(Long trackId, Long serviceId) {
         trackServicePersistencePort.findByTrackIdAndServiceId(trackId, serviceId)
                 .ifPresent(existingAssignment -> {

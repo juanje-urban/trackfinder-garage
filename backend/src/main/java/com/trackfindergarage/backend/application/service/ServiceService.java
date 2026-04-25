@@ -9,6 +9,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+/**
+ * Implementa la lógica de administración del catalogo de servicios.
+ *
+ * <p>Controla la unicidad del nombre, mantiene el estado habilitado del servicio y expone las operaciones
+ * básicas de alta, modificación, etc.</p>
+ */
 @org.springframework.stereotype.Service
 @Transactional
 public class ServiceService implements ServiceUseCase {
@@ -22,6 +28,12 @@ public class ServiceService implements ServiceUseCase {
         this.servicePersistencePort = servicePersistencePort;
     }
 
+    /**
+     * Crea un nuevo servicio de catalogo.
+     *
+     * @param service datos del servicio
+     * @return servicio persistido
+     */
     @Override
     public Service createService(Service service) {
         servicePersistencePort.findByName(service.getName())
@@ -33,6 +45,13 @@ public class ServiceService implements ServiceUseCase {
         return servicePersistencePort.save(service);
     }
 
+    /**
+     * Actualiza un servicio existente.
+     *
+     * @param id identificador del servicio
+     * @param service nuevos datos del servicio
+     * @return servicio actualizado
+     */
     @Override
     public Service updateService(Long id, Service service) {
         Service existingService = findServiceOrThrow(id);
@@ -52,12 +71,23 @@ public class ServiceService implements ServiceUseCase {
         return servicePersistencePort.save(existingService);
     }
 
+    /**
+     * Recupera el catálogo completo de servicios.
+     *
+     * @return listado de servicios
+     */
     @Override
     @Transactional(readOnly = true)
     public List<Service> getAllServices() {
         return servicePersistencePort.findAll();
     }
 
+    /**
+     * Habilita un servicio.
+     *
+     * @param id identificador del servicio
+     * @return servicio habilitado
+     */
     @Override
     public Service enableService(Long id) {
         Service existingService = findServiceOrThrow(id);
@@ -65,6 +95,12 @@ public class ServiceService implements ServiceUseCase {
         return servicePersistencePort.save(existingService);
     }
 
+    /**
+     * Deshabilita un servicio existente.
+     *
+     * @param id identificador del servicio
+     * @return servicio deshabilitado
+     */
     @Override
     public Service disableService(Long id) {
         Service existingService = findServiceOrThrow(id);

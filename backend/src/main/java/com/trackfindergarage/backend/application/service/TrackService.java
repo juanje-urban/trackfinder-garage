@@ -10,6 +10,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+/**
+ * Implementa la lógica de gestión del catalogo de circuitos.
+ *
+ * <p>Valida datos obligatorios y normaliza textos.</p>
+ */
 @Service
 @Transactional
 public class TrackService implements TrackUseCase {
@@ -28,6 +33,12 @@ public class TrackService implements TrackUseCase {
         this.trackPersistencePort = trackPersistencePort;
     }
 
+    /**
+     * Crea un circuito tras validar sus datos básicos.
+     *
+     * @param track datos del circuito
+     * @return circuito
+     */
     @Override
     public Track createTrack(Track track) {
         validateTrack(track);
@@ -36,6 +47,13 @@ public class TrackService implements TrackUseCase {
         return trackPersistencePort.save(track);
     }
 
+    /**
+     * Actualiza un circuito existente.
+     *
+     * @param id identificador del circuito a modificar
+     * @param track nuevos datos del circuito
+     * @return circuito actualizado
+     */
     @Override
     public Track updateTrack(Long id, Track track) {
         validateTrack(track);
@@ -51,25 +69,41 @@ public class TrackService implements TrackUseCase {
         return trackPersistencePort.save(existingTrack);
     }
 
+    /**
+     * Recupera todos los circuitos registrados.
+     *
+     * @return listado de circuitos
+     */
     @Override
     @Transactional(readOnly = true)
     public List<Track> getAllTracks() {
         return trackPersistencePort.findAll();
     }
 
+    /**
+     * Recupera un circuito por su identificador.
+     *
+     * @param id identificador del circuito
+     * @return circuito encontrado
+     */
     @Override
     @Transactional(readOnly = true)
     public Track getTrackById(Long id) {
-        return trackPersistencePort.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(TRACK_NOT_FOUND_WITH_ID + id));
+        return findTrackOrThrow(id);
     }
 
-    //Función privada que hace lo mismo que getTrackById. Los métodos con proxy de Spring no deben ser llamados desde dentro del propio bean. (Da error sonar)
+    /**
+     * Variante interna de búsqueda que evita invocar un método proxificado desde el propio bean.
+     *
+     * @param id identificador del circuito
+     * @return circuito encontrado
+     */
     private Track findTrackOrThrow(Long id) {
         return trackPersistencePort.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(TRACK_NOT_FOUND_WITH_ID + id));
     }
 
+    //Validación básica de los datos
     private void validateTrack(Track track) {
         if (track == null) {
             throw new IllegalArgumentException("Track is required");
@@ -88,6 +122,7 @@ public class TrackService implements TrackUseCase {
         }
     }
 
+    //Normaliza el nombre largo, el alias y la descripción
     private void normalizeTrack(Track track) {
         track.setName(track.getName().trim());
         track.setShortName(track.getShortName().trim());
@@ -95,6 +130,7 @@ public class TrackService implements TrackUseCase {
         track.setDescription(track.getDescription().trim());
     }
 
+    //Comprueba valores repetidos
     private void validateUniqueFields(Track track, Long currentTrackId) {
         trackPersistencePort.findByName(track.getName())
                 .filter(existingTrack -> !existingTrack.getId().equals(currentTrackId))
