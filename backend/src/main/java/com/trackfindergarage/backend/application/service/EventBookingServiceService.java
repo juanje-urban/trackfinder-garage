@@ -12,6 +12,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Locale;
 
+/**
+ * Implementa la consulta de servicios adicionales contratados dentro de las reservas.
+ */
 @org.springframework.stereotype.Service
 @Transactional
 public class EventBookingServiceService implements EventBookingServiceUseCase {
@@ -36,6 +39,12 @@ public class EventBookingServiceService implements EventBookingServiceUseCase {
         this.userPersistencePort = userPersistencePort;
     }
 
+    /**
+     * Recupera los servicios contratados en una reserva concreta.
+     *
+     * @param eventBookingId identificador de la reserva
+     * @return listado de servicios contratados
+     */
     @Override
     @Transactional(readOnly = true)
     public List<EventBookingService> getEventBookingServicesByEventBookingId(Long eventBookingId) {
@@ -45,6 +54,13 @@ public class EventBookingServiceService implements EventBookingServiceUseCase {
         return eventBookingServicePersistencePort.findByEventBookingId(eventBookingId);
     }
 
+    /**
+     * Recupera los servicios contratados por el usuario en un evento concreto.
+     *
+     * @param eventId identificador del evento
+     * @param authenticatedEmail correo del usuario autenticado
+     * @return listado de servicios contratados por el usuario en ese evento
+     */
     @Override
     @Transactional(readOnly = true)
     public List<EventBookingService> getEventBookingServicesByEventIdAndAuthenticatedEmail(Long eventId,

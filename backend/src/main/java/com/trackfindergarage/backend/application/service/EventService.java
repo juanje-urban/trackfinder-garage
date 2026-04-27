@@ -16,6 +16,12 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * Implementa la lógica de gestión de eventos.
+ *
+ * <p>Valida reglas de negocio como fecha futura, unicidad por circuito y fecha, y consistencia entre el aforo y las
+ * reservas ya realizadas.</p>
+ */
 @org.springframework.stereotype.Service
 @Transactional
 public class EventService implements EventUseCase {
@@ -52,6 +58,12 @@ public class EventService implements EventUseCase {
         this.trackPersistencePort = trackPersistencePort;
     }
 
+    /**
+     * Crea un evento nuevo tras validar sus datos.
+     *
+     * @param event datos del evento
+     * @return evento persistido
+     */
     @Override
     public Event createEvent(Event event) {
         validateEvent(event);
@@ -73,6 +85,13 @@ public class EventService implements EventUseCase {
         return eventPersistencePort.save(event);
     }
 
+    /**
+     * Actualiza un evento futuro ya existente.
+     *
+     * @param id identificador del evento a modificar
+     * @param event nuevos datos del evento
+     * @return evento actualizado
+     */
     @Override
     public Event updateEvent(Long id, Event event) {
         validateEvent(event);
@@ -104,18 +123,34 @@ public class EventService implements EventUseCase {
         return eventPersistencePort.save(existingEvent);
     }
 
+    /**
+     * Elimina un evento existente.
+     *
+     * @param id identificador del evento a eliminar
+     */
     @Override
     public void deleteEvent(Long id) {
         Event event = findEventOrThrow(id);
         eventPersistencePort.delete(event);
     }
 
+    /**
+     * Recupera los eventos cuya fecha aún no ha llegado.
+     *
+     * @return listado de eventos futuros
+     */
     @Override
     @Transactional(readOnly = true)
     public List<Event> getFutureEvents() {
         return eventPersistencePort.findFutureEvents(LocalDate.now());
     }
 
+    /**
+     * Recupera un evento por su identificador.
+     *
+     * @param id identificador del evento
+     * @return evento encontrado
+     */
     @Override
     @Transactional(readOnly = true)
     public Event getEventById(Long id) {
@@ -123,6 +158,12 @@ public class EventService implements EventUseCase {
                 .orElseThrow(() -> new ResourceNotFoundException(EVENT_NOT_FOUND_WITH_ID + id));
     }
 
+    /**
+     * Calcula las plazas libres que quedan en un evento a partir de su aforo y sus reservas actuales.
+     *
+     * @param eventId identificador del evento
+     * @return plazas restantes
+     */
     @Override
     @Transactional(readOnly = true)
     public int getRemainingCapacity(Long eventId) {
@@ -132,6 +173,7 @@ public class EventService implements EventUseCase {
         return Math.max(0, event.getMaxParticipants() - currentBookings);
     }
 
+    //Métodos para validación básica de los datos de entrada
     private void validateEvent(Event event) {
         if (event.getOrganizer() == null || event.getOrganizer().getIdUser() == null) {
             throw new IllegalArgumentException(ORGANIZER_ID_REQUIRED);

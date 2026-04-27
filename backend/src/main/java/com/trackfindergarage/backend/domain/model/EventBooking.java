@@ -8,6 +8,12 @@ import lombok.Setter;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+/**
+ * Representa la reserva que un usuario realiza de un evento.
+ *
+ * <p>Guarda la fecha de compra, el precio base pagado en ese momento y si la reserva puede mostrarse
+ * públicamente en el perfil del usuario.</p>
+ */
 @Entity
 @Table(
         name = "event_bookings",

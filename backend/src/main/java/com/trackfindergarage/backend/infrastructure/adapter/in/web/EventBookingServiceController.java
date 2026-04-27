@@ -8,6 +8,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Expone los endpoints HTTP de consulta de servicios adicionales contratados en reservas.
+ */
 @RestController
 @RequestMapping("/event-booking-services")
 public class EventBookingServiceController extends AbstractWebController {
@@ -21,6 +24,12 @@ public class EventBookingServiceController extends AbstractWebController {
         this.eventBookingServiceWebMapper = eventBookingServiceWebMapper;
     }
 
+    /**
+     * Recupera los servicios contratados en una reserva concreta.
+     *
+     * @param eventBookingId identificador de la reserva
+     * @return listado de servicios contratados
+     */
     @GetMapping("/booking/{eventBookingId}")
     public List<EventBookingServiceResponse> getEventBookingServicesByEventBookingId(@PathVariable Long eventBookingId) {
         return mapResponses(
@@ -29,6 +38,13 @@ public class EventBookingServiceController extends AbstractWebController {
         );
     }
 
+    /**
+     * Recupera los servicios contratados por el usuario autenticado en un evento concreto.
+     *
+     * @param eventId identificador del evento
+     * @param authentication autenticación del usuario actual
+     * @return listado de servicios contratados por el usuario en ese evento
+     */
     @GetMapping("/event/{eventId}/me")
     public List<EventBookingServiceResponse> getCurrentUserEventBookingServicesByEventId(@PathVariable Long eventId,
                                                                                          Authentication authentication) {

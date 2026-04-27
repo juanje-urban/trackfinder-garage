@@ -17,6 +17,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * Expone los endpoints HTTP del espacio de trabajo del organizador.
+ */
 @RestController
 @RequestMapping("/organizer-workspace")
 @PreAuthorize("hasRole('ORGANIZER')")
@@ -31,6 +34,12 @@ public class OrganizerWorkspaceController extends AbstractWebController {
         this.organizerWorkspaceWebMapper = organizerWorkspaceWebMapper;
     }
 
+    /**
+     * Recupera la vista completa del workspace del organizador.
+     *
+     * @param authentication autenticación del usuario actual
+     * @return respuesta con el estado del workspace
+     */
     @GetMapping
     public OrganizerWorkspaceResponse getWorkspace(Authentication authentication) {
         return organizerWorkspaceWebMapper.toResponse(
@@ -38,6 +47,13 @@ public class OrganizerWorkspaceController extends AbstractWebController {
         );
     }
 
+    /**
+     * Añade un servicio del catálogo al organizador.
+     *
+     * @param request petición con el servicio a añadir
+     * @param authentication autenticación del usuario actual
+     * @return workspace actualizado
+     */
     @PostMapping("/services")
     public OrganizerWorkspaceResponse addOrganizerService(@Valid @RequestBody CreateOrganizerCatalogServiceRequest request,
                                                           Authentication authentication) {
@@ -49,6 +65,13 @@ public class OrganizerWorkspaceController extends AbstractWebController {
         );
     }
 
+    /**
+     * Elimina un servicio propio del organizador.
+     *
+     * @param organizerServiceId identificador de la asignación a eliminar
+     * @param authentication autenticación del usuario actual
+     * @return workspace actualizado
+     */
     @DeleteMapping("/services/{organizerServiceId}")
     public OrganizerWorkspaceResponse removeOrganizerService(@PathVariable Long organizerServiceId,
                                                              Authentication authentication) {
@@ -60,6 +83,13 @@ public class OrganizerWorkspaceController extends AbstractWebController {
         );
     }
 
+    /**
+     * Crea un evento nuevo desde el workspace del organizador.
+     *
+     * @param request petición con los datos del evento
+     * @param authentication autenticación del usuario actual
+     * @return workspace actualizado
+     */
     @PostMapping("/events")
     public OrganizerWorkspaceResponse createEvent(@Valid @RequestBody UpsertOrganizerEventRequest request,
                                                   Authentication authentication) {
@@ -71,6 +101,14 @@ public class OrganizerWorkspaceController extends AbstractWebController {
         );
     }
 
+    /**
+     * Actualiza un evento existente del organizador.
+     *
+     * @param eventId identificador del evento a modificar
+     * @param request petición con los nuevos datos del evento
+     * @param authentication autenticación del usuario actual
+     * @return workspace actualizado
+     */
     @PutMapping("/events/{eventId}")
     public OrganizerWorkspaceResponse updateEvent(@PathVariable Long eventId,
                                                   @Valid @RequestBody UpsertOrganizerEventRequest request,
@@ -84,6 +122,13 @@ public class OrganizerWorkspaceController extends AbstractWebController {
         );
     }
 
+    /**
+     * Elimina un evento del organizador.
+     *
+     * @param eventId identificador del evento a eliminar
+     * @param authentication autenticación del usuario actual
+     * @return workspace actualizado
+     */
     @DeleteMapping("/events/{eventId}")
     public OrganizerWorkspaceResponse deleteEvent(@PathVariable Long eventId,
                                                   Authentication authentication) {

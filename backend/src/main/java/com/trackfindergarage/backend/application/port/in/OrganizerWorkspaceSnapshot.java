@@ -12,6 +12,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Agrupa todos los datos que necesita el frontend para pintar el workspace del organizador.
+ */
 public record OrganizerWorkspaceSnapshot(
         Organizer organizer,
         List<Service> availableServices,

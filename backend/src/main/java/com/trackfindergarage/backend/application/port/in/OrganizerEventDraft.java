@@ -4,6 +4,9 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * Representa el borrador de un evento.
+ */
 public record OrganizerEventDraft(
         Long trackId,
         LocalDate eventDate,

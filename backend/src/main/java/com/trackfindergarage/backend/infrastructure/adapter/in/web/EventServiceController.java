@@ -7,6 +7,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Expone los endpoints HTTP de consulta de servicios adicionales asociados a un evento.
+ */
 @RestController
 @RequestMapping("/event-services")
 public class EventServiceController extends AbstractWebController {
@@ -20,6 +23,12 @@ public class EventServiceController extends AbstractWebController {
         this.eventServiceWebMapper = eventServiceWebMapper;
     }
 
+    /**
+     * Recupera los servicios configurados para un evento concreto.
+     *
+     * @param eventId identificador del evento
+     * @return listado de servicios del evento
+     */
     @GetMapping("/event/{eventId}")
     public List<EventServiceResponse> getEventServicesByEventId(@PathVariable Long eventId) {
         return mapResponses(eventServiceUseCase.getEventServicesByEventId(eventId), eventServiceWebMapper::toResponse);

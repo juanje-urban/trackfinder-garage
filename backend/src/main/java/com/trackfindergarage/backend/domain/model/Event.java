@@ -8,6 +8,11 @@ import lombok.Setter;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+/**
+ * Representa un evento organizado en un circuito por un organizador en una fecha concreta.
+ *
+ * <p>Recoge la información base que luego consumen las reservas y los servicios adicionales del evento.</p>
+ */
 @Entity
 @Table(
         name = "events",

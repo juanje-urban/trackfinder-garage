@@ -7,6 +7,12 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 
+/**
+ * Representa un servicio adicional ofertado dentro de un evento.
+ *
+ * <p>Puede apuntar a un servicio propio del circuito o a uno del organizador, junto con el precio
+ * concreto con el que se ofrece en ese evento.</p>
+ */
 @Entity
 @Table(
         name = "event_services",

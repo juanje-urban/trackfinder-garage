@@ -3,6 +3,9 @@ package com.trackfindergarage.backend.application.port.in;
 import java.math.BigDecimal;
 import java.util.List;
 
+/**
+ * Estadísticas básicas del workspace del organizador.
+ */
 public record OrganizerWorkspaceStatsView(
         BigDecimal totalBaseRevenue,
         BigDecimal totalServiceRevenue,

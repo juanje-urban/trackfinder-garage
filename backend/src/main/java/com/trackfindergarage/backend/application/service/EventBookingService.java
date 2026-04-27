@@ -22,6 +22,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
+/**
+ * Implementa la lógica de reserva de eventos para usuarios estándar.
+ *
+ * <p>Valida disponibilidad, propiedad de la reserva, reglas de cancelación y persistencia de los
+ * precios aplicados en el momento del checkout.</p>
+ */
 @org.springframework.stereotype.Service
 @Transactional
 public class EventBookingService implements EventBookingUseCase {
@@ -69,6 +75,15 @@ public class EventBookingService implements EventBookingUseCase {
         this.eventPersistencePort = eventPersistencePort;
     }
 
+    /**
+     * Crea y persiste la reserva base del evento antes de asociar servicios adicionales.
+     *
+     * <p>Este helper concentra las validaciones propias de la reserva: usuario y evento existentes,
+     * evento futuro, unicidad por usuario, aforo disponible y fijación de los datos de compra.</p>
+     *
+     * @param eventBooking reserva en construcción
+     * @return reserva persistida con sus datos base ya fijados
+     */
     private EventBooking createEventBooking(EventBooking eventBooking) {
         validateEventBooking(eventBooking);
 
@@ -105,6 +120,15 @@ public class EventBookingService implements EventBookingUseCase {
         return eventBookingPersistencePort.save(eventBooking);
     }
 
+    /**
+     * Crea una reserva para el usuario autenticado y registra los servicios adicionales seleccionados.
+     *
+     * @param authenticatedEmail correo del usuario autenticado
+     * @param eventId identificador del evento reservado
+     * @param eventServiceIds identificadores de servicios adicionales seleccionados
+     * @param isVisible indica si la reserva será visible en el perfil público
+     * @return reserva creada
+     */
     @Override
     public EventBooking checkoutEventBooking(String authenticatedEmail, Long eventId, List<Long> eventServiceIds, boolean isVisible) {
         User user = loadAuthenticatedUser(authenticatedEmail);
@@ -118,8 +142,10 @@ public class EventBookingService implements EventBookingUseCase {
         event.setId(eventId);
         eventBooking.setEvent(event);
 
+        // Primero se crea la reserva base; después se añaden los servicios extra seleccionados.
         EventBooking createdEventBooking = createEventBooking(eventBooking);
 
+        // Normaliza la selección de servicios eliminando nulos y duplicados.
         List<Long> distinctEventServiceIds = eventServiceIds == null
                 ? List.of()
                 : eventServiceIds.stream()
@@ -133,6 +159,14 @@ public class EventBookingService implements EventBookingUseCase {
         return createdEventBooking;
     }
 
+    /**
+     * Actualiza la visibilidad de una reserva que pertenece al usuario autenticado.
+     *
+     * @param authenticatedEmail correo del usuario autenticado
+     * @param id identificador de la reserva
+     * @param isVisible nuevo estado de visibilidad
+     * @return reserva actualizada
+     */
     @Override
     public EventBooking updateOwnEventBookingVisibility(String authenticatedEmail, Long id, boolean isVisible) {
         EventBooking eventBooking = loadOwnedBooking(authenticatedEmail, id);
@@ -141,11 +175,18 @@ public class EventBookingService implements EventBookingUseCase {
         return eventBookingPersistencePort.save(eventBooking);
     }
 
+    /**
+     * Cancela una reserva propia si sigue cumpliendo las reglas de cancelación.
+     *
+     * @param authenticatedEmail correo del usuario autenticado
+     * @param id identificador de la reserva
+     */
     @Override
     public void deleteOwnEventBooking(String authenticatedEmail, Long id) {
         deleteEventBooking(loadOwnedBooking(authenticatedEmail, id));
     }
 
+    // Valida si la reserva aún puede cancelarse y elimina primero sus servicios asociados.
     private void deleteEventBooking(EventBooking eventBooking) {
         LocalDate deletionLimitDate = LocalDate.now().plusDays(14);
         if (eventBooking.getEvent().getEventDate().isBefore(deletionLimitDate)) {
@@ -158,12 +199,24 @@ public class EventBookingService implements EventBookingUseCase {
         eventBookingPersistencePort.delete(eventBooking);
     }
 
+    /**
+     * Recupera las reservas del usuario autenticado.
+     *
+     * @param authenticatedEmail correo del usuario autenticado
+     * @return listado de reservas del usuario
+     */
     @Override
     @Transactional(readOnly = true)
     public List<EventBooking> getEventBookingsByAuthenticatedEmail(String authenticatedEmail) {
         return eventBookingPersistencePort.findByUserId(loadAuthenticatedUser(authenticatedEmail).getId());
     }
 
+    /**
+     * Recupera las reservas visibles de un usuario concreto.
+     *
+     * @param userId identificador del usuario
+     * @return listado de reservas visibles del usuario
+     */
     @Override
     @Transactional(readOnly = true)
     public List<EventBooking> getEventBookingsByUserId(Long userId) {
@@ -176,6 +229,12 @@ public class EventBookingService implements EventBookingUseCase {
                 .toList();
     }
 
+    /**
+     * Recupera todas las reservas asociadas a un evento.
+     *
+     * @param eventId identificador del evento
+     * @return listado de reservas del evento
+     */
     @Override
     @Transactional(readOnly = true)
     public List<EventBooking> getEventBookingsByEventId(Long eventId) {
@@ -185,6 +244,7 @@ public class EventBookingService implements EventBookingUseCase {
         return eventBookingPersistencePort.findByEventId(eventId);
     }
 
+    // Valida los datos mínimos de entrada para crear una reserva.
     private void validateEventBooking(EventBooking eventBooking) {
         if (eventBooking.getUser() == null || eventBooking.getUser().getId() == null) {
             throw new IllegalArgumentException(USER_ID_REQUIRED);
@@ -194,6 +254,7 @@ public class EventBookingService implements EventBookingUseCase {
         }
     }
 
+    // Carga y normaliza el usuario autenticado a partir de su correo.
     private User loadAuthenticatedUser(String authenticatedEmail) {
         if (authenticatedEmail == null || authenticatedEmail.isBlank()) {
             throw new IllegalArgumentException(AUTHENTICATED_EMAIL_REQUIRED);
@@ -204,6 +265,7 @@ public class EventBookingService implements EventBookingUseCase {
                 .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND_WITH_EMAIL + normalizedEmail));
     }
 
+    // Restringe las reservas a usuarios con rol estándar.
     private void ensureStandardUser(User user) {
         if (user.getRole() == null
                 || user.getRole().getRoleName() == null
@@ -212,6 +274,7 @@ public class EventBookingService implements EventBookingUseCase {
         }
     }
 
+    // Carga la reserva y comprueba que pertenece al usuario autenticado.
     private EventBooking loadOwnedBooking(String authenticatedEmail, Long bookingId) {
         User currentUser = loadAuthenticatedUser(authenticatedEmail);
         EventBooking eventBooking = eventBookingPersistencePort.findById(bookingId)
@@ -226,10 +289,12 @@ public class EventBookingService implements EventBookingUseCase {
         return eventBooking;
     }
 
+    // Normaliza el correo para comparaciones y búsquedas.
     private String normalizeEmail(String email) {
         return email.trim().toLowerCase(Locale.ROOT);
     }
 
+    // Crea la asociación entre la reserva y cada servicio extra seleccionado.
     private void createEventBookingServiceForCheckout(EventBooking eventBooking, Long eventServiceId, Long eventId) {
         EventService eventService = eventServicePersistencePort.findById(eventServiceId)
                 .orElseThrow(() -> new ResourceNotFoundException(EVENT_SERVICE_NOT_FOUND_WITH_ID + eventServiceId));

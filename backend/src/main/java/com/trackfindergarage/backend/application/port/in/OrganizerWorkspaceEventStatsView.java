@@ -3,6 +3,9 @@ package com.trackfindergarage.backend.application.port.in;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+/**
+ * Estadísticas de un evento concreto.
+ */
 public record OrganizerWorkspaceEventStatsView(
         Long eventId,
         String trackName,

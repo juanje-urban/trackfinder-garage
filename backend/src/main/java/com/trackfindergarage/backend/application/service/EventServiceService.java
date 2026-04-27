@@ -16,6 +16,12 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.List;
 
+/**
+ * Implementa la lógica de asociación de servicios adicionales a un evento.
+ *
+ * <p>Garantiza que cada asociación apunte a un único origen válido y que ese servicio pertenezca
+ * al mismo circuito u organizador del evento.</p>
+ */
 @org.springframework.stereotype.Service
 @Transactional
 public class EventServiceService implements EventServiceUseCase {
@@ -52,6 +58,12 @@ public class EventServiceService implements EventServiceUseCase {
         this.organizerServicePersistencePort = organizerServicePersistencePort;
     }
 
+    /**
+     * Asocia un nuevo servicio a un evento.
+     *
+     * @param eventService datos de la asociación
+     * @return servicio de evento persistido
+     */
     @Override
     public EventService createEventService(EventService eventService) {
         validateEventService(eventService);
@@ -69,6 +81,13 @@ public class EventServiceService implements EventServiceUseCase {
         return eventServicePersistencePort.save(eventService);
     }
 
+    /**
+     * Actualiza una asociación existente entre un evento y un servicio.
+     *
+     * @param id identificador de la asociación a modificar
+     * @param eventService nuevos datos de la asociación
+     * @return servicio de evento actualizado
+     */
     @Override
     public EventService updateEventService(Long id, EventService eventService) {
         validateEventService(eventService);
@@ -89,12 +108,23 @@ public class EventServiceService implements EventServiceUseCase {
         return eventServicePersistencePort.save(existingEventService);
     }
 
+    /**
+     * Elimina un servicio ya asociado a un evento.
+     *
+     * @param id identificador de la asociación a eliminar
+     */
     @Override
     public void deleteEventService(Long id) {
         EventService eventService = findEventServiceOrThrow(id);
         eventServicePersistencePort.delete(eventService);
     }
 
+    /**
+     * Recupera todos los servicios configurados para un evento concreto.
+     *
+     * @param eventId identificador del evento
+     * @return listado de servicios del evento
+     */
     @Override
     @Transactional(readOnly = true)
     public List<EventService> getEventServicesByEventId(Long eventId) {
@@ -104,6 +134,7 @@ public class EventServiceService implements EventServiceUseCase {
         return eventServicePersistencePort.findByEventId(eventId);
     }
 
+    //Métodos auxiliares para recuperar y validar datos
     private void validateEventService(EventService eventService) {
         if (eventService.getEvent() == null || eventService.getEvent().getId() == null) {
             throw new IllegalArgumentException("Event id is required");

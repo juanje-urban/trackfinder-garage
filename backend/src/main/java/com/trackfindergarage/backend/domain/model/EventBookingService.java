@@ -7,6 +7,12 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 
+/**
+ * Representa un servicio adicional contratado dentro de una reserva de evento.
+ *
+ * <p>Conserva el precio del servicio en el momento de la compra para no depender de cambios futuros
+ * en la tarifa del evento (que puede variar según las reglas de negocio).</p>
+ */
 @Entity
 @Table(
         name = "event_booking_services",

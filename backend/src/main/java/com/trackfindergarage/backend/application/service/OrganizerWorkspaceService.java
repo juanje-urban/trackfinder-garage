@@ -45,6 +45,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+/**
+ * Implementa la lógica del espacio de trabajo del organizador.
+ *
+ * <p>Reúne catálogo, servicios, eventos y estadísticas en una única vista, y además aplica las
+ * reglas de negocio de alta, edición y eliminación de elementos gestionados por el organizador, que en este caso
+ * son abundantes.</p>
+ */
 @org.springframework.stereotype.Service
 @Transactional
 public class OrganizerWorkspaceService implements OrganizerWorkspaceUseCase {
@@ -115,6 +122,12 @@ public class OrganizerWorkspaceService implements OrganizerWorkspaceUseCase {
         this.eventServiceUseCase = eventServiceUseCase;
     }
 
+    /**
+     * Construye la instantánea completa del workspace para el organizador autenticado.
+     *
+     * @param authenticatedEmail correo del usuario autenticado
+     * @return estado completo del workspace
+     */
     @Override
     @Transactional(readOnly = true)
     public OrganizerWorkspaceSnapshot getWorkspace(String authenticatedEmail) {
@@ -122,6 +135,13 @@ public class OrganizerWorkspaceService implements OrganizerWorkspaceUseCase {
         return buildWorkspaceSnapshot(organizer);
     }
 
+    /**
+     * Añade un servicio del catálogo al organizador autenticado y devuelve el workspace actualizado.
+     *
+     * @param authenticatedEmail correo del usuario autenticado
+     * @param serviceId identificador del servicio a añadir
+     * @return workspace actualizado
+     */
     @Override
     public OrganizerWorkspaceSnapshot addOrganizerService(String authenticatedEmail, Long serviceId) {
         Organizer organizer = loadEnabledOrganizer(authenticatedEmail);
@@ -138,6 +158,13 @@ public class OrganizerWorkspaceService implements OrganizerWorkspaceUseCase {
         return buildWorkspaceSnapshot(organizer);
     }
 
+    /**
+     * Elimina un servicio propio del organizador si no está comprometido en eventos futuros.
+     *
+     * @param authenticatedEmail correo del usuario autenticado
+     * @param organizerServiceId identificador de la asignación a eliminar
+     * @return workspace actualizado
+     */
     @Override
     public OrganizerWorkspaceSnapshot removeOrganizerService(String authenticatedEmail, Long organizerServiceId) {
         Organizer organizer = loadEnabledOrganizer(authenticatedEmail);
@@ -162,6 +189,13 @@ public class OrganizerWorkspaceService implements OrganizerWorkspaceUseCase {
         return buildWorkspaceSnapshot(organizer);
     }
 
+    /**
+     * Crea un evento nuevo para el organizador y sincroniza sus servicios adicionales.
+     *
+     * @param authenticatedEmail correo del usuario autenticado
+     * @param draft borrador con los datos del evento
+     * @return workspace actualizado
+     */
     @Override
     public OrganizerWorkspaceSnapshot createEvent(String authenticatedEmail, OrganizerEventDraft draft) {
         Organizer organizer = loadEnabledOrganizer(authenticatedEmail);
@@ -173,6 +207,14 @@ public class OrganizerWorkspaceService implements OrganizerWorkspaceUseCase {
         return buildWorkspaceSnapshot(organizer);
     }
 
+    /**
+     * Actualiza un evento existente del organizador y sincroniza sus servicios.
+     *
+     * @param authenticatedEmail correo del usuario autenticado
+     * @param eventId identificador del evento a modificar
+     * @param draft borrador con los nuevos datos del evento
+     * @return workspace actualizado
+     */
     @Override
     public OrganizerWorkspaceSnapshot updateEvent(String authenticatedEmail, Long eventId, OrganizerEventDraft draft) {
         Organizer organizer = loadEnabledOrganizer(authenticatedEmail);
@@ -188,6 +230,13 @@ public class OrganizerWorkspaceService implements OrganizerWorkspaceUseCase {
         return buildWorkspaceSnapshot(organizer);
     }
 
+    /**
+     * Elimina un evento futuro del organizador autenticado solo si todavía no tiene reservas.
+     *
+     * @param authenticatedEmail correo del usuario autenticado
+     * @param eventId identificador del evento a eliminar
+     * @return workspace actualizado
+     */
     @Override
     public OrganizerWorkspaceSnapshot deleteEvent(String authenticatedEmail, Long eventId) {
         Organizer organizer = loadEnabledOrganizer(authenticatedEmail);
@@ -209,6 +258,7 @@ public class OrganizerWorkspaceService implements OrganizerWorkspaceUseCase {
         return buildWorkspaceSnapshot(organizer);
     }
 
+    // Construye la vista completa del workspace a partir de los datos del organizador.
     private OrganizerWorkspaceSnapshot buildWorkspaceSnapshot(Organizer organizer) {
         List<Service> availableServices = loadAvailableServices();
         List<com.trackfindergarage.backend.domain.model.OrganizerService> organizerServices =
@@ -231,6 +281,7 @@ public class OrganizerWorkspaceService implements OrganizerWorkspaceUseCase {
         );
     }
 
+    // Carga el catálogo de servicios que un organizador puede ofrecer.
     private List<Service> loadAvailableServices() {
         return servicePersistencePort.findAllByAllowedForOrganizerTrue()
                 .stream()
@@ -239,6 +290,7 @@ public class OrganizerWorkspaceService implements OrganizerWorkspaceUseCase {
                 .toList();
     }
 
+    // Carga y ordena los servicios ya asociados al organizador.
     private List<com.trackfindergarage.backend.domain.model.OrganizerService> loadOrganizerServices(Long organizerId) {
         return organizerServiceUseCase.getOrganizerServicesByOrganizerId(organizerId)
                 .stream()
@@ -249,6 +301,7 @@ public class OrganizerWorkspaceService implements OrganizerWorkspaceUseCase {
                 .toList();
     }
 
+    // Carga y ordena los circuitos disponibles para crear eventos.
     private List<Track> loadTracks() {
         return trackPersistencePort.findAll()
                 .stream()
@@ -256,6 +309,7 @@ public class OrganizerWorkspaceService implements OrganizerWorkspaceUseCase {
                 .toList();
     }
 
+    // Carga y ordena las asociaciones circuito-servicio disponibles.
     private List<TrackService> loadTrackServices() {
         return trackServiceUseCase.getAllTrackServices()
                 .stream()
@@ -265,6 +319,7 @@ public class OrganizerWorkspaceService implements OrganizerWorkspaceUseCase {
                 .toList();
     }
 
+    // Carga y ordena los eventos que pertenecen al organizador.
     private List<Event> loadOrganizerEvents(Long organizerId) {
         return eventPersistencePort.findByOrganizerIdUser(organizerId)
                 .stream()
@@ -272,6 +327,7 @@ public class OrganizerWorkspaceService implements OrganizerWorkspaceUseCase {
                 .toList();
     }
 
+    // Reúne los servicios, las compras y las estadísticas de cada evento del workspace.
     private WorkspaceEventData collectWorkspaceEventData(List<Event> events) {
         Map<Long, List<EventService>> eventServicesByEventId = new HashMap<>();
         Map<Long, Set<Long>> bookedEventServiceIdsByEventId = new HashMap<>();
@@ -290,6 +346,7 @@ public class OrganizerWorkspaceService implements OrganizerWorkspaceUseCase {
         );
     }
 
+    // Calcula las métricas agregadas de un evento concreto.
     private OrganizerWorkspaceEventStatsView buildEventStats(Event event) {
         List<EventBooking> bookings = eventBookingPersistencePort.findByEventId(event.getId());
         List<EventBookingService> soldServices = eventBookingServicePersistencePort.findByEventBookingEventId(event.getId());
@@ -378,6 +435,7 @@ public class OrganizerWorkspaceService implements OrganizerWorkspaceUseCase {
         }
     }
 
+    // Carga el organizador autenticado y comprueba que su cuenta está aprobada.
     private Organizer loadEnabledOrganizer(String authenticatedEmail) {
         User user = loadAuthenticatedUser(authenticatedEmail);
 
@@ -397,6 +455,7 @@ public class OrganizerWorkspaceService implements OrganizerWorkspaceUseCase {
         return organizer;
     }
 
+    // Carga y normaliza el usuario autenticado a partir de su correo.
     private User loadAuthenticatedUser(String authenticatedEmail) {
         if (authenticatedEmail == null || authenticatedEmail.isBlank()) {
             throw new IllegalArgumentException(AUTHENTICATED_EMAIL_REQUIRED);
@@ -407,6 +466,7 @@ public class OrganizerWorkspaceService implements OrganizerWorkspaceUseCase {
                 .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND_WITH_EMAIL + normalizedEmail));
     }
 
+    // Construye la entidad Event a partir del borrador recibido desde el workspace.
     private Event buildEventDomain(Long organizerId, OrganizerEventDraft draft) {
         Event event = new Event();
 
@@ -426,12 +486,14 @@ public class OrganizerWorkspaceService implements OrganizerWorkspaceUseCase {
         return event;
     }
 
+    // Comprueba que el evento realmente pertenece al organizador autenticado.
     private void ensureEventBelongsToOrganizer(Event event, Organizer organizer) {
         if (event.getOrganizer() == null || !Objects.equals(event.getOrganizer().getIdUser(), organizer.getIdUser())) {
             throw new AccessDeniedException(EVENT_DOES_NOT_BELONG_TO_AUTHENTICATED_ORGANIZER);
         }
     }
 
+    // Valida qué campos del evento pueden seguir editándose una vez creado.
     private void validateEditableEventFields(Event existingEvent, OrganizerEventDraft draft) {
         if (existingEvent.getTrack() != null && !Objects.equals(existingEvent.getTrack().getId(), draft.trackId())) {
             throw new ConflictException(EVENT_TRACK_CANNOT_BE_CHANGED);
@@ -442,6 +504,7 @@ public class OrganizerWorkspaceService implements OrganizerWorkspaceUseCase {
         }
     }
 
+    // Valida la selección de servicios del borrador: origen único, precio válido y sin duplicados.
     private void validateEventServiceDrafts(List<OrganizerEventServiceDraft> drafts) {
         Set<String> seenKeys = new HashSet<>();
 
@@ -467,6 +530,7 @@ public class OrganizerWorkspaceService implements OrganizerWorkspaceUseCase {
         }
     }
 
+    // Sincroniza los servicios del evento: crea los nuevos, actualiza precios y elimina los sobrantes.
     private void syncEventServices(Long eventId, List<OrganizerEventServiceDraft> requestedServices) {
         List<OrganizerEventServiceDraft> normalizedRequestedServices = normalizeDraftServices(requestedServices);
         List<EventService> existingServices = eventServiceUseCase.getEventServicesByEventId(eventId);
@@ -481,12 +545,14 @@ public class OrganizerWorkspaceService implements OrganizerWorkspaceUseCase {
             String serviceKey = toServiceKey(requestedService);
             requestedKeys.add(serviceKey);
 
+            // Crea la asociación si todavía no existía.
             EventService existingService = existingByKey.get(serviceKey);
             if (existingService == null) {
                 eventServiceUseCase.createEventService(buildEventServiceDomain(eventId, requestedService));
                 continue;
             }
 
+            // Actualiza el servicio sólo si ha cambiado el precio configurado.
             if (existingService.getPrice().compareTo(requestedService.price()) != 0) {
                 eventServiceUseCase.updateEventService(existingService.getId(), buildEventServiceDomain(eventId, requestedService));
             }
@@ -497,6 +563,7 @@ public class OrganizerWorkspaceService implements OrganizerWorkspaceUseCase {
                 continue;
             }
 
+            // Impide borrar servicios que ya han sido comprados en reservas.
             if (!eventBookingServicePersistencePort.findByEventServiceId(existingService.getId()).isEmpty()) {
                 throw new ConflictException(EVENT_SERVICE_ALREADY_HAS_BOOKINGS);
             }
@@ -505,6 +572,7 @@ public class OrganizerWorkspaceService implements OrganizerWorkspaceUseCase {
         }
     }
 
+    // Construye la entidad EventService a partir del borrador recibido desde el workspace.
     private EventService buildEventServiceDomain(Long eventId, OrganizerEventServiceDraft draft) {
         EventService eventService = new EventService();
 
@@ -529,6 +597,7 @@ public class OrganizerWorkspaceService implements OrganizerWorkspaceUseCase {
         return eventService;
     }
 
+    // Normaliza la colección de borradores eliminando nulos y devolviendo lista vacía si no hay datos.
     private List<OrganizerEventServiceDraft> normalizeDraftServices(List<OrganizerEventServiceDraft> drafts) {
         if (drafts == null || drafts.isEmpty()) {
             return List.of();
@@ -537,6 +606,7 @@ public class OrganizerWorkspaceService implements OrganizerWorkspaceUseCase {
         return drafts.stream().filter(Objects::nonNull).toList();
     }
 
+    // Localiza qué servicios de evento ya han sido adquiridos en reservas.
     private Set<Long> findBookedEventServiceIds(Long eventId) {
         Set<Long> bookedEventServiceIds = new HashSet<>();
 
@@ -549,10 +619,12 @@ public class OrganizerWorkspaceService implements OrganizerWorkspaceUseCase {
         return bookedEventServiceIds;
     }
 
+    // Genera la clave lógica de un borrador de servicio para compararlo con el estado persistido.
     private String toServiceKey(OrganizerEventServiceDraft draft) {
         return toServiceKey(draft.trackServiceId(), draft.organizerServiceId());
     }
 
+    // Genera la clave lógica de un servicio de evento ya persistido.
     private String toServiceKey(EventService existingService) {
         return toServiceKey(
                 existingService.getTrackService() != null ? existingService.getTrackService().getId() : null,
@@ -560,6 +632,7 @@ public class OrganizerWorkspaceService implements OrganizerWorkspaceUseCase {
         );
     }
 
+    // Normaliza la identidad de un servicio usando su origen real: circuito u organizador.
     private String toServiceKey(Long trackServiceId, Long organizerServiceId) {
         return trackServiceId != null
                 ? "track:" + trackServiceId
