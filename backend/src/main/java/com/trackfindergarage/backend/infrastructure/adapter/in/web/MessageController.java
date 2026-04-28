@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Expone los endpoints HTTP relacionados con la mensajería privada entre usuarios.
+ */
 @RestController
 @RequestMapping("/messages")
 public class MessageController extends AbstractWebController {
@@ -24,6 +27,13 @@ public class MessageController extends AbstractWebController {
         this.messageWebMapper = messageWebMapper;
     }
 
+    /**
+     * Envía un mensaje nuevo.
+     *
+     * @param authentication autenticación del usuario actual
+     * @param request petición con los datos del mensaje
+     * @return respuesta con el mensaje creado
+     */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public MessageResponse createMessage(Authentication authentication,
@@ -38,11 +48,23 @@ public class MessageController extends AbstractWebController {
         );
     }
 
+    /**
+     * Recupera la bandeja de mensajes del usuario.
+     *
+     * @param authentication autenticación del usuario actual
+     * @return listado de mensajes
+     */
     @GetMapping
     public List<MessageResponse> getOwnMessages(Authentication authentication) {
         return mapResponses(messageUseCase.getOwnMessages(authenticatedEmail(authentication)), messageWebMapper::toResponse);
     }
 
+    /**
+     * Recupera los posibles destinatarios para el usuario.
+     *
+     * @param authentication autenticación del usuario actual
+     * @return listado de contactos disponibles
+     */
     @GetMapping("/contacts")
     public List<MessageContactResponse> getAvailableRecipients(Authentication authentication) {
         return mapResponses(
@@ -51,6 +73,13 @@ public class MessageController extends AbstractWebController {
         );
     }
 
+    /**
+     * Marca como leído un mensaje recibido por el usuario.
+     *
+     * @param id identificador del mensaje
+     * @param authentication autenticación del usuario actual
+     * @return respuesta con el mensaje actualizado
+     */
     @PatchMapping("/{id}/read")
     public MessageResponse markAsRead(@PathVariable Long id, Authentication authentication) {
         return messageWebMapper.toResponse(

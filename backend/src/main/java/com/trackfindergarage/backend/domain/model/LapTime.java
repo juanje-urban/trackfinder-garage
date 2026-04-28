@@ -7,6 +7,9 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 
+/**
+ * Representa un tiempo de vuelta registrado por un usuario en un circuito concreto.
+ */
 @Entity
 @Table(name = "lap_times")
 @Getter

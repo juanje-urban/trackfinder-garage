@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Expone los endpoints HTTP relacionados con los tiempos de vuelta de los usuarios.
+ */
 @RestController
 @RequestMapping("/lap-times")
 public class LapTimeController extends AbstractWebController {
@@ -23,6 +26,13 @@ public class LapTimeController extends AbstractWebController {
         this.lapTimeWebMapper = lapTimeWebMapper;
     }
 
+    /**
+     * Registra un nuevo tiempo de vuelta para el usuario.
+     *
+     * @param request petición con los datos de la vuelta
+     * @param authentication autenticación del usuario actual
+     * @return respuesta con el tiempo creado
+     */
     @PostMapping("/me")
     @ResponseStatus(HttpStatus.CREATED)
     public LapTimeResponse createCurrentUserLapTime(@Valid @RequestBody CreateOwnLapTimeRequest request,
@@ -38,12 +48,24 @@ public class LapTimeController extends AbstractWebController {
         );
     }
 
+    /**
+     * Elimina un tiempo de vuelta del usuario.
+     *
+     * @param id identificador del tiempo de vuelta
+     * @param authentication autenticación del usuario actual
+     */
     @DeleteMapping("/me/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteCurrentUserLapTime(@PathVariable Long id, Authentication authentication) {
         lapTimeUseCase.deleteOwnLapTime(authenticatedEmail(authentication), id);
     }
 
+    /**
+     * Recupera los tiempos de vuelta del usuario autenticado.
+     *
+     * @param authentication autenticación del usuario actual
+     * @return listado de tiempos del usuario
+     */
     @GetMapping("/me")
     public List<LapTimeResponse> getCurrentUserLapTimes(Authentication authentication) {
         return mapResponses(
@@ -52,6 +74,12 @@ public class LapTimeController extends AbstractWebController {
         );
     }
 
+    /**
+     * Recupera los tiempos de vuelta de un usuario concreto.
+     *
+     * @param userId identificador del usuario
+     * @return listado de tiempos del usuario
+     */
     @GetMapping("/user/{userId}")
     public List<LapTimeResponse> getLapTimesByUserId(@PathVariable Long userId) {
         return mapResponses(lapTimeUseCase.getLapTimesByUserId(userId), lapTimeWebMapper::toResponse);

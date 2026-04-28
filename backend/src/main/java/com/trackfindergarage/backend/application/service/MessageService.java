@@ -14,6 +14,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
+/**
+ * Implementa la lógica de mensajería entre usuarios.
+ *
+ * <p>Valida remitente, destinatario, permisos de lectura y longitud de los textos antes de
+ * persistir los mensajes.</p>
+ */
 @org.springframework.stereotype.Service
 @Transactional
 public class MessageService implements MessageUseCase {
@@ -40,6 +46,12 @@ public class MessageService implements MessageUseCase {
         this.userPersistencePort = userPersistencePort;
     }
 
+    /**
+     * Recupera todos los mensajes en los que participa el usuario.
+     *
+     * @param authenticatedEmail correo del usuario autenticado
+     * @return listado de mensajes ordenados cronológicamente
+     */
     @Override
     @Transactional(readOnly = true)
     public List<Message> getOwnMessages(String authenticatedEmail) {
@@ -47,14 +59,25 @@ public class MessageService implements MessageUseCase {
         return messagePersistencePort.findByParticipantIdOrderBySentAtAsc(currentUser.getId());
     }
 
+    /**
+     * Envía un nuevo mensaje desde el usuario a otro usuario activo.
+     *
+     * @param authenticatedEmail correo del usuario autenticado
+     * @param receiverId identificador del destinatario
+     * @param subject asunto del mensaje
+     * @param content contenido del mensaje
+     * @return mensaje creado
+     */
     @Override
     public Message createOwnMessage(String authenticatedEmail, Long receiverId, String subject, String content) {
         User sender = loadAuthenticatedUser(authenticatedEmail);
         User receiver = loadUserById(receiverId);
 
+        // Impide conversaciones triviales del usuario consigo mismo.
         if (Objects.equals(sender.getId(), receiver.getId())) {
             throw new IllegalArgumentException(USER_CANNOT_MESSAGE_SELF);
         }
+        // Obliga a que el destinatario siga activo antes de aceptar mensajes nuevos.
         if (!Boolean.TRUE.equals(receiver.getEnabled())) {
             throw new IllegalArgumentException(RECEIVER_ACCOUNT_IS_DISABLED);
         }
@@ -69,6 +92,13 @@ public class MessageService implements MessageUseCase {
         return saveNewMessage(message, sender, receiver);
     }
 
+    /**
+     * Marca como leído un mensaje recibido por el usuario.
+     *
+     * @param authenticatedEmail correo del usuario autenticado
+     * @param id identificador del mensaje
+     * @return mensaje actualizado
+     */
     @Override
     public Message markOwnMessageAsRead(String authenticatedEmail, Long id) {
         User currentUser = loadAuthenticatedUser(authenticatedEmail);
@@ -78,6 +108,12 @@ public class MessageService implements MessageUseCase {
         return messagePersistencePort.save(message);
     }
 
+    /**
+     * Recupera los usuarios activos a los que el usuario puede enviar mensajes.
+     *
+     * @param authenticatedEmail correo del usuario autenticado
+     * @return listado de destinatarios disponibles
+     */
     @Override
     @Transactional(readOnly = true)
     public List<User> getAvailableRecipients(String authenticatedEmail) {
@@ -91,6 +127,7 @@ public class MessageService implements MessageUseCase {
                 .toList();
     }
 
+    // Valida el asunto y el contenido antes de persistir un mensaje nuevo.
     private void validateMessage(Message message) {
         if (message.getSubject() == null || message.getSubject().isBlank()) {
             throw new IllegalArgumentException(SUBJECT_REQUIRED);
@@ -106,6 +143,7 @@ public class MessageService implements MessageUseCase {
         }
     }
 
+    // Comprueba que solo el destinatario pueda cambiar el estado de lectura.
     private void validateReceiverAccess(Message message, Long userId) {
         loadUserById(userId);
         if (!message.getReceiver().getId().equals(userId)) {
@@ -113,6 +151,7 @@ public class MessageService implements MessageUseCase {
         }
     }
 
+    // Carga y normaliza el usuario autenticado a partir de su correo.
     private User loadAuthenticatedUser(String authenticatedEmail) {
         if (authenticatedEmail == null || authenticatedEmail.isBlank()) {
             throw new IllegalArgumentException(AUTHENTICATED_EMAIL_REQUIRED);
@@ -123,15 +162,18 @@ public class MessageService implements MessageUseCase {
                 .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND_WITH_EMAIL + normalizedEmail));
     }
 
+    // Carga un usuario por id o lanza error si no existe.
     private User loadUserById(Long userId) {
         return userPersistencePort.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND_WITH_ID + userId));
     }
 
+    // Normaliza el correo para comparaciones y búsquedas.
     private String normalizeEmail(String authenticatedEmail) {
         return authenticatedEmail.trim().toLowerCase(Locale.ROOT);
     }
 
+    // Completa los metadatos del mensaje antes de guardarlo.
     private Message saveNewMessage(Message message, User sender, User receiver) {
         message.setSender(sender);
         message.setReceiver(receiver);
@@ -140,6 +182,7 @@ public class MessageService implements MessageUseCase {
         return messagePersistencePort.save(message);
     }
 
+    // Recupera un mensaje por id o lanza error si no existe.
     private Message findMessageOrThrow(Long id) {
         return messagePersistencePort.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(MESSAGE_NOT_FOUND_WITH_ID + id));

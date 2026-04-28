@@ -7,6 +7,9 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
+/**
+ * Representa un mensaje privado intercambiado entre dos usuarios de la plataforma.
+ */
 @Entity
 @Table(name = "messages")
 @Getter
