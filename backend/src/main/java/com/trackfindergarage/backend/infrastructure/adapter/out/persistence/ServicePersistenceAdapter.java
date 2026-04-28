@@ -7,6 +7,12 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Adaptador de persistencia que implementa el puerto de servicios mediante Spring Data JPA.
+ *
+ * <p>Encapsula el acceso al repositorio de servicios y expone a la aplicación una interfaz estable
+ * independiente de JPA.</p>
+ */
 @Component
 public class ServicePersistenceAdapter implements ServicePersistencePort {
 

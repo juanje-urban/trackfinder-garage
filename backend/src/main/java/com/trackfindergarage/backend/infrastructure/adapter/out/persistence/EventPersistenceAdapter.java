@@ -8,6 +8,12 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Adaptador de persistencia que implementa el puerto de eventos con Spring Data JPA.
+ *
+ * <p>Centraliza las búsquedas y escrituras de eventos delegando en el repositorio de
+ * infraestructura.</p>
+ */
 @Component
 public class EventPersistenceAdapter implements EventPersistencePort {
 

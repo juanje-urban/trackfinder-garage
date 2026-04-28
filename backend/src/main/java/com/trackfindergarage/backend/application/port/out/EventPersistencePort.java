@@ -6,6 +6,12 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Puerto de salida para persistir y consultar eventos.
+ *
+ * <p>Expone a la capa de aplicación las operaciones necesarias para gestionar el calendario de
+ * eventos sin acoplarla a JPA ni a ningún repositorio concreto.</p>
+ */
 public interface EventPersistencePort {
 
     Event save(Event event);

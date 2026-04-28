@@ -7,6 +7,12 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Adaptador de persistencia para los servicios asociados a eventos.
+ *
+ * <p>Traduce las necesidades de la aplicación sobre extras de evento a consultas concretas sobre la
+ * capa JPA.</p>
+ */
 @Component
 public class EventServicePersistenceAdapter implements EventServicePersistencePort {
 

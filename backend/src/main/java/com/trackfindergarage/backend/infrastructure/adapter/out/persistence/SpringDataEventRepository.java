@@ -8,6 +8,12 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Repositorio Spring Data para la entidad {@link Event}.
+ *
+ * <p>Declara las consultas del calendario de eventos y carga junto al evento sus referencias
+ * principales para evitar accesos innecesarios.</p>
+ */
 public interface SpringDataEventRepository extends JpaRepository<Event, Long> {
 
     @Override

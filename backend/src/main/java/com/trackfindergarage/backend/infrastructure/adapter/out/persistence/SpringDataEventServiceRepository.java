@@ -7,6 +7,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Repositorio Spring Data para la entidad {@link EventService}.
+ *
+ * <p>Resuelve las lecturas de servicios de evento cargando las asociaciones necesarias para que la
+ * capa de aplicación trabaje con el agregado ya hidratado.</p>
+ */
 public interface SpringDataEventServiceRepository extends JpaRepository<EventService, Long> {
 
     @Override

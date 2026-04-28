@@ -5,6 +5,12 @@ import com.trackfindergarage.backend.domain.model.Track;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Puerto de salida para persistir y consultar circuitos del catálogo.
+ *
+ * <p>Aísla a la capa de aplicación de la tecnología concreta usada para guardar los circuitos y
+ * expone sólo las operaciones que necesita el dominio.</p>
+ */
 public interface TrackPersistencePort {
 
     Track save(Track track);

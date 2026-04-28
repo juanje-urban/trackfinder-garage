@@ -7,6 +7,12 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Adaptador de persistencia para las relaciones entre circuitos y servicios.
+ *
+ * <p>Traduce las necesidades de la aplicación sobre el catálogo por circuito a consultas JPA sobre
+ * la entidad de unión.</p>
+ */
 @Component
 public class TrackServicePersistenceAdapter implements TrackServicePersistencePort {
 

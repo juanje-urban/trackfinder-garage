@@ -7,6 +7,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Repositorio Spring Data para la entidad {@link TrackService}.
+ *
+ * <p>Aplica {@code EntityGraph} en las lecturas para devolver la asociación circuito-servicio con
+ * sus referencias cargadas y evitar accesos innecesarios.</p>
+ */
 public interface SpringDataTrackServiceRepository extends JpaRepository<TrackService, Long> {
 
     @Override

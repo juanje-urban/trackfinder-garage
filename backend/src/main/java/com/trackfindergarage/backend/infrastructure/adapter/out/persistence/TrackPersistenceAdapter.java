@@ -7,6 +7,12 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Adaptador de persistencia que conecta el puerto de circuitos con Spring Data JPA.
+ *
+ * <p>Delega las operaciones CRUD y de búsqueda sobre circuitos en el repositorio concreto de
+ * infraestructura.</p>
+ */
 @Component
 public class TrackPersistenceAdapter implements TrackPersistencePort {
 
