@@ -7,6 +7,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Repositorio Spring Data para la entidad {@link LapTime}.
+ *
+ * <p>Resuelve consultas sobre tiempos de vuelta cargando el usuario y el circuito asociados a cada
+ * registro.</p>
+ */
 public interface SpringDataLapTimeRepository extends JpaRepository<LapTime, Long> {
 
     @Override

@@ -7,6 +7,12 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Adaptador de persistencia que implementa el puerto de tiempos de vuelta.
+ *
+ * <p>Delega en Spring Data JPA las lecturas y escrituras del histórico de vueltas por usuario y por
+ * circuito.</p>
+ */
 @Component
 public class LapTimePersistenceAdapter implements LapTimePersistencePort {
 

@@ -5,6 +5,13 @@ import com.trackfindergarage.backend.domain.model.EventBookingService;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+
+/**
+ * Adaptador de persistencia para los servicios extra asociados a reservas.
+ *
+ * <p>Materializa con JPA las consultas que necesita la aplicación sobre el detalle de servicios
+ * contratados en cada reserva.</p>
+ */
 @Component
 public class EventBookingServicePersistenceAdapter implements EventBookingServicePersistencePort {
 

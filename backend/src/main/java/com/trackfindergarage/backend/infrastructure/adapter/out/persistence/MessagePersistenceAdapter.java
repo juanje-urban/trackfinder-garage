@@ -6,6 +6,12 @@ import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
+/**
+ * Adaptador de persistencia que implementa el puerto de mensajes con Spring Data JPA.
+ *
+ * <p>Encapsula el acceso al repositorio de mensajería y ofrece a la aplicación una interfaz estable
+ * para guardar mensajes y consultar conversaciones visibles.</p>
+ */
 @Component
 public class MessagePersistenceAdapter implements MessagePersistencePort {
 

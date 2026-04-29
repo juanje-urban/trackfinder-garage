@@ -7,6 +7,12 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Adaptador de persistencia que implementa el puerto de reservas con Spring Data JPA.
+ *
+ * <p>Delega en el repositorio concreto las búsquedas y escrituras necesarias para la gestión de
+ * inscripciones a eventos.</p>
+ */
 @Component
 public class EventBookingPersistenceAdapter implements EventBookingPersistencePort {
 

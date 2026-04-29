@@ -7,6 +7,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Repositorio Spring Data para la entidad {@link EventBooking}.
+ *
+ * <p>Declara las consultas de reservas e hidrata junto a cada una sus referencias principales para
+ * que la aplicación pueda trabajar con la reserva completa.</p>
+ */
 public interface SpringDataEventBookingRepository extends JpaRepository<EventBooking, Long> {
 
     @Override

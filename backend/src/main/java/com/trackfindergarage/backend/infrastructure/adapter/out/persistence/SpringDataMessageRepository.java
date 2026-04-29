@@ -8,6 +8,12 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
+/**
+ * Repositorio Spring Data para la entidad {@link Message}.
+ *
+ * <p>Define las consultas de mensajería cargando remitente y destinatario para que la aplicación no
+ * dependa de cargas posteriores.</p>
+ */
 public interface SpringDataMessageRepository extends JpaRepository<Message, Long> {
 
     @Override
