@@ -5,6 +5,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/**
+ * Relación entre un organizador y un servicio del catálogo que puede ofrecer en sus eventos.
+ *
+ * <p>Permite activar o desactivar servicios concretos para cada organizador sin eliminar la relación histórica.</p>
+ */
 @Entity
 @Table(
         name = "organizer_services",

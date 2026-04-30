@@ -5,6 +5,12 @@ import lombok.Getter;
 
 import java.util.List;
 
+/**
+ * DTO de salida principal del workspace del organizador.
+ *
+ * <p>Reúne en una sola respuesta el organizador autenticado, su catálogo disponible, sus eventos
+ * gestionados y las estadísticas necesarias para pintar el panel completo.</p>
+ */
 @Getter
 @Builder
 public class OrganizerWorkspaceResponse {

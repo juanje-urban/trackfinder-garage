@@ -4,6 +4,12 @@ import com.trackfindergarage.backend.domain.model.EventBooking;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.EventBookingResponse;
 import org.springframework.stereotype.Component;
 
+/**
+ * Mapper web para proyectar reservas de evento a respuestas HTTP.
+ *
+ * <p>Extrae de la reserva y de sus relaciones asociadas la información resumida que consume el
+ * frontend del usuario o del organizador.</p>
+ */
 @Component
 public class EventBookingWebMapper {
 

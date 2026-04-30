@@ -5,6 +5,9 @@ import lombok.Getter;
 
 import java.time.LocalDateTime;
 
+/**
+ * Respuesta con los datos completos de un mensaje enviado o recibido.
+ */
 @Getter
 @Builder
 public class MessageResponse {

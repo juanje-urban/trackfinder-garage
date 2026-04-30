@@ -10,6 +10,12 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Gestor global de excepciones de la aplicación a respuestas HTTP.
+ *
+ * <p>Centraliza el mapeo entre errores de dominio, validación o seguridad y el formato de respuesta
+ * devuelto por la API.</p>
+ */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 

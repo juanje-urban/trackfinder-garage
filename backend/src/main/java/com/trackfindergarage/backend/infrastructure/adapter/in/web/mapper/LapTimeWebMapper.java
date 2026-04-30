@@ -4,9 +4,18 @@ import com.trackfindergarage.backend.domain.model.LapTime;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.LapTimeResponse;
 import org.springframework.stereotype.Component;
 
+/**
+ * Convierte tiempos de vuelta del dominio en respuestas HTTP.
+ */
 @Component
 public class LapTimeWebMapper {
 
+    /**
+     * Construye la respuesta web de un tiempo de vuelta, incluyendo referencias simples a usuario y circuito.
+     *
+     * @param lapTime tiempo de vuelta del dominio
+     * @return DTO preparado para la API
+     */
     public LapTimeResponse toResponse(LapTime lapTime) {
         return LapTimeResponse.builder()
                 .id(lapTime.getId())

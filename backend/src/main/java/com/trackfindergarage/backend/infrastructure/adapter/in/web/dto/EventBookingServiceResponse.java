@@ -5,6 +5,12 @@ import lombok.Getter;
 
 import java.math.BigDecimal;
 
+/**
+ * DTO de salida con un servicio extra contratado dentro de una reserva.
+ *
+ * <p>Permite relacionar una línea de detalle con la reserva, el evento y el servicio concreto, así
+ * como mostrar el precio capturado en el momento de la compra.</p>
+ */
 @Getter
 @Builder
 public class EventBookingServiceResponse {

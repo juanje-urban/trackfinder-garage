@@ -16,8 +16,6 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
-@Configuration
-@EnableMethodSecurity
 /**
  * Configuración central de seguridad de la API.
  *
@@ -28,10 +26,11 @@ import java.util.List;
  *     <li>El codificador de contraseñas utilizado (BCrypt).</li>
  * </ul>
  *
- * <p>Se exponen de manera pública los endpoints a modo de consulta (GET) que puedan
- * sirvan como reclamo comercial (eventos, circuitos...). Además, se habilita seguridad
- * a nivel de método.</p>
+ * <p>Se exponen de manera pública los endpoints de consulta que sirven como escaparate del sistema,
+ * como eventos, circuitos o rankings. Además, se habilita seguridad a nivel de método.</p>
  */
+@Configuration
+@EnableMethodSecurity
 public class SecurityConfig {
 
     /**
@@ -76,15 +75,14 @@ public class SecurityConfig {
     /**
      * Declara la política CORS utilizada por la API.
      *
-     * <p>Permite al frontend consumir el backend desde. Es necesario porque el front y el back son orígenes
-     * distintos (front usa el puerto 5173 y back 8080).</p>
+     * <p>Permite al frontend consumir el backend desde sus orígenes locales. Es necesario porque el
+     * front y el back se sirven desde puertos distintos.</p>
      *
      * @return origen de configuración CORS registrado para todas las rutas de la API
      */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-
-        CorsConfiguration configuration = new CorsConfiguration(); //Almacena la configuración CORS
+        CorsConfiguration configuration = new CorsConfiguration(); // Almacena la configuración CORS.
         configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://127.0.0.1:5173"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
@@ -98,7 +96,7 @@ public class SecurityConfig {
     /**
      * Proporciona el codificador de contraseñas empleado por el sistema.
      *
-     * <p>Se utiliza BCrypt, que viene incluído con Spring Security.</p>
+     * <p>Se utiliza BCrypt, que viene incluido con Spring Security.</p>
      *
      * @return codificador BCrypt para contraseñas
      */

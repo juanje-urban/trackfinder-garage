@@ -7,6 +7,12 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 
+/**
+ * DTO de entrada que representa un servicio incluido en el alta o edición de un evento.
+ *
+ * <p>Permite referenciar tanto servicios heredados del circuito como servicios propios del
+ * organizador, junto con el precio concreto que tendrán en ese evento.</p>
+ */
 @Getter
 @Setter
 public class OrganizerEventServiceInput {

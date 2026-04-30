@@ -4,6 +4,12 @@ import com.trackfindergarage.backend.domain.model.OrganizerService;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.OrganizerServiceResponse;
 import org.springframework.stereotype.Component;
 
+/**
+ * Mapper web para convertir servicios de organizador en respuestas HTTP.
+ *
+ * <p>Adapta la relación entre organizador y servicio del catálogo a una vista plana lista para el
+ * frontend del workspace.</p>
+ */
 @Component
 public class OrganizerServiceWebMapper {
 

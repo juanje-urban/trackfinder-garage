@@ -7,6 +7,12 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Adaptador de persistencia que implementa el puerto de usuarios con Spring Data JPA.
+ *
+ * <p>Encapsula las búsquedas y escrituras sobre usuarios para que la capa de aplicación no dependa
+ * directamente del repositorio JPA.</p>
+ */
 @Component
 public class UserPersistenceAdapter implements UserPersistencePort {
 

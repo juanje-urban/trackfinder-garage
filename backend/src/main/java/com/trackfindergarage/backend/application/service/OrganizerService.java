@@ -191,11 +191,13 @@ public class OrganizerService implements OrganizerUseCase {
         return organizerPersistencePort.save(existingOrganizer);
     }
 
+    // Obtiene el rol que identifica a las cuentas de organizador.
     private Role getOrganizerRole() {
         return rolePersistencePort.findByRoleName("ORGANIZER")
                 .orElseThrow(() -> new ResourceNotFoundException("Role not found: ORGANIZER"));
     }
 
+    // Valida unicidad del alias visible durante el alta.
     private void validateDisplayNameForCreate(String displayName) {
         validateUniqueUser(
                 userPersistencePort.findByDisplayName(displayName),
@@ -204,6 +206,7 @@ public class OrganizerService implements OrganizerUseCase {
         );
     }
 
+    // Valida unicidad del correo durante el alta.
     private void validateEmailForCreate(String email) {
         validateUniqueUser(
                 userPersistencePort.findByEmail(email),
@@ -212,6 +215,7 @@ public class OrganizerService implements OrganizerUseCase {
         );
     }
 
+    // Valida unicidad del teléfono durante el alta.
     private void validatePhoneForCreate(String phone) {
         validateUniqueUser(
                 userPersistencePort.findByPhone(phone),
@@ -220,6 +224,7 @@ public class OrganizerService implements OrganizerUseCase {
         );
     }
 
+    // Valida unicidad de la razón social durante el alta.
     private void validateLegalNameForCreate(String legalName) {
         validateUniqueOrganizer(
                 organizerPersistencePort.findByLegalName(legalName),
@@ -228,6 +233,7 @@ public class OrganizerService implements OrganizerUseCase {
         );
     }
 
+    // Valida unicidad del CIF durante el alta.
     private void validateCifForCreate(String cif) {
         validateUniqueOrganizer(
                 organizerPersistencePort.findByCif(cif),
@@ -236,6 +242,7 @@ public class OrganizerService implements OrganizerUseCase {
         );
     }
 
+    // Valida unicidad del correo permitiendo conservar el del propio organizador.
     private void validateEmailForUpdate(Long organizerId, String email) {
         validateUniqueUser(
                 userPersistencePort.findByEmail(email),
@@ -244,6 +251,7 @@ public class OrganizerService implements OrganizerUseCase {
         );
     }
 
+    // Valida unicidad del teléfono permitiendo conservar el del propio organizador.
     private void validatePhoneForUpdate(Long organizerId, String phone) {
         validateUniqueUser(
                 userPersistencePort.findByPhone(phone),
@@ -252,6 +260,7 @@ public class OrganizerService implements OrganizerUseCase {
         );
     }
 
+    // Valida unicidad de la razón social permitiendo conservar la propia.
     private void validateLegalNameForUpdate(Long organizerId, String legalName) {
         validateUniqueOrganizer(
                 organizerPersistencePort.findByLegalName(legalName),
@@ -260,6 +269,7 @@ public class OrganizerService implements OrganizerUseCase {
         );
     }
 
+    // Valida unicidad del CIF permitiendo conservar el propio.
     private void validateCifForUpdate(Long organizerId, String cif) {
         validateUniqueOrganizer(
                 organizerPersistencePort.findByCif(cif),
@@ -268,6 +278,7 @@ public class OrganizerService implements OrganizerUseCase {
         );
     }
 
+    // Reutiliza el mismo control de duplicados para los datos de usuario.
     private void validateUniqueUser(Optional<User> candidate,
                                     Long excludedUserId,
                                     String duplicateMessage) {
@@ -278,6 +289,7 @@ public class OrganizerService implements OrganizerUseCase {
         });
     }
 
+    // Reutiliza el mismo control de duplicados para los datos legales del organizador.
     private void validateUniqueOrganizer(Optional<Organizer> candidate,
                                          Long excludedOrganizerId,
                                          String duplicateMessage) {
@@ -288,11 +300,13 @@ public class OrganizerService implements OrganizerUseCase {
         });
     }
 
+    // Carga un organizador por id o centraliza el error de no encontrado.
     private Organizer findOrganizerOrThrow(Long id) {
         return organizerPersistencePort.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ORGANIZER_NOT_FOUND_WITH_ID + id));
     }
 
+    // Resuelve el organizador asociado al usuario autenticado.
     private Organizer findOrganizerByAuthenticatedEmail(String authenticatedEmail) {
         if (authenticatedEmail == null || authenticatedEmail.isBlank()) {
             throw new IllegalArgumentException(AUTHENTICATED_EMAIL_REQUIRED);
@@ -308,6 +322,7 @@ public class OrganizerService implements OrganizerUseCase {
                 .orElseThrow(() -> new ResourceNotFoundException(ORGANIZER_NOT_FOUND_WITH_ID + user.getId()));
     }
 
+    // Aplica los datos que sólo deben fijarse en creación.
     private void applyUserIdentity(User user,
                                    String displayName,
                                    String email,
@@ -319,6 +334,7 @@ public class OrganizerService implements OrganizerUseCase {
         applyUserProfile(user, name, surname, email, address, phone);
     }
 
+    // Aplica los datos editables del usuario asociado al organizador.
     private void applyUserProfile(User user,
                                   String name,
                                   String surname,
@@ -332,15 +348,18 @@ public class OrganizerService implements OrganizerUseCase {
         user.setPhone(phone);
     }
 
+    // Aplica los datos legales editables del organizador.
     private void applyOrganizerIdentity(Organizer organizer, String legalName, String cif) {
         organizer.setLegalName(legalName);
         organizer.setCif(cif);
     }
 
+    // Normaliza textos opcionales conservando null cuando el campo no viene informado.
     private String normalizeText(String value) {
         return value == null ? null : value.trim();
     }
 
+    // Normaliza el correo para búsquedas y validaciones.
     private String normalizeEmail(String value) {
         return value == null ? null : value.trim().toLowerCase(Locale.ROOT);
     }

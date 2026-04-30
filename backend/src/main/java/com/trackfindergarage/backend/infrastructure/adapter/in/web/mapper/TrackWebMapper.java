@@ -6,6 +6,12 @@ import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.TrackResp
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.UpdateTrackRequest;
 import org.springframework.stereotype.Component;
 
+/**
+ * Mapper web para convertir circuitos entre DTOs HTTP y dominio.
+ *
+ * <p>Se encarga de normalizar los textos de entrada y de proyectar el modelo {@link Track} a una
+ * respuesta compacta para el frontend.</p>
+ */
 @Component
 public class TrackWebMapper {
 

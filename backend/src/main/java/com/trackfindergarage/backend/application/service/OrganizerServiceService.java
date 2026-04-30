@@ -13,6 +13,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+/**
+ * Implementa la gestión del catálogo de servicios propio de cada organizador.
+ *
+ * <p>Valida que el organizador y el servicio existan, evita asignaciones duplicadas y permite reactivar
+ * servicios previamente deshabilitados.</p>
+ */
 @org.springframework.stereotype.Service
 @Transactional
 public class OrganizerServiceService implements OrganizerServiceUseCase {
@@ -39,11 +45,18 @@ public class OrganizerServiceService implements OrganizerServiceUseCase {
         this.servicePersistencePort = servicePersistencePort;
     }
 
+    /**
+     * Crea una relación entre un organizador y un servicio permitido para organizadores.
+     *
+     * @param organizerService datos mínimos de la asignación
+     * @return asignación creada o reactivada
+     */
     @Override
     public OrganizerService createOrganizerService(OrganizerService organizerService) {
         Long organizerId = extractOrganizerId(organizerService);
         Long serviceId = extractServiceId(organizerService);
 
+        // Reactiva una asignación existente si estaba deshabilitada.
         OrganizerService existingAssignment = organizerServicePersistencePort
                 .findByOrganizerIdUserAndServiceId(organizerId, serviceId)
                 .orElse(null);
@@ -74,6 +87,11 @@ public class OrganizerServiceService implements OrganizerServiceUseCase {
         return organizerServicePersistencePort.save(organizerService);
     }
 
+    /**
+     * Desactiva una asignación sin eliminar físicamente el registro.
+     *
+     * @param id identificador de la asignación
+     */
     @Override
     public void deleteOrganizerService(Long id) {
         OrganizerService organizerService = findOrganizerServiceOrThrow(id);
@@ -81,6 +99,12 @@ public class OrganizerServiceService implements OrganizerServiceUseCase {
         organizerServicePersistencePort.save(organizerService);
     }
 
+    /**
+     * Recupera una asignación por identificador.
+     *
+     * @param id identificador de la asignación
+     * @return asignación encontrada
+     */
     @Override
     @Transactional(readOnly = true)
     public OrganizerService getOrganizerServiceById(Long id) {
@@ -88,6 +112,12 @@ public class OrganizerServiceService implements OrganizerServiceUseCase {
                 .orElseThrow(() -> new ResourceNotFoundException(ORGANIZER_SERVICE_NOT_FOUND_WITH_ID + id));
     }
 
+    /**
+     * Recupera las asignaciones activas de un organizador existente.
+     *
+     * @param organizerId identificador del organizador
+     * @return servicios activos del organizador
+     */
     @Override
     @Transactional(readOnly = true)
     public List<OrganizerService> getOrganizerServicesByOrganizerId(Long organizerId) {
@@ -99,6 +129,9 @@ public class OrganizerServiceService implements OrganizerServiceUseCase {
                 .toList();
     }
 
+    /**
+     * Extrae y valida el identificador del organizador recibido.
+     */
     private Long extractOrganizerId(OrganizerService organizerService) {
         if (organizerService.getOrganizer() == null || organizerService.getOrganizer().getIdUser() == null) {
             throw new IllegalArgumentException(ORGANIZER_ID_REQUIRED);
@@ -106,6 +139,9 @@ public class OrganizerServiceService implements OrganizerServiceUseCase {
         return organizerService.getOrganizer().getIdUser();
     }
 
+    /**
+     * Extrae y valida el identificador del servicio recibido.
+     */
     private Long extractServiceId(OrganizerService organizerService) {
         if (organizerService.getService() == null || organizerService.getService().getId() == null) {
             throw new IllegalArgumentException(SERVICE_ID_REQUIRED);
@@ -113,16 +149,25 @@ public class OrganizerServiceService implements OrganizerServiceUseCase {
         return organizerService.getService().getId();
     }
 
+    /**
+     * Comprueba que el servicio pueda ser ofrecido por organizadores.
+     */
     private void validateServiceAllowedForOrganizer(Service service) {
         if (!Boolean.TRUE.equals(service.getAllowedForOrganizer())) {
             throw new IllegalArgumentException(SERVICE_NOT_ALLOWED_FOR_ORGANIZERS.formatted(service.getId()));
         }
     }
 
+    /**
+     * Considera activos los registros que no están marcados explícitamente como deshabilitados.
+     */
     private boolean isCatalogActive(OrganizerService organizerService) {
         return !Boolean.FALSE.equals(organizerService.getEnabled());
     }
 
+    /**
+     * Carga una asignación o lanza error si no existe.
+     */
     private OrganizerService findOrganizerServiceOrThrow(Long id) {
         return organizerServicePersistencePort.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ORGANIZER_SERVICE_NOT_FOUND_WITH_ID + id));

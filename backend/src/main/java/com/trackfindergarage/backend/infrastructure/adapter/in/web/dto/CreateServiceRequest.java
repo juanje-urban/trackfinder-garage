@@ -6,6 +6,12 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * DTO de entrada para crear un servicio del catálogo general.
+ *
+ * <p>Define la información básica del servicio y en qué contextos puede ofrecerse dentro de la
+ * aplicación (disponible para organizadores, circuitos o ambos).</p>
+ */
 @Getter
 @Setter
 public class CreateServiceRequest {

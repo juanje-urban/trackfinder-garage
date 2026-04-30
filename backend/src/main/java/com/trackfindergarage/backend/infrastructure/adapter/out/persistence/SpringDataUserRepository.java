@@ -6,6 +6,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
+/**
+ * Repositorio Spring Data para la entidad {@link User}.
+ *
+ * <p>Declara búsquedas habituales de usuarios y carga el rol cuando la aplicación necesita trabajar
+ * con la identidad completa del usuario.</p>
+ */
 public interface SpringDataUserRepository extends JpaRepository<User, Long> {
 
     @Override

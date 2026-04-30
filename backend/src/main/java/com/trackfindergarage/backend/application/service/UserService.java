@@ -192,23 +192,27 @@ public class UserService implements UserUseCase {
         return userPersistencePort.save(existingUser);
     }
 
+    // Obtiene el rol estándar que se asigna a las altas de usuarios finales.
     private Role getUserRole() {
         return rolePersistencePort.findByRoleName("USER")
                 .orElseThrow(() -> new ResourceNotFoundException("Role not found: USER"));
     }
 
+    // Evita que el flujo de usuarios modifique cuentas que deben pasar por OrganizerService.
     private void requireNonOrganizerUser(User user) {
         if (isOrganizerUser(user)) {
             throw new IllegalArgumentException(ORGANIZER_USERS_MANAGED_THROUGH_ORGANIZER_SERVICE);
         }
     }
 
+    // Detecta cuentas de organizador a partir del rol asociado al usuario.
     private boolean isOrganizerUser(User user) {
         return user.getRole() != null
                 && user.getRole().getRoleName() != null
                 && "ORGANIZER".equalsIgnoreCase(user.getRole().getRoleName().trim());
     }
 
+    // Protege la cuenta admin demo para no dejar la aplicación sin acceso administrativo.
     private boolean isDefaultAdminUser(User user) {
         if (user.getRole() == null || user.getRole().getRoleName() == null || user.getEmail() == null) {
             return false;
@@ -218,6 +222,7 @@ public class UserService implements UserUseCase {
                 && DEFAULT_ADMIN_EMAIL.equals(normalizeEmail(user.getEmail()));
     }
 
+    // Valida unicidad del alias visible durante el alta.
     private void validateDisplayNameForCreate(String displayName) {
         validateUniqueUser(
                 userPersistencePort.findByDisplayName(displayName),
@@ -226,6 +231,7 @@ public class UserService implements UserUseCase {
         );
     }
 
+    // Valida unicidad del correo durante el alta.
     private void validateEmailForCreate(String email) {
         validateUniqueUser(
                 userPersistencePort.findByEmail(email),
@@ -234,6 +240,7 @@ public class UserService implements UserUseCase {
         );
     }
 
+    // Valida unicidad del teléfono durante el alta.
     private void validatePhoneForCreate(String phone) {
         validateUniqueUser(
                 userPersistencePort.findByPhone(phone),
@@ -242,6 +249,7 @@ public class UserService implements UserUseCase {
         );
     }
 
+    // Valida unicidad del correo permitiendo conservar el del propio usuario.
     private void validateEmailForUpdate(Long userId, String email) {
         validateUniqueUser(
                 userPersistencePort.findByEmail(email),
@@ -250,6 +258,7 @@ public class UserService implements UserUseCase {
         );
     }
 
+    // Valida unicidad del teléfono permitiendo conservar el del propio usuario.
     private void validatePhoneForUpdate(Long userId, String phone) {
         validateUniqueUser(
                 userPersistencePort.findByPhone(phone),
@@ -258,6 +267,7 @@ public class UserService implements UserUseCase {
         );
     }
 
+    // Reutiliza el mismo control de duplicados para altas y ediciones.
     private void validateUniqueUser(Optional<User> candidate,
                                     Long excludedUserId,
                                     String duplicateMessage) {
@@ -268,11 +278,13 @@ public class UserService implements UserUseCase {
         });
     }
 
+    // Carga un usuario por id o centraliza el error de no encontrado.
     private User findUserOrThrow(Long id) {
         return userPersistencePort.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND_WITH_ID + id));
     }
 
+    // Carga el usuario autenticado desde el correo resuelto por Spring Security.
     private User findUserByAuthenticatedEmail(String authenticatedEmail) {
         if (authenticatedEmail == null || authenticatedEmail.isBlank()) {
             throw new IllegalArgumentException(AUTHENTICATED_EMAIL_REQUIRED);
@@ -283,6 +295,7 @@ public class UserService implements UserUseCase {
                 .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND_WITH_EMAIL + normalizedEmail));
     }
 
+    // Aplica los datos que sólo deben fijarse en creación.
     private void applyUserIdentity(User user,
                                    String displayName,
                                    String email,
@@ -294,6 +307,7 @@ public class UserService implements UserUseCase {
         applyUserProfile(user, name, surname, email, address, phone);
     }
 
+    // Aplica los datos editables del perfil de usuario.
     private void applyUserProfile(User user,
                                   String name,
                                   String surname,
@@ -307,6 +321,7 @@ public class UserService implements UserUseCase {
         user.setPhone(phone);
     }
 
+    // Deshabilita también la ficha de organizador si el usuario tenía una asociada.
     private void disableOrganizerIfPresent(Long userId) {
         organizerPersistencePort.findById(userId)
                 .ifPresent(organizer -> {
@@ -315,10 +330,12 @@ public class UserService implements UserUseCase {
                 });
     }
 
+    // Normaliza el correo para búsquedas y validaciones.
     private String normalizeEmail(String email) {
         return email.trim().toLowerCase(Locale.ROOT);
     }
 
+    // Normaliza textos obligatorios antes de validar o persistir.
     private String normalizeText(String value) {
         return value.trim();
     }

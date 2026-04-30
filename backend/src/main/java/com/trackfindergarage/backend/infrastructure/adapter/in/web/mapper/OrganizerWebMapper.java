@@ -5,11 +5,12 @@ import com.trackfindergarage.backend.domain.model.User;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.OrganizerResponse;
 import org.springframework.stereotype.Component;
 
-/* Nota: el servicio debe fijar el rol ORGANIZER, añadir la fecha de creación del user,
-establecer por defecto user.enabled=true y organizer.enabled=false, y transformar
-el password en passwordHash.
+/**
+ * Mapper web para convertir organizadores de dominio en respuestas HTTP.
+ *
+ * <p>Expone en una sola respuesta la información del organizador y de su usuario asociado. La
+ * lógica de alta y preparación del agregado sigue perteneciendo a la capa de aplicación.</p>
  */
-
 @Component
 public class OrganizerWebMapper {
 

@@ -6,6 +6,12 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * DTO de entrada para crear un circuito del catálogo.
+ *
+ * <p>Recoge los datos descriptivos y el {@code shortName} técnico que la aplicación usa para
+ * identificar recursos asociados al circuito (imágenes principalmente).</p>
+ */
 @Getter
 @Setter
 public class CreateTrackRequest {

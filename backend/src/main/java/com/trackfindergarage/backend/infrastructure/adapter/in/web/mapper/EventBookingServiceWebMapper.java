@@ -4,6 +4,12 @@ import com.trackfindergarage.backend.domain.model.EventBookingService;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.EventBookingServiceResponse;
 import org.springframework.stereotype.Component;
 
+/**
+ * Mapper web para convertir líneas de detalle de servicios reservados en respuestas HTTP.
+ *
+ * <p>Proyecta cada servicio contratado dentro de una reserva junto con sus referencias principales y
+ * el precio pagado.</p>
+ */
 @Component
 public class EventBookingServiceWebMapper {
 

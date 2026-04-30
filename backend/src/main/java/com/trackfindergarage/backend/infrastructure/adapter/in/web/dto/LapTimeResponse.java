@@ -5,6 +5,9 @@ import lombok.Getter;
 
 import java.time.LocalDate;
 
+/**
+ * Respuesta pública de un tiempo de vuelta con los datos básicos del usuario y del circuito.
+ */
 @Getter
 @Builder
 public class LapTimeResponse {

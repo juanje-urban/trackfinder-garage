@@ -6,6 +6,12 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * DTO de entrada para actualizar un circuito existente del catálogo.
+ *
+ * <p>Permite editar tanto la información visible del circuito como su identificador corto usado por
+ * el frontend para resolver recursos estáticos asociados.</p>
+ */
 @Getter
 @Setter
 public class UpdateTrackRequest {

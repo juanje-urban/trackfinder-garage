@@ -6,6 +6,12 @@ import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.ServiceRe
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.UpdateServiceRequest;
 import org.springframework.stereotype.Component;
 
+/**
+ * Mapper web para convertir servicios entre DTOs HTTP y modelo de dominio.
+ *
+ * <p>Traduce peticiones de creación o edición al agregado {@link Service} y genera respuestas listas
+ * para el frontend a partir del dominio.</p>
+ */
 @Component
 public class ServiceWebMapper {
 

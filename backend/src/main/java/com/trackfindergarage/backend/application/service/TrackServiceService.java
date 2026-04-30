@@ -87,6 +87,7 @@ public class TrackServiceService implements TrackServiceUseCase {
     }
 
     //Métodos auxiliares para recuperar circuitos y servicios
+    // Evita duplicar una misma combinación circuito-servicio.
     private void ensureTrackServiceDoesNotExist(Long trackId, Long serviceId) {
         trackServicePersistencePort.findByTrackIdAndServiceId(trackId, serviceId)
                 .ifPresent(existingAssignment -> {
@@ -94,16 +95,19 @@ public class TrackServiceService implements TrackServiceUseCase {
                 });
     }
 
+    // Carga el circuito destino de la asignación.
     private Track loadTrack(Long trackId) {
         return trackPersistencePort.findById(trackId)
                 .orElseThrow(() -> new ResourceNotFoundException(TRACK_NOT_FOUND_WITH_ID + trackId));
     }
 
+    // Carga el servicio base desde el catálogo.
     private Service loadService(Long serviceId) {
         return servicePersistencePort.findById(serviceId)
                 .orElseThrow(() -> new ResourceNotFoundException(SERVICE_NOT_FOUND_WITH_ID + serviceId));
     }
 
+    // Carga el servicio y comprueba que pueda asociarse a circuitos.
     private Service loadTrackAllowedService(Long serviceId) {
         Service service = loadService(serviceId);
 
@@ -114,6 +118,7 @@ public class TrackServiceService implements TrackServiceUseCase {
         return service;
     }
 
+    // Extrae y valida el id del circuito recibido.
     private Long extractTrackId(TrackService trackService) {
         if (trackService.getTrack() == null || trackService.getTrack().getId() == null) {
             throw new IllegalArgumentException(TRACK_ID_REQUIRED);
@@ -121,6 +126,7 @@ public class TrackServiceService implements TrackServiceUseCase {
         return trackService.getTrack().getId();
     }
 
+    // Extrae y valida el id del servicio recibido.
     private Long extractServiceId(TrackService trackService) {
         if (trackService.getService() == null || trackService.getService().getId() == null) {
             throw new IllegalArgumentException(SERVICE_ID_REQUIRED);
@@ -128,6 +134,7 @@ public class TrackServiceService implements TrackServiceUseCase {
         return trackService.getService().getId();
     }
 
+    // Carga una asignación circuito-servicio o centraliza el error de no encontrado.
     private TrackService findTrackServiceOrThrow(Long id) {
         return trackServicePersistencePort.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(TRACK_SERVICE_NOT_FOUND_WITH_ID + id));

@@ -22,6 +22,13 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * Mapper web del workspace del organizador.
+ *
+ * <p>Transforma la vista agregada de aplicación del workspace en el DTO rico que consume el
+ * frontend, y también convierte las peticiones de alta o edición de eventos en borradores de
+ * aplicación.</p>
+ */
 @Component
 public class OrganizerWorkspaceWebMapper {
 
@@ -49,6 +56,7 @@ public class OrganizerWorkspaceWebMapper {
         this.eventServiceWebMapper = eventServiceWebMapper;
     }
 
+    // Convierte la petición web en un borrador de aplicación, filtrando entradas nulas de servicios.
     public OrganizerEventDraft toDraft(UpsertOrganizerEventRequest request) {
         return new OrganizerEventDraft(
                 request.getTrackId(),
@@ -67,6 +75,7 @@ public class OrganizerWorkspaceWebMapper {
         );
     }
 
+    // Ensambla el DTO completo del workspace a partir de la vista agregada del caso de uso.
     public OrganizerWorkspaceResponse toResponse(OrganizerWorkspaceSnapshot snapshot) {
         Map<Long, OrganizerWorkspaceEventStatsView> eventStatsById = snapshot.stats().eventStats().stream()
                 .collect(Collectors.toMap(OrganizerWorkspaceEventStatsView::eventId, Function.identity()));
@@ -92,6 +101,7 @@ public class OrganizerWorkspaceWebMapper {
                 .build();
     }
 
+    // Combina el evento, sus servicios y sus métricas en una fila gestionable por el organizador.
     private OrganizerManagedEventResponse toManagedEventResponse(Event event,
                                                                  List<EventService> services,
                                                                  Set<Long> bookedEventServiceIds,
@@ -108,6 +118,7 @@ public class OrganizerWorkspaceWebMapper {
                 .build();
     }
 
+    // Traduce las métricas agregadas del workspace al contrato web.
     private OrganizerWorkspaceStatsResponse toStatsResponse(OrganizerWorkspaceStatsView stats) {
         return OrganizerWorkspaceStatsResponse.builder()
                 .totalBaseRevenue(stats.totalBaseRevenue())
@@ -123,6 +134,7 @@ public class OrganizerWorkspaceWebMapper {
                 .build();
     }
 
+    // Traduce las métricas específicas de un evento al contrato web.
     private OrganizerWorkspaceEventStatsResponse toEventStatsResponse(OrganizerWorkspaceEventStatsView stats) {
         return OrganizerWorkspaceEventStatsResponse.builder()
                 .eventId(stats.eventId())

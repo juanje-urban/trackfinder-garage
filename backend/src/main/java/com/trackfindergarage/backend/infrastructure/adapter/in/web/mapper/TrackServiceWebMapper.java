@@ -7,6 +7,12 @@ import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.CreateTra
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.TrackServiceResponse;
 import org.springframework.stereotype.Component;
 
+/**
+ * Mapper web para convertir asociaciones circuito-servicio entre HTTP y dominio.
+ *
+ * <p>Construye relaciones ligeras a partir de identificadores recibidos por la API y las transforma
+ * después en respuestas legibles para el frontend.</p>
+ */
 @Component
 public class TrackServiceWebMapper {
 

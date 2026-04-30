@@ -12,6 +12,12 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Locale;
 
+/**
+ * Adaptador entre el modelo de usuario de la aplicación y Spring Security.
+ *
+ * <p>Localiza usuarios por correo electrónico y construye el {@link UserDetails} que Spring usa
+ * para autenticar peticiones HTTP Basic.</p>
+ */
 @Service
 public class AppUserDetailsService implements UserDetailsService {
 

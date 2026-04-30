@@ -6,6 +6,12 @@ import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
+/**
+ * Adaptador de persistencia que implementa el puerto de roles mediante Spring Data JPA.
+ *
+ * <p>Ofrece a la aplicación una forma simple de resolver roles sin depender directamente del
+ * repositorio concreto.</p>
+ */
 @Component
 public class RolePersistenceAdapter implements RolePersistencePort {
 

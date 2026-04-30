@@ -6,6 +6,12 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * DTO de entrada para actualizar un servicio existente del catálogo.
+ *
+ * <p>Permite modificar tanto sus datos descriptivos como las banderas que indican dónde puede
+ * utilizarse (circuito, organizador o ambos).</p>
+ */
 @Getter
 @Setter
 public class UpdateServiceRequest {

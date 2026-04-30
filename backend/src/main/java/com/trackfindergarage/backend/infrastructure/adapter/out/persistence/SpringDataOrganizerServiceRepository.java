@@ -7,6 +7,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Repositorio Spring Data para la entidad {@link OrganizerService}.
+ *
+ * <p>Resuelve las consultas sobre servicios propios del organizador cargando el organizador, su
+ * usuario y el servicio enlazado.</p>
+ */
 public interface SpringDataOrganizerServiceRepository extends JpaRepository<OrganizerService, Long> {
 
     @Override

@@ -6,6 +6,12 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * DTO de entrada para actualizar el perfil del organizador autenticado.
+ *
+ * <p>Incluye tanto los datos personales de la cuenta asociada como la información legal y fiscal
+ * del organizador. La contraseña es opcional para permitir cambios parciales del perfil.</p>
+ */
 @Getter
 @Setter
 public class UpdateCurrentOrganizerProfileRequest {

@@ -6,6 +6,12 @@ import lombok.Getter;
 import java.math.BigDecimal;
 import java.util.List;
 
+/**
+ * DTO de salida con las métricas globales del workspace del organizador.
+ *
+ * <p>Expone ingresos, ocupación y volumen de actividad tanto a nivel agregado como desglosado por
+ * evento.</p>
+ */
 @Getter
 @Builder
 public class OrganizerWorkspaceStatsResponse {

@@ -4,6 +4,12 @@ import com.trackfindergarage.backend.domain.model.Event;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.EventResponse;
 import org.springframework.stereotype.Component;
 
+/**
+ * Mapper web para proyectar eventos de dominio a respuestas HTTP.
+ *
+ * <p>Genera una vista pública del evento complementándola con datos calculados fuera del dominio,
+ * como la capacidad restante.</p>
+ */
 @Component
 public class EventWebMapper {
 

@@ -7,6 +7,12 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Adaptador de persistencia que conecta el puerto de organizadores con Spring Data JPA.
+ *
+ * <p>Centraliza el acceso a los datos del organizador y sus búsquedas por identificadores de negocio como CIF o razón
+ * social.</p>
+ */
 @Component
 public class OrganizerPersistenceAdapter implements OrganizerPersistencePort {
 

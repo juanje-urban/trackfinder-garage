@@ -3,6 +3,12 @@ package com.trackfindergarage.backend.infrastructure.adapter.in.web.dto;
 import lombok.Builder;
 import lombok.Getter;
 
+/**
+ * DTO de salida con el resumen público visible del perfil de un usuario.
+ *
+ * <p>Contiene sólo métricas agregadas y datos de identificación pública pensados para mostrarse a
+ * otros usuarios sin exponer información privada.</p>
+ */
 @Getter
 @Builder
 public class PublicUserProfileResponse {

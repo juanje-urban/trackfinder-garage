@@ -5,6 +5,12 @@ import org.springframework.security.core.Authentication;
 import java.util.List;
 import java.util.function.Function;
 
+/**
+ * Clase base con utilidades comunes para controladores web.
+ *
+ * <p>Reúne helpers pequeños para extraer el correo autenticado y transformar colecciones de dominio
+ * en respuestas HTTP sin repetir código en cada controlador.</p>
+ */
 abstract class AbstractWebController {
 
     protected String authenticatedEmail(Authentication authentication) {

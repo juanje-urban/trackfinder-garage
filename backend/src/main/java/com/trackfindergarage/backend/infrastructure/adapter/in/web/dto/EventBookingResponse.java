@@ -8,6 +8,12 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+/**
+ * DTO de salida con la información principal de una reserva de evento.
+ *
+ * <p>Resume el usuario, el evento reservado, el precio base pagado y la preferencia de visibilidad
+ * pública asociada a esa inscripción.</p>
+ */
 @Getter
 @Builder
 public class EventBookingResponse {

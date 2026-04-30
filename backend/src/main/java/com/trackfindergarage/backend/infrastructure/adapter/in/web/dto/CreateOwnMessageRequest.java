@@ -6,6 +6,9 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * Datos recibidos para enviar un mensaje desde el usuario autenticado a otro usuario.
+ */
 @Getter
 @Setter
 public class CreateOwnMessageRequest {

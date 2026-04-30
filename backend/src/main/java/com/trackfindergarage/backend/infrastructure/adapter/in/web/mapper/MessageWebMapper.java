@@ -6,9 +6,18 @@ import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.MessageCo
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.MessageResponse;
 import org.springframework.stereotype.Component;
 
+/**
+ * Convierte mensajes y usuarios del dominio en respuestas HTTP de mensajería.
+ */
 @Component
 public class MessageWebMapper {
 
+    /**
+     * Construye la respuesta completa de un mensaje.
+     *
+     * @param message mensaje del dominio
+     * @return DTO preparado para la API
+     */
     public MessageResponse toResponse(Message message) {
         return MessageResponse.builder()
                 .id(message.getId())
@@ -23,6 +32,12 @@ public class MessageWebMapper {
                 .build();
     }
 
+    /**
+     * Construye la respuesta resumida de un usuario visible como contacto.
+     *
+     * @param user usuario disponible para iniciar conversación
+     * @return DTO de contacto de mensajería
+     */
     public MessageContactResponse toContactResponse(User user) {
         return MessageContactResponse.builder()
                 .id(user.getId())

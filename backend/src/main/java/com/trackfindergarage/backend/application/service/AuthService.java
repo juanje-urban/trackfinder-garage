@@ -116,12 +116,14 @@ public class AuthService implements AuthUseCase {
         return buildAuthResponse(createdOrganizer.getUser());
     }
 
+    // Carga solo usuarios activos para que login y sesión compartan la misma regla.
     private User loadActiveUserByEmail(String normalizedEmail) {
         return userPersistencePort.findByEmail(normalizedEmail)
                 .filter(existingUser -> Boolean.TRUE.equals(existingUser.getEnabled()))
                 .orElseThrow(() -> new InvalidCredentialsException(INVALID_CREDENTIALS_MESSAGE));
     }
 
+    // Construye el usuario base antes de delegar sus validaciones al caso de uso correspondiente.
     private User buildUser(AuthRegistrationCommand registrationCommand, String normalizedEmail) {
         User user = new User();
         user.setDisplayName(normalizeText(registrationCommand.displayName()));
@@ -133,6 +135,7 @@ public class AuthService implements AuthUseCase {
         return user;
     }
 
+    // Reduce la entidad User al contrato de sesión que consume el frontend.
     private AuthResponse buildAuthResponse(User user) {
         AuthResponse response = new AuthResponse();
         response.setUserId(user.getId());
@@ -142,10 +145,12 @@ public class AuthService implements AuthUseCase {
         return response;
     }
 
+    // Normaliza el correo para búsquedas y comparaciones.
     private String normalizeEmail(String email) {
         return email.trim().toLowerCase(Locale.ROOT);
     }
 
+    // Normaliza textos obligatorios recibidos desde el formulario de registro.
     private String normalizeText(String value) {
         return value.trim();
     }

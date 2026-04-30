@@ -8,6 +8,9 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 
+/**
+ * Datos recibidos al registrar un tiempo de vuelta para el usuario autenticado.
+ */
 @Getter
 @Setter
 public class CreateOwnLapTimeRequest {

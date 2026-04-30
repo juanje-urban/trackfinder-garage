@@ -43,6 +43,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+/**
+ * Cargador de datos de demostración para el perfil {@code demo}.
+ *
+ * <p>Genera un conjunto amplio de usuarios, organizadores, circuitos, servicios, eventos, reservas,
+ * mensajes y tiempos de vuelta para poder explorar la aplicación con una base de datos ya poblada.</p>
+ */
 @Component
 @Profile("demo")
 @Transactional
@@ -252,6 +258,7 @@ public class DemoDataSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
+        // Crea primero roles y usuarios porque el resto de datos dependen de ellos.
         Role adminRole = createRoleIfMissing("ADMIN");
         Role userRole = createRoleIfMissing(USER_ROLE_NAME);
         Role organizerRole = createRoleIfMissing("ORGANIZER");
@@ -259,11 +266,17 @@ public class DemoDataSeeder implements CommandLineRunner {
         createUser("admin", "admin@example.com", "Admin", "Demo", "admin123", adminRole);
         seedStandardUsers(userRole);
         seedOrganizers(organizerRole);
+
+        // Después carga el catálogo común de circuitos, servicios y asignaciones disponibles.
         seedTracks();
         seedServices();
         seedOrganizerServices();
         seedTrackServices();
+
+        // Mantiene coherentes datos demo antiguos antes de sembrar eventos actuales.
         migrateLegacyFutureEvents();
+
+        // Siembra eventos, reservas y servicios comprados tanto pasados como futuros.
         seedPastEvents();
         syncEventDescriptions(pastEventSeeds());
         seedPastEventServices();
@@ -274,6 +287,8 @@ public class DemoDataSeeder implements CommandLineRunner {
         seedFutureEventServices();
         seedFutureEventBookings();
         seedFutureEventBookingServices();
+
+        // Completa la actividad visible en perfiles públicos y bandejas de entrada.
         seedLapTimes();
         seedMessages();
     }
@@ -315,6 +330,7 @@ public class DemoDataSeeder implements CommandLineRunner {
         return userRepository.save(user);
     }
 
+    // Genera teléfonos demo deterministas para evitar colisiones entre ejecuciones.
     private String demoPhoneNumber(String uniqueKey) {
         try {
             byte[] digest = MessageDigest.getInstance("SHA-256")
@@ -560,6 +576,7 @@ public class DemoDataSeeder implements CommandLineRunner {
                 TRANSPONDER_TIMING_SERVICE_NAME);
     }
 
+    // Reubica eventos demo antiguos a fechas futuras esperadas por el frontend.
     private void migrateLegacyFutureEvents() {
         migrateLegacyFutureEvent(
                 TRACKEVENTS_LEGAL_NAME,
@@ -694,6 +711,7 @@ public class DemoDataSeeder implements CommandLineRunner {
         });
     }
 
+    // Añade sólo los servicios que cada circuito u organizador puede ofrecer realmente.
     private void seedEventServices(List<EventSeed> eventSeeds) {
         eventSeeds.forEach(eventSeed -> {
             createTrackEventServiceIfSupported(eventSeed.trackName(), eventSeed.eventDate(), BOX_RENTAL_SERVICE_NAME, BOX_RENTAL_PRICE);
@@ -710,6 +728,7 @@ public class DemoDataSeeder implements CommandLineRunner {
         });
     }
 
+    // Crea el servicio de evento sólo si el circuito tiene esa prestación en su catálogo.
     private void createTrackEventServiceIfSupported(String trackName,
                                                     LocalDate eventDate,
                                                     String serviceName,
@@ -724,6 +743,7 @@ public class DemoDataSeeder implements CommandLineRunner {
         createTrackEventServiceIfMissing(trackName, eventDate, serviceName, price);
     }
 
+    // Crea el servicio de evento sólo si el organizador ofrece esa prestación.
     private void createOrganizerEventServiceIfSupported(String trackName,
                                                         LocalDate eventDate,
                                                         String serviceName,
@@ -751,6 +771,7 @@ public class DemoDataSeeder implements CommandLineRunner {
         });
     }
 
+    // Reparte las compras demo en distintos momentos para que parezcan actividad real.
     private LocalDateTime bookingTimestamp(LocalDate eventDate, int attendeeIndex) {
         int hour = attendeeIndex % 2 == 0 ? 19 - attendeeIndex : 9 + attendeeIndex;
         int minuteOffset = 5 + (attendeeIndex * 11);
@@ -763,6 +784,7 @@ public class DemoDataSeeder implements CommandLineRunner {
         attendanceSeeds.forEach(this::seedDefaultBookingServices);
     }
 
+    // Asigna extras variados a algunos asistentes para poblar ingresos por servicios.
     private void seedDefaultBookingServices(EventAttendanceSeed attendanceSeed) {
         List<String> attendees = attendanceSeed.attendees();
 
@@ -1983,6 +2005,7 @@ public class DemoDataSeeder implements CommandLineRunner {
         eventBookingRepository.save(eventBooking);
     }
 
+    // Oculta algunas reservas futuras para que los perfiles públicos tengan casos mixtos.
     private boolean shouldExposeBookingInPublicProfile(String attendeeDisplayName, LocalDate eventDate) {
         if (eventDate.isBefore(FUTURE_JARAMA_EVENT_DATE)) {
             return true;
@@ -2027,6 +2050,7 @@ public class DemoDataSeeder implements CommandLineRunner {
         eventServiceRepository.save(eventService);
     }
 
+    // Registra la compra de un extra procedente del catálogo del circuito.
     private void createTrackEventBookingServiceIfMissing(String attendeeDisplayName,
                                                          String trackName,
                                                          LocalDate eventDate,
@@ -2054,6 +2078,7 @@ public class DemoDataSeeder implements CommandLineRunner {
         eventBookingServiceRepository.save(eventBookingService);
     }
 
+    // Registra la compra de un extra procedente del catálogo del organizador.
     private void createOrganizerEventBookingServiceIfMissing(String attendeeDisplayName,
                                                              String trackName,
                                                              LocalDate eventDate,

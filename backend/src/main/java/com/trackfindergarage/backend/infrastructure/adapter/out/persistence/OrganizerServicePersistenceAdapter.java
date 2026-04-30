@@ -7,6 +7,12 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Adaptador de persistencia para el catálogo de servicios habilitados por organizador.
+ *
+ * <p>Implementa el puerto de organizer services delegando en el repositorio JPA las búsquedas por
+ * organizador y servicio.</p>
+ */
 @Component
 public class OrganizerServicePersistenceAdapter implements OrganizerServicePersistencePort {
 

@@ -4,6 +4,12 @@ import com.trackfindergarage.backend.domain.model.EventService;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.EventServiceResponse;
 import org.springframework.stereotype.Component;
 
+/**
+ * Mapper web para convertir servicios de evento en respuestas HTTP.
+ *
+ * <p>Expone una representación uniforme de extras de evento, ya provengan del catálogo del circuito
+ * o del catálogo propio del organizador.</p>
+ */
 @Component
 public class EventServiceWebMapper {
 
@@ -33,5 +39,4 @@ public class EventServiceWebMapper {
                 .hasBookings(hasBookings)
                 .build();
     }
-
 }

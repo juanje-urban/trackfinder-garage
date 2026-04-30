@@ -13,6 +13,12 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * DTO de entrada para crear o actualizar un evento desde el workspace del organizador.
+ *
+ * <p>Incluye los datos base del evento y la colección completa de servicios que deben quedar
+ * configurados tras la operación.</p>
+ */
 @Getter
 @Setter
 public class UpsertOrganizerEventRequest {

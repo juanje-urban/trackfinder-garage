@@ -135,6 +135,7 @@ public class EventServiceService implements EventServiceUseCase {
     }
 
     //Métodos auxiliares para recuperar y validar datos
+    // Valida datos mínimos, precio y que el servicio venga de un único origen.
     private void validateEventService(EventService eventService) {
         if (eventService.getEvent() == null || eventService.getEvent().getId() == null) {
             throw new IllegalArgumentException("Event id is required");
@@ -155,6 +156,7 @@ public class EventServiceService implements EventServiceUseCase {
         }
     }
 
+    // Resuelve y valida una asociación procedente del catálogo del circuito.
     private TrackService resolveTrackService(EventService eventService, Event event, Long currentEventServiceId) {
         if (eventService.getTrackService() == null || eventService.getTrackService().getId() == null) {
             return null;
@@ -180,6 +182,7 @@ public class EventServiceService implements EventServiceUseCase {
         return trackService;
     }
 
+    // Resuelve y valida una asociación procedente del catálogo del organizador.
     private OrganizerService resolveOrganizerService(EventService eventService, Event event, Long currentEventServiceId) {
         if (eventService.getOrganizerService() == null || eventService.getOrganizerService().getId() == null) {
             return null;
@@ -209,10 +212,12 @@ public class EventServiceService implements EventServiceUseCase {
         return organizerService;
     }
 
+    // Extrae el id del evento una vez validada la presencia de la referencia.
     private Long extractEventId(EventService eventService) {
         return eventService.getEvent().getId();
     }
 
+    // Carga una asociación de evento o centraliza el error de no encontrado.
     private EventService findEventServiceOrThrow(Long id) {
         return eventServicePersistencePort.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(EVENT_SERVICE_NOT_FOUND_WITH_ID + id));

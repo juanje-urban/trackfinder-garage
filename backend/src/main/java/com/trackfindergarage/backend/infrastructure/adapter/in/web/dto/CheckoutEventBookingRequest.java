@@ -8,6 +8,12 @@ import lombok.Setter;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * DTO de entrada para confirmar la contratación de una reserva de evento.
+ *
+ * <p>Incluye el evento elegido, los servicios extra seleccionados y la preferencia de visibilidad
+ * pública de la reserva en el perfil del usuario y en la lista de asistentes al evento.</p>
+ */
 @Getter
 @Setter
 public class CheckoutEventBookingRequest {

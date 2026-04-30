@@ -4,10 +4,12 @@ import com.trackfindergarage.backend.domain.model.User;
 import com.trackfindergarage.backend.infrastructure.adapter.in.web.dto.UserResponse;
 import org.springframework.stereotype.Component;
 
-/*Nota: el servicio debe hacer la conversión de role a roleId, añadir la fecha de creación y fijar por defecto
-enabled=true y transformar el password en passwordHash.
+/**
+ * Mapper web para transformar usuarios de dominio en respuestas HTTP.
+ *
+ * <p>Se centra en la conversión a {@link UserResponse}. La preparación del usuario, como fijar el
+ * rol, la fecha de creación o el hash de contraseña, permanece en la capa de aplicación.</p>
  */
-
 @Component
 public class UserWebMapper {
 
