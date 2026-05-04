@@ -11,6 +11,8 @@ import OrganizerView from '@/views/OrganizerView.vue'
 import MessagesView from '@/views/MessagesView.vue'
 import { isAdminRole, isOrganizerRole, isUserRole } from '@/utils/authRoles'
 
+// Declaro aquí el mapa de URLs. Cada ruta apunta a una vista y algunas llevan meta
+// para que el guard de abajo sepa qué permisos tiene que comprobar.
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -26,10 +28,13 @@ const router = createRouter({
   ],
 })
 
+// Este guard se ejecuta antes de entrar en cada ruta. Lo uso como portero sencillo:
+// si no hay sesión o el rol no encaja, mando al usuario a la home.
 router.beforeEach((to) => {
   const auth = useAuth()
   const session = auth.session.value
 
+  // Si estoy viendo mi propio perfil público, prefiero llevarme al perfil privado.
   if (
     to.name === 'public-profile' &&
     session &&
@@ -39,6 +44,7 @@ router.beforeEach((to) => {
     return { name: 'profile' }
   }
 
+  // Las rutas con meta no duplican lógica en cada vista, centralizo aquí los permisos.
   if (to.meta.requiresProfile && !session) {
     return { name: 'home' }
   }

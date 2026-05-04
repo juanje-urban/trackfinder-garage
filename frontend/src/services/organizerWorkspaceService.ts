@@ -4,6 +4,7 @@ import type {
   OrganizerWorkspace,
 } from '@/types/organizerWorkspace'
 
+// El workspace es el panel del organizador para gestionar eventos, servicios y métricas en una sola carga.
 export async function getOrganizerWorkspace(): Promise<OrganizerWorkspace> {
   const response = await api.get<OrganizerWorkspace>('/organizer-workspace')
   return response.data

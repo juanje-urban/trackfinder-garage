@@ -1,3 +1,4 @@
+// Tipos de mensajería. El backend guarda mensajes sueltos y el front los agrupa en 'MessageThread'.
 export interface MessageItem {
   id: number
   senderId: number

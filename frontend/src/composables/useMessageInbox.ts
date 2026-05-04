@@ -10,6 +10,7 @@ const state = reactive<MessageInboxState>({
   unreadCount: 0,
 })
 
+// Guardo el contador de mensajes sin leer en un composable para compartirlo entre cabecera y bandeja.
 export function useMessageInbox() {
   return {
     unreadCount: computed(() => state.unreadCount),
@@ -29,7 +30,7 @@ async function refreshUnreadCount(currentUserId: number | null) {
     const messages = await getOwnMessages()
     syncMessages(messages, currentUserId)
   } catch {
-    // Keep the last known counter if refresh fails.
+    // Mantengo el último contador conocido si falla la recarga.
   }
 }
 
@@ -39,6 +40,7 @@ function syncMessages(messages: MessageItem[], currentUserId: number | null) {
     return
   }
 
+  // Cuento solo mensajes recibidos por mí que todavía no estén leídos.
   state.unreadCount = messages.filter(
     (message) => message.receiverId === currentUserId && !message.isRead,
   ).length

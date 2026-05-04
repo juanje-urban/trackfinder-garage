@@ -14,8 +14,12 @@ const state = reactive<AuthState>({
   isDialogOpen: false,
 })
 
+// Esto es un composable: una función que puedo llamar desde cualquier componente, como los hook
+// de React.
+// Mantiene el 'state' fuera para que todos compartan la misma sesión, no una copia por componente.
 export function useAuth() {
   return {
+    // Expongo 'computed' para que Vue actualice la pantalla cuando cambie la sesión.
     session: computed(() => state.session),
     isAuthenticated: computed(() => state.session !== null),
     isDialogOpen: computed(() => state.isDialogOpen),
@@ -55,6 +59,7 @@ async function refreshSession() {
   }
 
   try {
+    // Valido la identidad contra el backend, pero conservo la cabecera Basic ya calculada.
     const nextIdentity = await getCurrentSession()
     setSession({
       ...nextIdentity,
@@ -66,6 +71,7 @@ async function refreshSession() {
 }
 
 function loadStoredSession(): AuthSession | null {
+  // En tests o renderizados fuera del navegador puede no existir window.
   if (typeof window === 'undefined') {
     return null
   }
@@ -85,6 +91,7 @@ function loadStoredSession(): AuthSession | null {
       typeof parsedValue.email !== 'string' ||
       typeof parsedValue.authorizationHeader !== 'string'
     ) {
+      // Si el localStorage está corrupto, limpiamos y empezamos sin sesión.
       removeStoredSession()
       return null
     }

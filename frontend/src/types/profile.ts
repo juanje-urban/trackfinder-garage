@@ -1,3 +1,4 @@
+// Estado de formularios del perfil. Lo guardo como string porque los inputs HTML trabajan con texto.
 export interface ProfileFormState {
   name: string
   surname: string

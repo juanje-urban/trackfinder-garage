@@ -1,6 +1,7 @@
 import { api } from '@/services/api'
 import type { CreateMessagePayload, MessageContact, MessageItem } from '@/types/message'
 
+// Servicio de mensajería. La vista trabaja con mensajes, contactos e hilos ya montados aparte.
 export async function getOwnMessages(): Promise<MessageItem[]> {
   const response = await api.get<MessageItem[]>('/messages')
   return response.data

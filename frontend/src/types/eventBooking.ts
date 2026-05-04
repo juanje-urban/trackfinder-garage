@@ -1,3 +1,4 @@
+// Tipos de reservas. Separamos la reserva base de los servicios extra comprados.
 export interface EventBooking {
   id: number
   userId: number

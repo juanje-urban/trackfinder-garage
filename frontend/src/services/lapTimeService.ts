@@ -1,6 +1,7 @@
 import { api } from '@/services/api'
 import type { CreateOwnLapTimePayload, LapTime } from '@/types/lapTime'
 
+// Servicio de tiempos por vuelta: lectura pública por usuario y gestión del usuario actual.
 export async function getLapTimesByUserId(userId: number): Promise<LapTime[]> {
   const response = await api.get<LapTime[]>(`/lap-times/user/${userId}`)
   return response.data

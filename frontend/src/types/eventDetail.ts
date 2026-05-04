@@ -1,5 +1,6 @@
 import type { EventAvailabilityState } from '@/utils/eventAvailability'
 
+// Tipos específicos de la pantalla de detalle. No vienen tal cual del backend, los preparo para pintar la UI.
 export interface DisplayService {
   id: number
   name: string

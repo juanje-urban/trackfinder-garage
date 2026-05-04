@@ -6,6 +6,7 @@ import type {
   UpdateEventBookingVisibilityPayload,
 } from '@/types/eventBooking'
 
+// Agrupo aquí lo relacionado con reservas para que las vistas no conozcan URLs concretas.
 export async function checkoutEventBooking(
   payload: EventBookingCheckoutPayload,
 ): Promise<EventBooking> {

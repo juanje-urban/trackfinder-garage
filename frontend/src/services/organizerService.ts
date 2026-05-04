@@ -5,6 +5,7 @@ import type {
   UpdateCurrentOrganizerProfilePayload,
 } from '@/types/organizer'
 
+// Servicio de organizadores. Lo usan el perfil de organizador y la administración.
 export async function getOrganizers(): Promise<Organizer[]> {
   const response = await api.get<Organizer[]>('/organizers')
   return response.data

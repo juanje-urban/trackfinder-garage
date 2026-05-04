@@ -1,3 +1,4 @@
+// Servicio ofertado dentro de un evento concreto, ya sea del circuito o del organizador.
 export interface EventServiceItem {
   id: number
   eventId: number

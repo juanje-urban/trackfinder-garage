@@ -7,6 +7,7 @@ import type {
   AuthSession,
 } from '@/types/auth'
 
+// Este servicio traduce acciones de autenticación del front a llamadas HTTP del backend.
 export async function login(credentials: AuthCredentials): Promise<AuthSession> {
   const response = await api.post<AuthIdentity>('/auth/login', credentials)
   return withAuthorizationHeader(response.data, credentials)
@@ -33,6 +34,7 @@ function withAuthorizationHeader(
   identity: AuthIdentity,
   credentials: AuthCredentials,
 ): AuthSession {
+  // El backend me devuelve la identidad; yo le añado la cabecera para reutilizarla después.
   return {
     ...identity,
     authorizationHeader: buildAuthorizationHeader(credentials),
@@ -40,6 +42,7 @@ function withAuthorizationHeader(
 }
 
 function buildAuthorizationHeader(credentials: AuthCredentials): string {
+  // Construyo Basic Auth en el navegador. Uso TextEncoder para no romper caracteres especiales.
   const token = `${credentials.email}:${credentials.password}`
   const tokenBytes = new TextEncoder().encode(token)
   let binaryToken = ''

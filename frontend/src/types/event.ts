@@ -1,3 +1,4 @@
+// Evento público tal como lo consumo desde el front.
 export interface Event {
   id: number
   organizerId: number

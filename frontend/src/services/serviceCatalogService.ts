@@ -1,6 +1,7 @@
 import { api } from '@/services/api'
 import type { ServiceCatalogItem, ServiceCatalogPayload } from '@/types/serviceCatalog'
 
+// Catálogo maestro de servicios que luego pueden asociarse a circuitos u organizadores.
 export async function getServices(): Promise<ServiceCatalogItem[]> {
   const response = await api.get<ServiceCatalogItem[]>('/services')
   return response.data

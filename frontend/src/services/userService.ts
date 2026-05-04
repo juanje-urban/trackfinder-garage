@@ -6,6 +6,7 @@ import type {
   UserProfile,
 } from '@/types/user'
 
+// Servicio de usuarios. Incluye perfil propio, perfil público y administración de cuentas.
 export async function getCurrentUserProfile(): Promise<UserProfile> {
   const response = await api.get<UserProfile>('/users/me')
   return response.data

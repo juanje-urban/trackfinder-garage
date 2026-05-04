@@ -4,6 +4,7 @@ import type {
   TrackServiceAssignmentPayload,
 } from '@/types/trackService'
 
+// Relación entre circuitos y servicios disponibles en pista.
 export async function getTrackServiceAssignments(): Promise<TrackServiceAssignment[]> {
   const response = await api.get<TrackServiceAssignment[]>('/track-services')
   return response.data

@@ -2,6 +2,7 @@ import { api } from './api'
 import type { Track, TrackPayload } from '@/types/track'
 import type { TrackRecord } from '@/types/trackRecord'
 
+// Servicio de circuitos. También pido aquí el ranking porque depende directamente del circuito.
 export async function getTracks(): Promise<Track[]> {
   const response = await api.get<Track[]>('/tracks')
   return response.data

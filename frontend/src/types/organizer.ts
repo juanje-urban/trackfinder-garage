@@ -1,3 +1,4 @@
+// Datos de organizador. Combina usuario base con información fiscal y estado de validación.
 export interface Organizer {
   idUser: number
   displayName: string

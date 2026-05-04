@@ -1,3 +1,4 @@
+// Tiempo por vuelta de un usuario. El tiempo se guarda en milisegundos para comparar fácil.
 export interface LapTime {
   id: number
   userId: number

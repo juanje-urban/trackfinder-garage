@@ -9,6 +9,7 @@ import { useAuth } from '@/composables/useAuth'
 
 const auth = useAuth()
 
+// Cuando el componente raíz aparece en pantalla, intento recuperar la sesión guardada.
 onMounted(() => {
   void auth.refreshSession()
 })
@@ -16,10 +17,12 @@ onMounted(() => {
 
 <template>
   <div class="app-shell">
+    <!-- Estos componentes permanecen siempre en la app, cambie o no la página actual. -->
     <AppHeader />
     <AuthDialog />
     <AppToast />
     <div class="app-shell__body">
+      <!-- RouterView nos renderizará la vista correspondiente a la URL. -->
       <RouterView />
     </div>
     <AppFooter />
