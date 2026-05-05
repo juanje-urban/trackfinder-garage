@@ -3,6 +3,7 @@ import SectionCard from '@/components/SectionCard.vue'
 import type { DisplayServiceGroup } from '@/types/eventDetail'
 import { formatCurrency } from '@/utils/format'
 
+// Lista de servicios contratables. Bloqueada cuando ya existe reserva confirmada.
 defineProps<{
   isPastEvent: boolean
   servicesLoading: boolean
@@ -13,10 +14,12 @@ defineProps<{
 }>()
 
 defineEmits<{
+  // Devuelvo solo el id. La vista padre decide si lo añade o lo quita.
   toggleService: [serviceId: number]
 }>()
 
 function isSelected(selectedServiceIds: number[], serviceId: number): boolean {
+  // Helper mínimo para no repetir 'includes' varias veces en el template.
   return selectedServiceIds.includes(serviceId)
 }
 </script>

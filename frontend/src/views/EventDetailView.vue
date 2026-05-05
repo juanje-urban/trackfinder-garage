@@ -45,6 +45,7 @@ type BookingDialogMode = 'checkout' | 'cancel'
 const route = useRoute()
 const auth = useAuth()
 
+// Estado principal de la pantalla. Separar carga general y carga de servicios permite mostrar errores parciales.
 const loading = ref(true)
 const error = ref('')
 const servicesLoading = ref(true)
@@ -65,6 +66,7 @@ const eventId = computed(() => Number(route.params.id))
 const todayIso = toIsoDate(new Date())
 
 const eventDetail = computed(() => {
+  // Junto evento y circuito cuando ambos están disponibles para simplificar el template.
   if (!event.value || !track.value) {
     return null
   }
@@ -84,6 +86,7 @@ const formattedPrice = computed(() =>
 )
 
 const availability = computed<EventAvailabilitySummary | null>(() => {
+  // Transformo plazas restantes en textos y estado visual reutilizable.
   if (!eventDetail.value) {
     return null
   }
@@ -106,6 +109,7 @@ const layoutImage = computed(() => trackMedia.value.layoutImage)
 const secondGalleryImage = computed(() => trackMedia.value.gallery[1])
 
 const availableServices = computed<DisplayService[]>(() =>
+  // Normalizo servicios de circuito y organizador en una forma común para pintarlos juntos.
   eventServices.value
     .flatMap((service) => {
       const name = service.trackServiceName ?? service.organizerServiceName
@@ -226,6 +230,7 @@ const bookingCaption = computed(() => {
 })
 
 const heroStyle = computed(() => {
+  // Si el circuito tiene imagen, la uso; si no, genero una paleta visual estable.
   if (!eventDetail.value) {
     return {}
   }
@@ -251,6 +256,7 @@ const heroStyle = computed(() => {
 })
 
 onMounted(async () => {
+  // Además de cargar datos, registro Escape para cerrar el modal de imágenes.
   window.addEventListener('keydown', handleMediaDialogKeydown)
 
   if (Number.isNaN(eventId.value)) {
@@ -270,6 +276,7 @@ onUnmounted(() => {
 watch(
   () => [auth.session.value?.userId ?? null, auth.session.value?.roleName ?? null] as const,
   async () => {
+    // Si cambia la sesión, refresco reserva/plazas porque el botón puede cambiar completamente.
     if (Number.isNaN(eventId.value)) {
       return
     }
@@ -278,7 +285,7 @@ watch(
       event.value = await getEventById(eventId.value)
       await loadExistingBookingState(eventId.value)
     } catch {
-      // Keep the current UI state if the refresh fails.
+      // Mantiene el estado actual de la interfaz de usuario si falla la actualización.
     }
   },
 )
@@ -288,6 +295,7 @@ async function loadEventDetail() {
     const selectedEvent = await getEventById(eventId.value)
     event.value = selectedEvent
 
+    // El circuito y los servicios son independientes, así que los pido en paralelo.
     const [trackResult, servicesResult] = await Promise.allSettled([
       getTrackById(selectedEvent.trackId),
       getEventServicesByEventId(selectedEvent.id),
@@ -320,12 +328,14 @@ function toggleServiceSelection(serviceId: number) {
     return
   }
 
+  // Alterno el id dentro del array; Vue detecta el cambio al asignar un array nuevo.
   selectedServiceIds.value = selectedServiceIds.value.includes(serviceId)
     ? selectedServiceIds.value.filter((id) => id !== serviceId)
     : [...selectedServiceIds.value, serviceId]
 }
 
 async function loadExistingBookingState(selectedEventId: number) {
+  // Solo una cuenta de usuario estándar puede tener reserva propia en un evento.
   if (!hasBookableSession.value) {
     existingBooking.value = null
     selectedServiceIds.value = []
@@ -365,6 +375,7 @@ function closeBookingDialog() {
 
 function handleBookingAction() {
   if (!auth.isAuthenticated.value) {
+    // Si no hay sesión, no navego fuera: abro el diálogo global de login.
     auth.openAuthDialog()
     return
   }
@@ -395,6 +406,7 @@ async function confirmBookingCheckout() {
     return
   }
 
+  // Mientras envío la reserva bloqueo botones para evitar dobles clicks.
   bookingSubmitting.value = true
   bookingDialogError.value = ''
 
@@ -441,6 +453,7 @@ async function confirmBookingCancellation() {
 
   try {
     await cancelEventBooking(booking.id)
+    // Limpio el estado local antes de recargar plazas para que la UI responda al momento.
     existingBooking.value = null
     selectedServiceIds.value = []
     bookingVisibleOnPublicProfile.value = false

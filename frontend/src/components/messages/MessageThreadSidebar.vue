@@ -3,6 +3,7 @@ import { SquarePen } from 'lucide-vue-next'
 import type { MessageThread } from '@/types/message'
 import { formatMessageTimestamp } from '@/utils/messageFormatting'
 
+// Barra lateral de hilos. No decide nada de negocio, solo comunica qué hilo se abre.
 defineProps<{
   threads: MessageThread[]
   selectedThreadKey: string | null
@@ -10,6 +11,7 @@ defineProps<{
 }>()
 
 defineEmits<{
+  // 'compose' abre nuevo mensaje y 'openThread' selecciona una conversación existente.
   compose: []
   openThread: [thread: MessageThread]
 }>()

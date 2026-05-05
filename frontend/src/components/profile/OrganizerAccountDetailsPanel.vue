@@ -4,6 +4,7 @@ import type { OrganizerProfile } from '@/types/organizer'
 import type { ProfileFormState } from '@/types/profile'
 import { formatDisplayDate } from '@/utils/format'
 
+// Panel de datos del organizador: alterna lectura y edición según 'editMode'.
 defineProps<{
   organizerProfile: OrganizerProfile
   profileForm: ProfileFormState
@@ -13,6 +14,7 @@ defineProps<{
 }>()
 
 defineEmits<{
+  // El guardado real está en UserProfileView, que conoce servicios y sesión.
   edit: []
   cancel: []
   save: []

@@ -1,5 +1,6 @@
 const fallbackPalette = ['#4c1717', '#24365a'] as const
 
+// Paletas de respaldo cuando un circuito/evento no tiene imagen propia.
 export const eventVisualPalettes = [
   ['#4c1717', '#24365a'],
   ['#203d56', '#6d1e18'],
@@ -14,6 +15,7 @@ export const trackVisualPalettes = [
   ['#5b2118', '#243a63'],
 ] as const
 
+// Devuelvo variables CSS dinámicas para pintar tarjetas con colores distintos sin clases extra.
 export function createVisualStyle(
   index: number,
   palettes: readonly (readonly [string, string])[],

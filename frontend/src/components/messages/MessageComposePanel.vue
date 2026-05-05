@@ -3,6 +3,7 @@ import { Send } from 'lucide-vue-next'
 import type { MessageContact } from '@/types/message'
 import { formatMessageRoleLabel } from '@/utils/messageFormatting'
 
+// Formulario de mensaje nuevo. El padre guarda el estado para poder limpiar/navegar.
 defineProps<{
   contacts: MessageContact[]
   receiverId: string
@@ -13,6 +14,7 @@ defineProps<{
 }>()
 
 defineEmits<{
+  // Cada campo avisa al padre cuando cambia, igual que un v-model manual.
   'update:receiverId': [value: string]
   'update:subject': [value: string]
   'update:message': [value: string]

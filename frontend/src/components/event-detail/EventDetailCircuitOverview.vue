@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import type { Track } from '@/types/track'
 
+// Bloque informativo del circuito, con foto opcional ampliable.
 defineProps<{
   track: Track
   secondGalleryImage?: string
 }>()
 
 defineEmits<{
+  // El modal de imagen vive en la vista padre.
   openPhoto: []
 }>()
 </script>

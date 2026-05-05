@@ -11,6 +11,7 @@ type ResolveApiErrorOptions = {
   matches?: ApiErrorMatch[]
 }
 
+// Intento sacar el mensaje más útil del backend antes de caer en un texto genérico.
 function getBackendErrorMessage(error: unknown): string | null {
   if (!isAxiosError(error)) {
     return null
@@ -34,6 +35,7 @@ function getBackendErrorMessage(error: unknown): string | null {
   return firstFieldError ?? null
 }
 
+// Centralizo aquí la traducción de errores para no repetir lógica en cada vista.
 export function resolveApiErrorMessage(
   error: unknown,
   { fallback, statusMessages = {}, matches = [] }: ResolveApiErrorOptions,

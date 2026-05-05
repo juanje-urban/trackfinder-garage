@@ -6,15 +6,18 @@ import TrackCard from '@/components/TrackCard.vue'
 import { getTracks } from '@/services/trackService'
 import type { Track } from '@/types/track'
 
+// La vista solo necesita la lista de circuitos y estados básicos de carga/error.
 const tracks = ref<Track[]>([])
 const loading = ref(true)
 const error = ref('')
 
+// Calculo localizaciones únicas sin pedir un endpoint extra al backend.
 const locationCount = computed(
   () => new Set(tracks.value.map((track) => track.location)).size,
 )
 
 onMounted(async () => {
+  // 'onMounted' se ejecuta una vez cuando Vue ya ha montado esta página.
   try {
     tracks.value = await getTracks()
   } catch {

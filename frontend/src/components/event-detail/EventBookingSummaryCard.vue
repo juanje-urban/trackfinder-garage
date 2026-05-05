@@ -2,6 +2,7 @@
 import type { DisplayService } from '@/types/eventDetail'
 import { formatCurrency } from '@/utils/format'
 
+// Resumen lateral de reserva: el padre calcula precios y aquí solo los muestro.
 defineProps<{
   isPastEvent: boolean
   totalPriceLabel: string
@@ -13,6 +14,7 @@ defineProps<{
 }>()
 
 defineEmits<{
+  // El botón principal avisa al padre para abrir confirmación o login.
   bookingAction: []
 }>()
 </script>

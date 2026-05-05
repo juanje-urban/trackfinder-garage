@@ -5,6 +5,7 @@ import type { Event } from '@/types/event'
 import type { EventAvailabilitySummary } from '@/types/eventDetail'
 import type { Track } from '@/types/track'
 
+// Hero del detalle. Recibe todo ya preparado.
 defineProps<{
   event: Event
   track: Track
@@ -15,6 +16,7 @@ defineProps<{
 }>()
 
 defineEmits<{
+  // Abre el mapa ampliado desde EventDetailView.
   openLayout: []
 }>()
 </script>

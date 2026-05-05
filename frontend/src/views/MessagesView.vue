@@ -26,6 +26,7 @@ const toast = useToast()
 const route = useRoute()
 const router = useRouter()
 
+// La mensajería guarda mensajes planos y los convierte en hilos con 'computed'.
 const loading = ref(true)
 const error = ref('')
 const sendError = ref('')
@@ -43,6 +44,7 @@ const composeForm = reactive({
   message: '',
 })
 
+// Datos derivados de la sesión actual; si hago login/logout, Vue recalcula automáticamente.
 const currentUserId = computed(() => auth.session.value?.userId ?? null)
 const isAuthenticated = computed(() => auth.isAuthenticated.value)
 
@@ -51,6 +53,7 @@ const contactsById = computed<Record<number, MessageContact>>(() =>
 )
 
 const threads = computed(() =>
+  // Transformo los mensajes en conversaciones agrupadas por destinatario + asunto.
   buildMessageThreads(messages.value, currentUserId.value, contactsById.value),
 )
 
@@ -59,6 +62,7 @@ const activeThread = computed(
 )
 
 onMounted(async () => {
+  // La vista necesita sesión porque todos los mensajes son privados.
   if (!isAuthenticated.value) {
     loading.value = false
     error.value = 'Necesitas iniciar sesión para acceder a tus mensajes.'
@@ -71,6 +75,7 @@ onMounted(async () => {
 watch(
   () => activeThread.value?.key ?? null,
   async () => {
+    // Al cambiar de hilo marco como leídos los mensajes entrantes de ese hilo.
     await markActiveThreadAsRead()
   },
 )
@@ -78,6 +83,7 @@ watch(
 watch(
   () => route.query.receiverId,
   () => {
+    // Permite abrir '/messages?receiverId=...' desde un perfil público y empezar ya el mensaje.
     applyComposeIntentFromRoute()
   },
 )
@@ -87,6 +93,7 @@ async function loadMessagesPage() {
   error.value = ''
 
   try {
+    // Cargo mensajes y contactos juntos para poder construir hilos con nombres y roles.
     const [ownMessages, availableContacts] = await Promise.all([
       getOwnMessages(),
       getMessageContacts(),
@@ -109,6 +116,7 @@ async function loadMessagesPage() {
 }
 
 function syncSelectedThread() {
+  // Si el hilo seleccionado ya no existe, elijo el primero disponible.
   if (threads.value.some((thread) => thread.key === selectedThreadKey.value)) {
     return
   }
@@ -121,6 +129,7 @@ function openCompose() {
 }
 
 function startCompose(receiverId: string) {
+  // Entrar en modo redacción limpia selección y errores anteriores.
   isComposeMode.value = true
   selectedThreadKey.value = null
   replyBody.value = ''
@@ -164,6 +173,7 @@ function applyComposeIntentFromRoute() {
 }
 
 async function clearComposeIntent() {
+  // Quito 'receiverId' de la URL para que no vuelva a abrir el compose al navegar dentro de mensajes.
   if (!('receiverId' in route.query)) {
     return
   }
@@ -187,6 +197,7 @@ async function markActiveThreadAsRead() {
   }
 
   try {
+    // Actualizo solo los mensajes que estaban sin leer y luego sincronizo el contador global.
     const updatedMessages = await Promise.all(
       unreadIncomingMessages.map((message) => markOwnMessageAsRead(message.id)),
     )
@@ -195,7 +206,7 @@ async function markActiveThreadAsRead() {
     messages.value = messages.value.map((message) => updatedMessagesById.get(message.id) ?? message)
     messageInbox.syncMessages(messages.value, currentUserId.value)
   } catch {
-    // The conversation remains usable even if the read sync fails.
+    // La conversación sigue siendo usable aunque falle la sincronización de lectura.
   }
 }
 
@@ -249,6 +260,7 @@ async function submitMessage(payload: { receiverId: number; subject: string; mes
   sending.value = true
 
   try {
+    // Tras enviar, inserto el mensaje en memoria para que aparezca sin recargar toda la página.
     const createdMessage = await createOwnMessage(payload)
 
     messages.value = [...messages.value, createdMessage]

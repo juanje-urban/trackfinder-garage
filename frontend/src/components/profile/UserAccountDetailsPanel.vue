@@ -4,6 +4,7 @@ import type { ProfileFormState } from '@/types/profile'
 import type { UserProfile } from '@/types/user'
 import { formatDisplayDate } from '@/utils/format'
 
+// Panel de datos personales del usuario estándar.
 defineProps<{
   profile: UserProfile
   profileForm: ProfileFormState
@@ -13,6 +14,7 @@ defineProps<{
 }>()
 
 defineEmits<{
+  // Igual que en organizador: este componente no guarda, solo avisa.
   edit: []
   cancel: []
   save: []

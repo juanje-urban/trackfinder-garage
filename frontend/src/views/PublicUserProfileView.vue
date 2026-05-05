@@ -31,6 +31,7 @@ const route = useRoute()
 const router = useRouter()
 const auth = useAuth()
 
+// Esta vista es pública: no depende de la sesión salvo para poder enviar mensaje.
 const loading = ref(true)
 const error = ref('')
 const publicProfile = ref<PublicUserProfile | null>(null)
@@ -39,6 +40,7 @@ const publicLapTimes = ref<LapTime[]>([])
 const trackRankings = ref<Record<number, TrackRecord[]>>({})
 
 const displayName = computed(() =>
+  // Leo el nombre público desde la URL '/profiles/:displayName'.
   typeof route.params.displayName === 'string' ? route.params.displayName : '',
 )
 
@@ -47,6 +49,7 @@ const todayIso = computed(() => {
 })
 
 const orderedBookings = computed(() =>
+  // Primero muestro eventos futuros y después historial, ambos ordenados de forma útil.
   [...publicBookings.value].sort((left, right) => {
     const leftIsFuture = left.eventDate >= todayIso.value
     const rightIsFuture = right.eventDate >= todayIso.value
@@ -64,6 +67,7 @@ const orderedBookings = computed(() =>
 )
 
 const groupedLapTimes = computed<PublicLapTimeGroup[]>(() => {
+  // Agrupo vueltas por circuito para que el perfil se lea como historial deportivo.
   const rows = [...publicLapTimes.value]
     .map((lapTime) => ({
       ...lapTime,
@@ -104,12 +108,14 @@ const groupedLapTimes = computed<PublicLapTimeGroup[]>(() => {
 })
 
 onMounted(() => {
+  // Uso 'void' porque no necesito esperar en el hook; el propio método gestiona loading/error.
   void loadPublicProfilePage()
 })
 
 watch(
   () => displayName.value,
   () => {
+    // Si navego de un perfil público a otro, recargo sin destruir la vista.
     void loadPublicProfilePage()
   },
 )
@@ -127,6 +133,7 @@ async function loadPublicProfilePage() {
   error.value = ''
 
   try {
+    // Primero necesito el perfil para conocer el id real del usuario.
     const publicProfileResult = await getPublicUserProfile(nextDisplayName)
     publicProfile.value = publicProfileResult
 
@@ -150,6 +157,7 @@ async function loadPublicProfilePage() {
 }
 
 async function refreshTrackRankings(sourceLapTimes: LapTime[]) {
+  // Pido rankings completos para poder mostrar la posición real de cada vuelta.
   const uniqueTrackIds = [...new Set(sourceLapTimes.map((lapTime) => lapTime.trackId))]
 
   if (uniqueTrackIds.length === 0) {
@@ -175,6 +183,7 @@ async function refreshTrackRankings(sourceLapTimes: LapTime[]) {
 }
 
 function resolveLapPosition(lapTime: LapTime): number | null {
+  // Busco la vuelta exacta dentro del ranking del circuito.
   const ranking = trackRankings.value[lapTime.trackId] ?? []
   const matchingIndex = ranking.findIndex(
     (record) =>
@@ -193,6 +202,7 @@ function handleEmailAction() {
   }
 
   if (!auth.isAuthenticated.value) {
+    // Para escribir a alguien necesito sesión; por eso abro el diálogo global.
     auth.openAuthDialog()
     return
   }
@@ -271,7 +281,7 @@ function handleEmailAction() {
                 :key="group.trackId"
                 class="public-profile-lap-group"
               >
-                <div class="panel-copy">                  
+                <div class="panel-copy">
                   <h3 class="ui-eyebrow">{{ group.trackName }}</h3>
                 </div>
 

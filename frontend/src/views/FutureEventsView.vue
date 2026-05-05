@@ -11,6 +11,7 @@ import { formatCurrency, formatDisplayDate } from '@/utils/format'
 
 const route = useRoute()
 
+// Filtros ligados a inputs. Los guardo como string porque así trabajan los formularios HTML.
 const events = ref<Event[]>([])
 const loading = ref(true)
 const error = ref('')
@@ -20,6 +21,7 @@ const selectedTrackId = ref('')
 const maxBasePrice = ref('')
 
 const filteredEvents = computed(() => {
+  // Derivo la lista visible desde 'events' + filtros; así nunca mantengo dos listas sincronizadas a mano.
   const selectedTrackValue = selectedTrackId.value.trim()
   const maxPriceValue = maxBasePrice.value.trim()
   const parsedMaxPrice = maxPriceValue ? Number(maxPriceValue) : null
@@ -48,6 +50,7 @@ const filteredEvents = computed(() => {
 const firstCatalogEvent = computed(() => events.value[0])
 
 const trackOptions = computed(() => {
+  // Construyo las opciones del selector a partir de los eventos disponibles.
   const uniqueTracks = new Map<number, string>()
 
   events.value.forEach((event) => {
@@ -72,6 +75,7 @@ const emptyMessage = computed(() =>
 )
 
 onMounted(async () => {
+  // Si llego desde una tarjeta de circuito, la URL puede traer '?trackId=...'.
   applyTrackFilterFromRoute(route.query.trackId)
 
   try {
@@ -86,6 +90,7 @@ onMounted(async () => {
 watch(
   () => route.query.trackId,
   (trackId) => {
+    // 'watch' escucha cambios posteriores en la URL sin recrear toda la vista.
     applyTrackFilterFromRoute(trackId)
   },
 )

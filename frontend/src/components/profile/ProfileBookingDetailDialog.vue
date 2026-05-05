@@ -24,11 +24,13 @@ const props = defineProps<{
 }>()
 
 defineEmits<{
+  // El padre controla cerrar y cancelar para mantener la lista sincronizada.
   close: []
   cancel: []
 }>()
 
 const totalPrice = computed(() =>
+  // Total real pagado: entrada base histórica + servicios contratados.
   props.booking
     ? props.booking.basePriceAtPurchase +
       props.services.reduce((sum, service) => sum + service.price, 0)

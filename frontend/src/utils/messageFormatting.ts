@@ -1,3 +1,4 @@
+// Mantengo el formato de mensajes fuera de la vista para que la plantilla sea más fácil de leer.
 export function formatMessageTimestamp(value: string): string {
   return new Date(value).toLocaleString('es-ES', {
     day: '2-digit',
@@ -8,6 +9,7 @@ export function formatMessageTimestamp(value: string): string {
   })
 }
 
+// Traduzco los roles técnicos a etiquetas humanas en la bandeja de mensajes.
 export function formatMessageRoleLabel(roleName: string | null): string {
   switch ((roleName ?? '').trim().toUpperCase()) {
     case 'ADMIN':

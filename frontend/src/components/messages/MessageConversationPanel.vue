@@ -3,6 +3,7 @@ import { Send } from 'lucide-vue-next'
 import type { MessageThread } from '@/types/message'
 import { formatMessageTimestamp } from '@/utils/messageFormatting'
 
+// Conversación abierta: pinta burbujas y el formulario de respuesta.
 const props = defineProps<{
   thread: MessageThread
   currentUserId: number | null
@@ -12,11 +13,13 @@ const props = defineProps<{
 }>()
 
 defineEmits<{
+  // El texto de respuesta vive en MessagesView para centralizar el envío.
   'update:replyBody': [value: string]
   submit: []
 }>()
 
 function isOutgoingMessage(senderId: number): boolean {
+  // Distingo mis mensajes para alinearlos y colorearlos distinto.
   return senderId === props.currentUserId
 }
 </script>

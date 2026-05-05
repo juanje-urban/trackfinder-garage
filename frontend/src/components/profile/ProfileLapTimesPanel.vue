@@ -5,6 +5,7 @@ import type { LapTime } from '@/types/lapTime'
 import type { Track } from '@/types/track'
 import { formatDisplayDate, formatLapTime } from '@/utils/format'
 
+// Panel de vueltas: el formulario vive como objeto reactivo en UserProfileView.
 defineProps<{
   lapError: string
   lapSaving: boolean
@@ -14,6 +15,7 @@ defineProps<{
 }>()
 
 defineEmits<{
+  // El padre valida y persiste; aquí solo pinto formulario/listado.
   submit: []
   remove: [lapTime: LapTime]
 }>()

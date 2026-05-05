@@ -4,6 +4,7 @@ import { RouterLink } from 'vue-router'
 import type { EventBooking } from '@/types/eventBooking'
 import { formatDisplayDate } from '@/utils/format'
 
+// Panel de reservas del perfil: separa futuras e históricas para leerlo rápido.
 const props = defineProps<{
   bookingError: string
   activeBookings: EventBooking[]
@@ -13,11 +14,13 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
+  // La vista padre abre detalle o cambia visibilidad.
   viewBooking: [booking: EventBooking]
   toggleVisibility: [booking: EventBooking]
 }>()
 
 function getBookingVisibilityToneClass(isVisible: boolean): string {
+  // Cambio color del botón según la acción que se va a realizar.
   return isVisible ? 'icon-button--danger' : 'icon-button--success'
 }
 

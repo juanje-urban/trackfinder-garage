@@ -1,5 +1,6 @@
 export type EventAvailabilityState = 'full' | 'urgent' | 'limited' | 'open'
 
+// Traduzco el número de plazas a un estado visual fácil de pintar en tarjetas y badges.
 export function getEventAvailabilityState(
   remainingCapacity: number,
 ): EventAvailabilityState {

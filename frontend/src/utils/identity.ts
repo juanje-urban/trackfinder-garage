@@ -1,3 +1,4 @@
+// Saco iniciales legibles para avatares cuando no tengo una imagen real del usuario.
 export function getDisplayNameMonogram(displayName: string): string {
   const parts = displayName
     .replace(/[_./-]+/g, ' ')

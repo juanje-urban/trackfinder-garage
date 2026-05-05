@@ -1,3 +1,4 @@
+// Normalizo los roles por seguridad para que el front no dependa de mayúsculas/minúsculas del backend.
 export function normalizeRoleName(roleName: string | null | undefined): string {
   return roleName?.trim().toUpperCase() ?? ''
 }

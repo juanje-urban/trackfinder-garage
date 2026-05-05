@@ -15,11 +15,13 @@ import { getEventRemainingLabel } from '@/utils/eventAvailability'
 import { formatCurrency, formatDisplayDate } from '@/utils/format'
 import heroImage from '@/assets/home/hero_page_jarama.jpg'
 
+// En Vue uso 'ref' para datos que cambian y deben refrescar la pantalla.
 const events = ref<Event[]>([])
 const tracks = ref<Track[]>([])
 const loading = ref(true)
 const eventsError = ref('')
 
+// 'computed' recalcula solo cuando cambian sus dependencias; no duplico listas ordenadas a mano.
 const sortedEvents = computed(() =>
   [...events.value].sort((left, right) => left.eventDate.localeCompare(right.eventDate)),
 )
@@ -35,6 +37,7 @@ const openSpots = computed(() =>
 const totalLocations = computed(() => new Set(tracks.value.map((track) => track.location)).size)
 
 function selectUpcomingUniqueTrackEvents(sourceEvents: Event[], limit: number): Event[] {
+  // Evito repetir circuito en la sección de récords de la home.
   const seenTrackIds = new Set<number>()
 
   return sourceEvents
@@ -58,6 +61,7 @@ function formatFeaturedAvailability(remainingCapacity: number): string {
 }
 
 onMounted(async () => {
+  // Cargo eventos y circuitos en paralelo: la home puede pintar métricas con ambos resultados.
   const [eventsResult, tracksResult] = await Promise.allSettled([
     getFutureEvents(),
     getTracks(),

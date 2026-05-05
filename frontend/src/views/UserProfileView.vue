@@ -49,6 +49,7 @@ const auth = useAuth()
 const router = useRouter()
 const toast = useToast()
 
+// Esta vista mezcla varias zonas del perfil, por eso separo estado de pantalla, datos y errores por bloque.
 const loading = ref(true)
 const error = ref('')
 const activeTab = ref<ProfileTab>('reservas')
@@ -74,6 +75,7 @@ const bookingDetailLoading = ref(false)
 const bookingDetailLoadingError = ref('')
 const profileEditMode = ref(false)
 
+// Uso reactive para formularios grandes: puedo escribir 'profileForm.name' sin tantos '.value'.
 const profileForm = reactive<ProfileFormState>({
   name: '',
   surname: '',
@@ -93,6 +95,7 @@ const lapForm = reactive<LapTimeFormState>({
   vehicle: '',
 })
 
+// Estos 'computed' son permisos derivados de la sesión; si cambia la sesión, Vue los recalcula.
 const isStandardUser = computed(() => isUserRole(auth.session.value?.roleName))
 const isOrganizerAccount = computed(() => isOrganizerRole(auth.session.value?.roleName))
 
@@ -104,6 +107,7 @@ const cancellationCutoffIso = computed(() => {
 })
 
 const futureBookings = computed(() =>
+  // Divido reservas futuras e históricas para que el template no tenga lógica de fechas.
   [...bookings.value]
     .filter((booking) => booking.eventDate >= todayIso.value)
     .sort((left, right) => left.eventDate.localeCompare(right.eventDate)),
@@ -120,6 +124,7 @@ const uniqueVisitedTracks = computed(
 )
 
 const sortedLapTimes = computed(() =>
+  // Ordeno primero por fecha reciente y, si empatan, por mejor tiempo.
   [...lapTimes.value].sort((left, right) => {
     const byDate = right.lapDate.localeCompare(left.lapDate)
     if (byDate !== 0) {
@@ -131,6 +136,7 @@ const sortedLapTimes = computed(() =>
 )
 
 const topFiveLapTimes = computed(() =>
+  // Cruzo mis vueltas con el ranking público para saber cuántas siguen en el top 5.
   lapTimes.value.filter((lapTime) =>
     (trackRankings.value[lapTime.trackId] ?? []).some(
       (record) =>
@@ -165,6 +171,7 @@ const tabItems = computed<Array<{ id: ProfileTab; label: string }>>(() =>
 )
 
 onMounted(async () => {
+  // La misma URL '/profile' sirve para usuarios y organizadores, pero cada rol carga datos distintos.
   if (!isStandardUser.value && !isOrganizerAccount.value) {
     loading.value = false
     error.value = 'Esta área está reservada para usuarios y organizadores con sesión iniciada.'
@@ -180,6 +187,7 @@ async function loadProfilePage() {
 
   try {
     if (isOrganizerAccount.value) {
+      // Los organizadores solo gestionan sus datos personales aquí; sus eventos viven en '/organizer'.
       activeTab.value = 'perfil'
       organizerProfile.value = await getCurrentOrganizerProfile()
       profile.value = null
@@ -191,6 +199,7 @@ async function loadProfilePage() {
       return
     }
 
+    // Para el usuario estándar cargo todo de golpe: perfil, reservas, vueltas y circuitos.
     const [profileResult, bookingsResult, lapTimesResult, tracksResult] = await Promise.all([
       getCurrentUserProfile(),
       getCurrentUserEventBookings(),
@@ -220,6 +229,7 @@ async function refreshTrackRankings(sourceLapTimes: LapTime[]) {
     return
   }
 
+  // Pido un ranking por circuito visitado para calcular estadísticas del hero.
   const rankingResults = await Promise.allSettled(
     uniqueTrackIds.map(async (trackId) => [trackId, await getTrackRanking(trackId, 5)] as const),
   )
@@ -235,6 +245,7 @@ async function refreshTrackRankings(sourceLapTimes: LapTime[]) {
 }
 
 function syncUserProfileForm(nextProfile: UserProfile) {
+  // Copio datos del backend al formulario editable.
   profileForm.name = nextProfile.name
   profileForm.surname = nextProfile.surname
   profileForm.email = nextProfile.email
@@ -263,6 +274,7 @@ function startProfileEdit() {
     return
   }
 
+  // Antes de editar reseteo el formulario con los datos actuales por si había cambios a medio hacer.
   if (isOrganizerAccount.value && organizerProfile.value) {
     syncOrganizerProfileForm(organizerProfile.value)
   } else if (profile.value) {
@@ -293,6 +305,7 @@ function canCancelBooking(booking: EventBooking): boolean {
 }
 
 async function openBookingDetail(booking: EventBooking) {
+  // Al abrir el detalle de una reserva cargo también el nombre/precio de los servicios contratados.
   bookingError.value = ''
   bookingDetailLoadingError.value = ''
   bookingDetailBooking.value = booking
@@ -367,6 +380,7 @@ async function confirmBookingCancellation() {
 }
 
 async function toggleBookingVisibility(booking: EventBooking) {
+  // La reserva puede ocultarse o mostrarse en el perfil público sin cancelar la asistencia.
   bookingVisibilityUpdatingId.value = booking.id
   bookingError.value = ''
 
@@ -395,6 +409,7 @@ async function toggleBookingVisibility(booking: EventBooking) {
 
 async function saveProfile() {
   if (isOrganizerAccount.value) {
+    // El formulario es parecido, pero el payload de organizador tiene campos extra.
     await saveOrganizerProfile()
     return
   }
@@ -439,6 +454,7 @@ async function saveProfile() {
     profileEditMode.value = false
 
     if (credentialChanged) {
+      // Si cambian email o contraseña, cierro sesión para no guardar credenciales antiguas.
       auth.clearSession()
       toast.showToast('Tus credenciales se han actualizado. Inicia sesión de nuevo para continuar.')
       await router.push('/')
@@ -497,6 +513,7 @@ async function saveOrganizerProfile() {
     profileEditMode.value = false
 
     if (credentialChanged) {
+      // Lo mismo para organizadores: cambio sensible implica nuevo login.
       auth.clearSession()
       toast.showToast('Tus credenciales se han actualizado. Inicia sesión de nuevo para continuar.')
       await router.push('/')
@@ -513,6 +530,7 @@ async function saveOrganizerProfile() {
 }
 
 async function addLapTime() {
+  // Valido en cliente para dar feedback rápido antes de llamar al backend.
   lapSaving.value = true
   lapError.value = ''
 
@@ -572,6 +590,7 @@ async function removeLapTime(lapTime: LapTime) {
 }
 
 function parseLapTimeInput(value: string): number | null {
+  // Acepto solo 'm:ss.mmm', por ejemplo '1:42.315'.
   const normalizedValue = value.trim()
   const match = normalizedValue.match(/^(\d+):([0-5]\d)\.(\d{3})$/)
 
