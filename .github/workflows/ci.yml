@@ -47,6 +47,8 @@ jobs:
         run: npm ci
       - name: Type-check frontend
         run: npm run type-check
+      - name: Test frontend
+        run: npm run test:coverage
       - name: Build frontend
         run: npm run build
       # Publica el análisis en el proyecto Sonar del frontend.

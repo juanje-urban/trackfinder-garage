@@ -31,4 +31,4 @@ export interface UpdateCurrentUserProfilePayload {
   password?: string
 }
 
-export interface AdminUser extends UserProfile {}
+export type AdminUser = UserProfile

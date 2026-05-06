@@ -5,7 +5,7 @@ import type { TrackServiceAssignment } from '@/types/trackService'
 import type { Track } from '@/types/track'
 
 // Panel de circuitos y sus servicios. Recibe datos ya filtrados desde AdminView.
-const props = defineProps<{
+defineProps<{
   trackError: string
   serviceError: string
   sortedTracks: Track[]
@@ -17,7 +17,7 @@ const props = defineProps<{
   assignmentDeletingId: number | null
 }>()
 
-const emit = defineEmits<{
+defineEmits<{
   // Uso emits para que este componente no tenga que conocer los servicios HTTP.
   openCreateTrack: []
   editTrack: [track: Track]

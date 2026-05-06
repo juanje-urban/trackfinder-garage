@@ -5,7 +5,7 @@ import type { EventBooking } from '@/types/eventBooking'
 import { formatDisplayDate } from '@/utils/format'
 
 // Panel de reservas del perfil: separa futuras e históricas para leerlo rápido.
-const props = defineProps<{
+defineProps<{
   bookingError: string
   activeBookings: EventBooking[]
   pastBookings: EventBooking[]

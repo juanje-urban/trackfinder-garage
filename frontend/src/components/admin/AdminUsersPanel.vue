@@ -10,7 +10,7 @@ type OrganizerAdminRecord = {
 }
 
 // Panel presentacional de usuarios. AdminView le pasa listas ya separadas por rol.
-const props = defineProps<{
+defineProps<{
   userError: string
   activeUserTab: UserManagementTab
   userBusyId: number | null
@@ -20,7 +20,7 @@ const props = defineProps<{
   isProtectedDefaultAdmin: (user: AdminUser) => boolean
 }>()
 
-const emit = defineEmits<{
+defineEmits<{
   // 'update:activeUserTab' implementa el patrón de v-model personalizado.
   'update:activeUserTab': [value: UserManagementTab]
   toggleUser: [user: AdminUser]
