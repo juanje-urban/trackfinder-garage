@@ -52,6 +52,7 @@ const tabItems: Array<{ id: AdminTab; label: string }> = [
 const auth = useAuth()
 const toast = useToast()
 
+// AdminView coordina paneles hijos. Aquí viven los datos y las acciones con backend.
 const loading = ref(true)
 const error = ref('')
 const errorTitle = ref('Acceso restringido')
@@ -88,6 +89,7 @@ const selectedServiceId = ref<number | ''>('')
 const trackForm = reactive<TrackPayload>(createEmptyTrackForm())
 const serviceForm = reactive<ServiceCatalogPayload>(createEmptyServiceForm())
 
+// Las listas ordenadas son 'computed' para no reordenar manualmente tras cada cambio.
 const pendingOrganizers = computed(() =>
   [...organizers.value]
     .filter((organizer) => !organizer.organizerEnabled)
@@ -107,6 +109,7 @@ const sortedUsers = computed(() =>
 )
 
 const organizersByUserId = computed(
+  // Mapa auxiliar para cruzar usuarios con su ficha de organizador.
   () => new Map(organizers.value.map((organizer) => [organizer.idUser, organizer])),
 )
 
@@ -128,6 +131,7 @@ const standardUsers = computed(() =>
 )
 
 const selectedTrackAssignments = computed(() => {
+  // Solo muestro las asociaciones del circuito seleccionado.
   if (!selectedTrackId.value) {
     return []
   }
@@ -138,6 +142,7 @@ const selectedTrackAssignments = computed(() => {
 })
 
 const assignableServices = computed(() => {
+  // Evito ofrecer servicios ya asignados al circuito.
   const assignedServiceIds = new Set(selectedTrackAssignments.value.map((assignment) => assignment.serviceId))
 
   return sortedServices.value.filter(
@@ -147,6 +152,7 @@ const assignableServices = computed(() => {
 })
 
 onMounted(async () => {
+  // Si no hay sesión, no intento cargar datos admin y muestro acceso restringido.
   if (!auth.isAuthenticated.value) {
     loading.value = false
     errorTitle.value = 'Acceso restringido'
@@ -155,6 +161,7 @@ onMounted(async () => {
   }
 
   if (!isAdminRole(auth.session.value?.roleName)) {
+    // Refresco por si el rol cambió en backend y la sesión local todavía está antigua.
     await auth.refreshSession()
   }
 
@@ -164,6 +171,7 @@ onMounted(async () => {
 watch(
   () => auth.session.value?.roleName,
   async () => {
+    // Si el login cambia mientras estoy en esta vista, reintento cargar el panel.
     if (!auth.isAuthenticated.value || !error.value) {
       return
     }
@@ -196,6 +204,7 @@ async function loadAdminPage() {
   errorTitle.value = 'No se pudo cargar el panel'
 
   try {
+    // Cargo todas las piezas del panel en paralelo para tener una foto completa.
     const [nextOrganizers, nextTracks, nextServices, nextAssignments, nextUsers] = await Promise.all([
       getOrganizers(),
       getTracks(),
@@ -233,6 +242,7 @@ async function loadAdminPage() {
 }
 
 function resetTrackForm() {
+  // El mismo modal sirve para crear y editar, por eso reseteo id y campos juntos.
   editingTrackId.value = null
   Object.assign(trackForm, createEmptyTrackForm())
   trackError.value = ''
@@ -266,6 +276,7 @@ async function saveTrack() {
   trackError.value = ''
 
   try {
+    // Recorto textos justo antes de enviar para no guardar espacios accidentales.
     const payload: TrackPayload = {
       name: trackForm.name.trim(),
       shortName: trackForm.shortName.trim(),
@@ -333,6 +344,7 @@ async function saveService() {
   serviceError.value = ''
 
   try {
+    // El servicio puede estar disponible para circuito, organizador o ambos.
     const payload: ServiceCatalogPayload = {
       name: serviceForm.name.trim(),
       description: serviceForm.description.trim(),
@@ -388,6 +400,7 @@ async function toggleServiceEnabled(service: ServiceCatalogItem) {
 }
 
 async function addTrackServiceAssignment() {
+  // Esta acción vincula un servicio maestro con un circuito concreto.
   if (!selectedTrackId.value || !selectedServiceId.value) {
     serviceError.value = 'Selecciona un circuito y un servicio para vincularlos.'
     return
@@ -436,6 +449,7 @@ async function removeTrackServiceAssignment(assignment: TrackServiceAssignment) 
 }
 
 async function approveOrganizerRequest(organizer: Organizer) {
+  // Aprobar activa la ficha de organizador asociada a ese usuario.
   organizerBusyId.value = organizer.idUser
   organizerError.value = ''
 
@@ -495,6 +509,7 @@ async function toggleUserEnabled(user: AdminUser) {
 }
 
 function isProtectedDefaultAdmin(user: AdminUser): boolean {
+  // Protejo el admin de demo para no dejar el proyecto sin una cuenta administradora.
   return isAdminRole(user.roleName) && user.email.trim().toLowerCase() === DEFAULT_ADMIN_EMAIL
 }
 

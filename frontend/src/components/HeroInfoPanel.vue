@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// Panel auxiliar para meter información destacada dentro de un hero.
 defineProps<{
   label: string
   caption: string

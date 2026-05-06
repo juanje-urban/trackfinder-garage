@@ -6,6 +6,8 @@ import logoUrl from '@/assets/tfg_logo.svg'
 import { isAdminRole, isOrganizerRole, isUserRole } from '@/utils/authRoles'
 
 const auth = useAuth()
+
+// El footer repite navegación global, pero se adapta al rol igual que la cabecera.
 const isOrganizer = computed(() => isOrganizerRole(auth.session.value?.roleName))
 const isAdmin = computed(() => isAdminRole(auth.session.value?.roleName))
 const canAccessOwnProfile = computed(

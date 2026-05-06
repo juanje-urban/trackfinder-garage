@@ -5,6 +5,7 @@ import {
   getEventAvailabilityState,
 } from '@/utils/eventAvailability'
 
+// Badge puramente visual. Recibe plazas restantes y decide color + texto.
 const props = defineProps<{
   remainingCapacity: number
 }>()

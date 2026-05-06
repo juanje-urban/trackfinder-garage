@@ -19,6 +19,8 @@ const MAX_SHORT_FIELD_LENGTH = 20
 
 const auth = useAuth()
 const router = useRouter()
+
+// Uso un único formulario para login y registros; según 'mode' muestro más o menos campos.
 const form = reactive<AuthOrganizerRegisterPayload>({
   displayName: '',
   email: '',
@@ -39,6 +41,7 @@ const uiState = reactive({
   showPassword: false,
 })
 
+// 'computed' me evita duplicar estados. El texto del modal sale del modo actual y de la sesión.
 const isRegistrationMode = computed(() => mode.value !== 'login')
 const isOrganizerRegisterMode = computed(() => mode.value === 'organizer-register')
 
@@ -95,6 +98,7 @@ const profileMonogram = computed(() =>
 watch(
   () => auth.isDialogOpen.value,
   (isOpen) => {
+    // Cuando el modal está abierto bloqueo el scroll del body.
     if (typeof document !== 'undefined') {
       document.body.style.overflow = isOpen ? 'hidden' : ''
     }
@@ -111,6 +115,7 @@ watch(
 watch(
   () => auth.isAuthenticated.value,
   (isAuthenticated) => {
+    // Si el login sale bien, borro la contraseña del formulario.
     if (isAuthenticated) {
       form.password = ''
       uiState.error = ''
@@ -127,6 +132,7 @@ onBeforeUnmount(() => {
 async function submit() {
   uiState.error = ''
 
+  // Valido antes de pedir al backend para responder rápido al usuario.
   const validationError = validateForm(mode.value)
   if (validationError) {
     uiState.error = validationError
@@ -141,6 +147,7 @@ async function submit() {
       password: form.password,
     }
 
+    // El mismo botón decide login, registro normal o registro de organizador.
     const session =
       mode.value === 'login'
         ? await login(credentials)
@@ -202,6 +209,7 @@ function handleDialogKeydown(event: KeyboardEvent) {
 }
 
 function resetDialog() {
+  // Dejo el diálogo limpio cada vez que se cierra para no arrastrar datos sensibles.
   mode.value = 'login'
   Object.assign(form, {
     displayName: '',
@@ -245,6 +253,7 @@ function getErrorMessage(error: unknown, currentMode: AuthMode): string {
 }
 
 function validateForm(currentMode: AuthMode): string {
+  // Valido lo común primero y luego los campos extra de registro.
   const email = form.email.trim()
 
   if (!email) {

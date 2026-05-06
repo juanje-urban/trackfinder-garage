@@ -2,6 +2,7 @@
 import { Check, X } from 'lucide-vue-next'
 import type { Organizer } from '@/types/organizer'
 
+// Panel presentacional. El padre trae datos y este componente solo emite aprobar/denegar.
 defineProps<{
   organizerError: string
   pendingOrganizers: Organizer[]
@@ -9,6 +10,7 @@ defineProps<{
 }>()
 
 defineEmits<{
+  // Emito el organizador completo para que AdminView tenga contexto suficiente.
   approve: [organizer: Organizer]
   deny: [organizer: Organizer]
 }>()

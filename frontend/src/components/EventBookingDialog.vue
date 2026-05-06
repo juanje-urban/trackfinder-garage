@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { X } from 'lucide-vue-next'
 
+// Este componente es "tonto". Recibe datos por props y avisa al padre con eventos.
 const props = defineProps<{
   isOpen: boolean
   mode: 'checkout' | 'cancel'
@@ -20,6 +21,7 @@ const props = defineProps<{
 }>()
 
 defineEmits<{
+  // Usamos emits para notificar eventos al padre.
   close: []
   confirm: []
   'update:isVisibleOnPublicProfile': [value: boolean]

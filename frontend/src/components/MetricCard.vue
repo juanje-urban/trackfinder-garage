@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// Métrica pequeña y presentacional. El padre le pasa texto, valor y tono visual.
 withDefaults(
   defineProps<{
     label: string

@@ -3,6 +3,7 @@ import { Eye, EyeOff, Lock, Mail, User } from 'lucide-vue-next'
 import type { AuthOrganizerRegisterPayload } from '@/types/auth'
 import type { AuthMode } from '@/types/authDialog'
 
+// Formulario de acceso controlado por el padre. Aquí pinto campos y emito acciones.
 const props = defineProps<{
   mode: AuthMode
   isRegistrationMode: boolean
@@ -17,6 +18,7 @@ const props = defineProps<{
 }>()
 
 defineEmits<{
+  // El padre cambia modo, envía formulario y alterna visibilidad de contraseña.
   setMode: [mode: AuthMode]
   togglePasswordVisibility: []
   submit: []
@@ -26,10 +28,12 @@ function updateField(
   field: keyof AuthOrganizerRegisterPayload,
   event: Event,
 ) {
+  // Mutar 'props.form' aquí funciona porque el objeto reactivo viene del padre.
   props.form[field] = (event.target as HTMLInputElement).value
 }
 
 function toggleOrganizerMode() {
+  // Alterno entre registro normal y registro de organizador.
   const nextMode: AuthMode = props.mode === 'organizer-register' ? 'register' : 'organizer-register'
   return nextMode
 }

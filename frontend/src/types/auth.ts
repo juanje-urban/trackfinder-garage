@@ -1,3 +1,4 @@
+// Tipos de autenticación: representan lo que envío al backend y lo que guardo en sesión.
 export interface AuthCredentials {
   email: string
   password: string

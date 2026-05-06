@@ -6,6 +6,7 @@ const emit = defineEmits<{
   (event: 'email-action'): void
 }>()
 
+// Hero del perfil. El padre decide si aparece el botón de contacto.
 withDefaults(
   defineProps<{
     displayName: string

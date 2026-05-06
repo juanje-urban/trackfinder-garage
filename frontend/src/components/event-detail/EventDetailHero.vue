@@ -87,11 +87,16 @@ defineEmits<{
 }
 
 .event-detail__hero-media {
+  --event-detail-start: #4c1717;
+  --event-detail-end: #24365a;
   min-height: 400px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   padding: clamp(20px, 3vw, 32px);
+  background-image:
+    radial-gradient(circle at top right, rgba(255, 191, 60, 0.18), transparent 32%),
+    linear-gradient(140deg, var(--event-detail-start), var(--event-detail-end));
   background-position: center;
   background-size: cover;
 }

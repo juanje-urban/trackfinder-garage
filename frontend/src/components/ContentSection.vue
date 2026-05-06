@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// Sección reutilizable con estados de carga, error y vacío ya resueltos.
 withDefaults(
   defineProps<{
     eyebrow?: string

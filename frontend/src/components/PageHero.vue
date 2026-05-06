@@ -17,9 +17,11 @@ const props = withDefaults(
 
 const slots = useSlots()
 
+// Los slots son huecos opcionales que el padre puede rellenar con contenido propio.
 const hasAside = computed(() => Boolean(slots.aside))
 const hasImage = computed(() => Boolean(props.imageUrl))
 
+// Cambio clases según el tipo de hero sin duplicar plantillas enteras.
 const heroClasses = computed(() => ({
   'page-hero--with-aside': hasAside.value,
   'page-hero--immersive': hasImage.value,

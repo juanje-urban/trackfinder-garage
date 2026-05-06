@@ -2,6 +2,7 @@
 import { Pencil, Power, PowerOff } from 'lucide-vue-next'
 import type { ServiceCatalogItem } from '@/types/serviceCatalog'
 
+// Lista de servicios del catálogo maestro gestionada desde el panel admin.
 defineProps<{
   serviceError: string
   sortedServices: ServiceCatalogItem[]
@@ -9,6 +10,7 @@ defineProps<{
 }>()
 
 defineEmits<{
+  // Las acciones reales viven en AdminView; aquí solo aviso del click.
   openCreateService: []
   editService: [service: ServiceCatalogItem]
   toggleService: [service: ServiceCatalogItem]

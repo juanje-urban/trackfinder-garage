@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Power, PowerOff } from 'lucide-vue-next'
 
+// Tarjeta reutilizable para admins, organizadores y usuarios estándar.
 const props = defineProps<{
   displayName: string
   realName?: string
@@ -14,6 +15,7 @@ const props = defineProps<{
 }>()
 
 defineEmits<{
+  // Solo emito 'toggle'; el padre decide si habilita o deshabilita.
   toggle: []
 }>()
 </script>

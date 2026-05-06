@@ -12,6 +12,7 @@ const auth = useAuth()
 const messageInbox = useMessageInbox()
 const route = useRoute()
 
+// La cabecera lee estado global (sesión, rol y contador de mensajes sin leer).
 const profileMonogram = computed(() =>
   getDisplayNameMonogram(auth.session.value?.displayName ?? ''),
 )
@@ -43,12 +44,14 @@ const unreadCountLabel = computed(() =>
 watch(
   () => [auth.session.value?.userId ?? null, route.fullPath] as const,
   async ([userId]) => {
+    // Cada cambio de ruta o sesión refresca el contador para que la campana no se quede vieja.
     await refreshUnreadCount(userId)
   },
   { immediate: true },
 )
 
 onMounted(() => {
+  // Si vuelvo a la pestaña, sincronizo mensajes por si llegaron mientras estaba fuera.
   window.addEventListener('focus', handleWindowFocus)
   document.addEventListener('visibilitychange', handleVisibilityChange)
 })

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// Tarjeta pequeña para datos destacados del detalle de evento.
 withDefaults(
   defineProps<{
     eyebrow: string

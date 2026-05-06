@@ -23,9 +23,11 @@ const loading = ref(true)
 const error = ref('')
 const ranking = ref<TrackRecord[]>([])
 
+// 'bestLap' se recalcula cuando llega un ranking nuevo.
 const bestLap = computed(() => ranking.value[0] ?? null)
 
 async function loadRanking() {
+  // Este componente se carga solo. El padre solo le dice qué circuito y límite usar.
   loading.value = true
   error.value = ''
 
@@ -39,12 +41,14 @@ async function loadRanking() {
   }
 }
 onMounted(() => {
+  // Primera carga al aparecer el marcador.
   void loadRanking()
 })
 
 watch(
   () => [props.trackId, props.limit] as const,
   () => {
+    // Si cambia el circuito o el límite, vuelvo a pedir el ranking.
     void loadRanking()
   },
 )

@@ -9,9 +9,11 @@ const props = defineProps<{
   track: Track
 }>()
 
+// La tarjeta resuelve sus propias imágenes a partir del 'shortName' del circuito.
 const trackMedia = computed(() => getTrackMedia(props.track.shortName))
 
 const visualStyle = computed(() => {
+  // Si no hay asset, uso una paleta para que la tarjeta siga teniendo diseño.
   if (trackMedia.value.coverImage) {
     return {
       backgroundImage: `linear-gradient(180deg, rgba(10, 12, 16, 0.2) 0%, rgba(10, 12, 16, 0.78) 100%), url(${trackMedia.value.coverImage})`,
@@ -53,6 +55,8 @@ const visualStyle = computed(() => {
 
 <style scoped>
 .track-card__visual {
+  --track-start: #2a3e58;
+  --track-end: #5a1b1b;
   min-height: 190px;
   padding: var(--space-lg);
   display: flex;

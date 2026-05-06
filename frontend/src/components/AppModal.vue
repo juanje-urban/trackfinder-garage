@@ -2,6 +2,7 @@
 import { X } from 'lucide-vue-next'
 import { computed } from 'vue'
 
+// Modal genérico reutilizable. El padre controla si está abierto y qué contenido mete dentro.
 const props = withDefaults(
   defineProps<{
     isOpen: boolean
@@ -22,9 +23,11 @@ const props = withDefaults(
 )
 
 defineEmits<{
+  // El modal no se cierra solo, emite 'close' y el padre decide cambiar su estado.
   close: []
 }>()
 
+// Calculo el ancho como estilo inline porque cambia por uso del modal.
 const panelStyle = computed(() => ({
   width: `min(${props.width}, calc(100vw - 32px))`,
 }))

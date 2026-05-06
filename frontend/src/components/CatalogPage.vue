@@ -3,6 +3,7 @@ import ContentSection from '@/components/ContentSection.vue'
 import HeroInfoPanel from '@/components/HeroInfoPanel.vue'
 import PageHero from '@/components/PageHero.vue'
 
+// Layout común para páginas de catálogo (hero, métricas, resumen, filtros y listado).
 withDefaults(
   defineProps<{
     heroEyebrow: string

@@ -5,6 +5,7 @@ const props = defineProps<{
   position: number
 }>()
 
+// Muestro 'P1', 'P2', etc. a partir de la posición numérica.
 const label = computed(() => `P${props.position}`)
 </script>
 

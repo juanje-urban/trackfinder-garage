@@ -4,6 +4,7 @@ import { formatCurrency, formatDisplayDate } from '@/utils/format'
 
 type RevenueChartBar = OrganizerWorkspaceEventStats & { width: string }
 
+// Panel solo de lectura: las barras ya llegan calculadas desde OrganizerView.
 defineProps<{
   stats: OrganizerWorkspaceStats
   revenueChartBars: RevenueChartBar[]

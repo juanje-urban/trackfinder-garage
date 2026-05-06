@@ -4,6 +4,7 @@ import { computed } from 'vue'
 import type { OrganizerCatalogService } from '@/types/organizerWorkspace'
 import type { ServiceCatalogItem } from '@/types/serviceCatalog'
 
+// Panel del catálogo propio del organizador.
 const props = defineProps<{
   serviceError: string
   availableCatalogServices: ServiceCatalogItem[]
@@ -15,12 +16,14 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
+  // El select funciona como v-model personalizado hacia OrganizerView.
   'update:selectedAvailableServiceId': [value: number | '']
   addService: []
   removeService: [organizerServiceId: number]
 }>()
 
 const selectedServiceId = computed({
+  // Computed con getter/setter: leo la prop y escribo emitiendo al padre.
   get: () => props.selectedAvailableServiceId,
   set: (value: number | '') => emit('update:selectedAvailableServiceId', value),
 })

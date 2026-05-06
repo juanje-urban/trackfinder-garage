@@ -6,6 +6,7 @@
   --surface-header: rgba(18, 7, 7, 0.78);
   --surface-panel-gradient:
     linear-gradient(180deg, rgba(57, 22, 22, 0.96) 0%, rgba(35, 15, 15, 0.97) 100%);
+  --surface-strong: #23100f;
   --surface-badge-soft: rgba(21, 13, 13, 0.7);
   --page-background:
     radial-gradient(circle at top, rgba(255, 60, 39, 0.18), transparent 38%),
@@ -35,6 +36,7 @@
   --error-surface: rgba(115, 18, 18, 0.32);
   --error-border: rgba(255, 90, 90, 0.35);
   --error-text: #ffd4d0;
+  --danger-text: var(--error-text);
   --success-surface: rgba(58, 215, 134, 0.16);
   --success-border: rgba(58, 215, 134, 0.2);
   --success-text: #9ff0bf;
@@ -89,8 +91,11 @@
   --fs-label: 0.74rem;
   --fs-caption: 0.88rem;
   --fs-meta: 0.92rem;
+  --fs-body-sm: 0.9rem;
   --fs-body: 0.95rem;
   --fs-body-lg: 1.04rem;
+  --fs-copy: var(--fs-body);
+  --fs-title-sm: 1.18rem;
   --fs-title-info: 1.15rem;
   --fs-title-card: 1.45rem;
   --fs-title-detail: 1.6rem;
@@ -237,11 +242,6 @@ button {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-}
-
-.badge--accent {
-  background: var(--accent-emphasis);
-  color: var(--text-strong);
 }
 
 .badge--soft {

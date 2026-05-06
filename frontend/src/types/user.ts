@@ -1,3 +1,4 @@
+// Tipos de usuario: perfil propio, perfil público y representación simplificada para admin.
 export interface UserProfile {
   id: number
   displayName: string

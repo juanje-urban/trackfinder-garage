@@ -4,6 +4,7 @@ import type { ServiceCatalogItem } from '@/types/serviceCatalog'
 import type { TrackServiceAssignment } from '@/types/trackService'
 import type { Track } from '@/types/track'
 
+// Panel de circuitos y sus servicios. Recibe datos ya filtrados desde AdminView.
 const props = defineProps<{
   trackError: string
   serviceError: string
@@ -17,6 +18,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
+  // Uso emits para que este componente no tenga que conocer los servicios HTTP.
   openCreateTrack: []
   editTrack: [track: Track]
   'update:selectedTrackId': [value: number | '']
@@ -26,6 +28,7 @@ const emit = defineEmits<{
 }>()
 
 function readSelectedValue(event: Event): number | '' {
+  // Los '<select>' devuelven strings. Convierto a número salvo la opción vacía.
   const value = (event.target as HTMLSelectElement).value
   return value === '' ? '' : Number(value)
 }

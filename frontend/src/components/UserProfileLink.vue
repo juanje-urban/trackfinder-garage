@@ -11,6 +11,7 @@ const props = defineProps<{
 const auth = useAuth()
 
 const profileTarget = computed(() => {
+  // Si el enlace apunta a mí mismo, prefiero ir al perfil privado.
   const session = auth.session.value
 
   if (

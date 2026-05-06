@@ -27,6 +27,7 @@ type OrganizerTab = 'services' | 'events' | 'stats'
 const auth = useAuth()
 const toast = useToast()
 
+// El panel del organizador trabaja casi entero contra 'workspace', que trae datos y métricas juntos.
 const loading = ref(true)
 const error = ref('')
 const activeTab = ref<OrganizerTab>('events')
@@ -54,6 +55,7 @@ const eventForm = reactive({
   description: '',
 })
 
+// Guardo selecciones de servicios por separado para montar luego el payload de evento.
 const selectedTrackServiceIds = ref<number[]>([])
 const selectedOrganizerServiceIds = ref<number[]>([])
 const servicePriceInputs = reactive<Record<string, string>>({})
@@ -68,6 +70,7 @@ const tabItems: Array<{ id: OrganizerTab; label: string }> = [
 ]
 
 const sortedEvents = computed(() =>
+  // Muestro primero los eventos más recientes.
   [...(workspace.value?.events ?? [])].sort((left, right) =>
     right.event.eventDate.localeCompare(left.event.eventDate),
   ),
@@ -78,6 +81,7 @@ const availableCatalogServices = computed(() => {
     return []
   }
 
+  // Ofrezco solo servicios que el organizador aún no tiene en su catálogo.
   const assignedIds = new Set(
     workspace.value.organizerServices
       .map((service) => service.serviceId)
@@ -90,6 +94,7 @@ const availableCatalogServices = computed(() => {
 })
 
 const currentTrackServiceOptions = computed(() => {
+  // Al cambiar de circuito cambian los servicios de pista disponibles.
   if (!workspace.value || eventForm.trackId === '') {
     return []
   }
@@ -106,6 +111,7 @@ const organizerServiceOptions = computed(() =>
 )
 
 const futureOrganizerServiceIdsInUse = computed(() => {
+  // Si un servicio está en un evento futuro, no dejo retirarlo del catálogo.
   const nextIds = new Set<number>()
 
   for (const managedEvent of workspace.value?.events ?? []) {
@@ -124,6 +130,7 @@ const futureOrganizerServiceIdsInUse = computed(() => {
 })
 
 const revenueChartBars = computed(() => {
+  // Convierto ingresos en porcentajes para que el componente pueda pintar barras.
   const eventStats = [...(workspace.value?.stats.eventStats ?? [])].sort((left, right) =>
     right.eventDate.localeCompare(left.eventDate),
   )
@@ -142,6 +149,7 @@ const editingManagedEvent = computed(
 const minimumParticipantsForEdit = computed(() => editingManagedEvent.value?.stats.bookings ?? 1)
 
 onMounted(async () => {
+  // Protejo la vista también en cliente, aunque el backend vuelva a validar permisos.
   if (!isOrganizer.value) {
     loading.value = false
     error.value = 'Esta area esta reservada para cuentas con rol organizador.'
@@ -154,6 +162,7 @@ onMounted(async () => {
 watch(
   () => eventForm.trackId,
   () => {
+    // Cuando cambio de circuito limpio servicios de pista que ya no pertenecen a ese circuito.
     const validIds = new Set(currentTrackServiceOptions.value.map((service) => service.id))
     selectedTrackServiceIds.value = selectedTrackServiceIds.value.filter((id) => validIds.has(id))
 
@@ -175,6 +184,7 @@ async function loadWorkspace() {
   error.value = ''
 
   try {
+    // Una sola petición deja el panel consistente: catálogo, eventos y estadísticas llegan juntos.
     workspace.value = await getOrganizerWorkspace()
   } catch (requestError) {
     error.value = resolveApiErrorMessage(requestError, {
@@ -195,6 +205,7 @@ async function loadWorkspace() {
 }
 
 function resetEventForm() {
+  // Dejo el modal listo tanto para crear como para editar otro evento.
   editingEventId.value = null
   eventForm.trackId = ''
   eventForm.eventDate = ''
@@ -236,6 +247,7 @@ function openCreateEventModal() {
 }
 
 function openEditEventModal(managedEvent: OrganizerManagedEvent) {
+  // Paso del modelo del backend al formulario plano que entienden los inputs.
   resetEventForm()
   editingEventId.value = managedEvent.event.id
   eventForm.trackId = String(managedEvent.event.trackId)
@@ -287,10 +299,12 @@ function isOrganizerEventServiceLockedForEdit(organizerServiceId: number): boole
 }
 
 function toServiceKey(kind: 'track' | 'organizer', id: number): string {
+  // Uso una clave con prefijo para no mezclar ids de servicios de pista y de organizador.
   return `${kind}:${id}`
 }
 
 async function addCatalogService() {
+  // Añadir al catálogo no crea el servicio maestro; solo lo activa para este organizador.
   if (selectedAvailableServiceId.value === '') {
     serviceError.value = 'Selecciona un servicio para añadirlo al catálogo.'
     return
@@ -346,6 +360,7 @@ function requestCatalogServiceRemoval(organizerServiceId: number) {
 }
 
 function buildEventPayload() {
+  // Construyo y valido el payload antes de llamar al backend para mostrar errores inmediatos.
   if (eventForm.trackId === '') {
     throw new Error('Selecciona un circuito para el evento.')
   }
@@ -391,6 +406,7 @@ function buildEventPayload() {
 }
 
 function parseServicePrice(kind: 'track' | 'organizer', id: number): number {
+  // Cada servicio seleccionado debe tener precio propio dentro del evento.
   const value = Number(servicePriceInputs[toServiceKey(kind, id)])
 
   if (!Number.isFinite(value) || value <= 0) {
@@ -407,6 +423,7 @@ async function saveEvent() {
   let payload
 
   try {
+    // Si falla la validación, no salgo al backend.
     payload = buildEventPayload()
   } catch (validationError) {
     eventError.value =
@@ -468,6 +485,7 @@ async function deleteEvent() {
     return
   }
 
+  // La confirmación vive en modal para evitar borrados accidentales.
   deletingEventId.value = eventPendingDeletion.value.event.id
   eventError.value = ''
 

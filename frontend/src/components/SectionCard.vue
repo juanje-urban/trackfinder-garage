@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// Contenedor sencillo para secciones con título y contenido por slot.
 withDefaults(
   defineProps<{
     eyebrow: string

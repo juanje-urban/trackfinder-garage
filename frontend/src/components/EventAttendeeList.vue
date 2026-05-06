@@ -16,12 +16,14 @@ const props = defineProps<{
 
 const FULL_TRACK_RANKING_LIMIT = 200
 
+// Este componente carga asistentes visibles y calcula su mejor posición en el ranking del circuito.
 const loading = ref(true)
 const error = ref('')
 const attendees = ref<EventBooking[]>([])
 const attendeePositions = ref<Record<number, number>>({})
 
 async function loadAttendees() {
+  // Primero cargo asistentes y después calculo sus posiciones deportivas.
   loading.value = true
   error.value = ''
 
@@ -46,6 +48,7 @@ async function refreshAttendeePositions(currentAttendees: EventBooking[]) {
   }
 
   try {
+    // Pido ranking amplio para poder ubicar a asistentes más allá del top 5.
     const ranking = await getTrackRanking(props.trackId, FULL_TRACK_RANKING_LIMIT)
     if (ranking.length === 0) {
       return
@@ -102,12 +105,14 @@ function findRankingPosition(lapTime: LapTime, ranking: TrackRecord[]): number |
 }
 
 onMounted(() => {
+  // Carga inicial al montar el componente.
   void loadAttendees()
 })
 
 watch(
   () => [props.eventId, props.trackId] as const,
   () => {
+    // Si el padre cambia de evento/circuito, vuelvo a cargar la lista.
     void loadAttendees()
   },
 )

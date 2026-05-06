@@ -13,6 +13,7 @@ const props = defineProps<{
 }>()
 
 const mediaStyle = computed(() => {
+  // Intento usar foto del circuito; si no existe, genero un degradado estable.
   const trackMedia = getTrackMedia(props.event.trackShortName)
 
   return createVisualStyle(
@@ -38,6 +39,7 @@ const availabilityState = computed(() =>
 )
 
 const capacityFill = computed(() => {
+  // Pinto una barra de ocupación a partir de aforo total y plazas restantes.
   const booked = props.event.maxParticipants - props.event.remainingCapacity
   return (booked / props.event.maxParticipants) * 100
 })
@@ -99,6 +101,9 @@ const remainingText = computed(() => {
   --event-state-text: #d6ffe6;
   --event-state-accent: #5adf97;
   --event-state-glow: rgba(58, 215, 134, 0.24);
+  --event-start: #4c1717;
+  --event-end: #24365a;
+  --event-photo-image: linear-gradient(135deg, var(--event-start), var(--event-end));
   display: grid;
   grid-template-rows: 210px 1fr;
   min-height: 500px;

@@ -3,6 +3,7 @@ import { Pencil, Plus, Trash2 } from 'lucide-vue-next'
 import type { OrganizerManagedEvent } from '@/types/organizerWorkspace'
 import { formatCurrency, formatDisplayDate } from '@/utils/format'
 
+// Panel de eventos del organizador: recibe eventos ya ordenados y emite crear/editar/borrar.
 const props = defineProps<{
   eventError: string
   events: OrganizerManagedEvent[]
@@ -10,20 +11,24 @@ const props = defineProps<{
 }>()
 
 defineEmits<{
+  // La vista padre conserva la lógica real de formularios y llamadas HTTP.
   create: []
   edit: [managedEvent: OrganizerManagedEvent]
   delete: [managedEvent: OrganizerManagedEvent]
 }>()
 
 function isPastEvent(eventDate: string): boolean {
+  // Evento pasado queda en modo lectura.
   return eventDate <= props.todayIso
 }
 
 function canDeleteEvent(managedEvent: OrganizerManagedEvent): boolean {
+  // Solo dejo borrar futuros sin reservas para evitar perder datos de asistentes.
   return !isPastEvent(managedEvent.event.eventDate) && managedEvent.stats.bookings === 0
 }
 
 function formatEventServiceName(service: OrganizerManagedEvent['services'][number]): string {
+  // El servicio puede venir del circuito o del organizador.
   return service.trackServiceName ?? service.organizerServiceName ?? ''
 }
 </script>

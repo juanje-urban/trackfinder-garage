@@ -9,6 +9,7 @@ type OrganizerAdminRecord = {
   organizer: Organizer | null
 }
 
+// Panel presentacional de usuarios. AdminView le pasa listas ya separadas por rol.
 const props = defineProps<{
   userError: string
   activeUserTab: UserManagementTab
@@ -20,6 +21,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
+  // 'update:activeUserTab' implementa el patrón de v-model personalizado.
   'update:activeUserTab': [value: UserManagementTab]
   toggleUser: [user: AdminUser]
 }>()
@@ -31,10 +33,12 @@ const userTabItems: Array<{ id: UserManagementTab; label: string }> = [
 ]
 
 function resolveUserTabToneClass(tabId: UserManagementTab): string {
+  // Devuelvo una clase por pestaña para poder colorearlas de forma distinta.
   return `admin-subtabs__tab--${tabId}`
 }
 
 function formatUserName(user: Pick<AdminUser, 'name' | 'surname'>): string {
+  // Uno nombre y apellidos evitando espacios vacíos.
   return [user.name, user.surname].filter((value) => value.trim() !== '').join(' ')
 }
 

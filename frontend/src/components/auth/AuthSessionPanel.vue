@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { AuthSession } from '@/types/auth'
 
+// Vista del diálogo cuando ya hay sesión. No gestiona estado, solo muestra y emite acciones.
 defineProps<{
   session: AuthSession | null
   dialogTitle: string
@@ -9,6 +10,7 @@ defineProps<{
 }>()
 
 defineEmits<{
+  // El padre decide cerrar modal o cerrar sesión.
   close: []
   logout: []
 }>()

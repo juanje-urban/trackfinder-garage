@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useToast } from '@/composables/useToast'
 
+// El toast se alimenta del composable global; cualquier vista puede dispararlo.
 const { isOpen, message, tone, hideToast } = useToast()
 </script>
 

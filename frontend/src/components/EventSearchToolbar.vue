@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// Toolbar controlada: el padre guarda los filtros y este componente solo emite cambios.
 defineProps<{
   selectedStartDate: string
   selectedEndDate: string
@@ -10,6 +11,7 @@ defineProps<{
 }>()
 
 const emit = defineEmits<{
+  // Uso el patrón 'update:...' para que el padre pueda escribir '@update:campo'.
   'update:selectedStartDate': [value: string]
   'update:selectedEndDate': [value: string]
   'update:selectedTrackId': [value: string]
