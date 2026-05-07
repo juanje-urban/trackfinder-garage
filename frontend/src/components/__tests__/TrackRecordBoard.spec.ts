@@ -80,4 +80,16 @@ describe('TrackRecordBoard', () => {
     await flushPromises()
     expect(errorWrapper.text()).toContain('No se pudieron cargar los records de vuelta.')
   })
+
+  it('reloads ranking when track or limit changes', async () => {
+    getTrackRankingMock.mockResolvedValue(ranking)
+    const wrapper = mountBoard()
+    await flushPromises()
+
+    await wrapper.setProps({ trackId: 2, limit: 5 })
+    await flushPromises()
+
+    expect(getTrackRankingMock).toHaveBeenCalledWith(1, 2)
+    expect(getTrackRankingMock).toHaveBeenCalledWith(2, 5)
+  })
 })

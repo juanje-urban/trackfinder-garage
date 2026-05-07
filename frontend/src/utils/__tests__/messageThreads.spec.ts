@@ -83,4 +83,36 @@ describe('buildMessageThreads', () => {
 
     expect(threads.map(({ subject }) => subject)).toEqual(['Calafat', 'Jarama'])
   })
+
+  it('ignores outgoing unread messages and updates the displayed counterpart name', () => {
+    const threads = buildMessageThreads(
+      [
+        message({
+          id: 1,
+          senderId: 1,
+          receiverId: 2,
+          receiverDisplayName: 'trackevents',
+          sentAt: '2026-07-12T08:00:00',
+          isRead: false,
+        }),
+        message({
+          id: 2,
+          senderId: 2,
+          senderDisplayName: 'TrackEvents Actualizado',
+          receiverId: 1,
+          sentAt: '2026-07-12T09:00:00',
+          isRead: true,
+        }),
+      ],
+      1,
+      {},
+    )
+
+    expect(threads[0]).toMatchObject({
+      counterpartDisplayName: 'TrackEvents Actualizado',
+      roleName: null,
+      unreadCount: 0,
+      lastMessageAt: '2026-07-12T09:00:00',
+    })
+  })
 })

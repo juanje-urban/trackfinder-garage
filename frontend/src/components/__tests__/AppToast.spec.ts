@@ -39,4 +39,18 @@ describe('AppToast', () => {
 
     expect(wrapper.find('.app-toast').exists()).toBe(false)
   })
+
+  it('uses default success tone and hides automatically', async () => {
+    useToast().showToast('Cambios guardados')
+
+    const wrapper = mount(AppToast)
+
+    expect(wrapper.find('.app-toast').classes()).toContain('app-toast--success')
+    expect(wrapper.text()).toContain('Cambios guardados')
+
+    vi.advanceTimersByTime(3200)
+    await nextTick()
+
+    expect(wrapper.find('.app-toast').exists()).toBe(false)
+  })
 })

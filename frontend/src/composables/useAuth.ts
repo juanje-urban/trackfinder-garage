@@ -72,7 +72,7 @@ async function refreshSession() {
 
 function loadStoredSession(): AuthSession | null {
   // En tests o renderizados fuera del navegador puede no existir window.
-  if (typeof globalThis.window === 'undefined') {
+  if (isBrowserUnavailable()) {
     return null
   }
 
@@ -110,7 +110,7 @@ function loadStoredSession(): AuthSession | null {
 }
 
 function persistSession(session: AuthSession) {
-  if (typeof globalThis.window === 'undefined') {
+  if (isBrowserUnavailable()) {
     return
   }
 
@@ -118,9 +118,13 @@ function persistSession(session: AuthSession) {
 }
 
 function removeStoredSession() {
-  if (typeof globalThis.window === 'undefined') {
+  if (isBrowserUnavailable()) {
     return
   }
 
   globalThis.window.localStorage.removeItem(STORAGE_KEY)
+}
+
+function isBrowserUnavailable(): boolean {
+  return globalThis.window === undefined
 }

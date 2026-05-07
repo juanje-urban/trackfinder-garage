@@ -44,4 +44,20 @@ describe('AppModal', () => {
 
     expect(wrapper.emitted('close')).toHaveLength(2)
   })
+
+  it('renders a custom header slot', () => {
+    const wrapper = mount(AppModal, {
+      props: {
+        isOpen: true,
+        ariaLabel: 'Detalle',
+      },
+      slots: {
+        header: '<strong data-test="custom-header">Cabecera propia</strong>',
+        default: '<p>Contenido</p>',
+      },
+    })
+
+    expect(wrapper.get('[data-test="custom-header"]').text()).toBe('Cabecera propia')
+    expect(wrapper.text()).toContain('Contenido')
+  })
 })

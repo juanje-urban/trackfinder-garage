@@ -54,6 +54,16 @@ describe('useMessageInbox', () => {
     expect(inbox.unreadCount.value).toBe(0)
   })
 
+  it('clears unread count when refresh runs without a current user', async () => {
+    const inbox = useMessageInbox()
+    inbox.syncMessages([message({})], 1)
+
+    await inbox.refreshUnreadCount(null)
+
+    expect(getOwnMessagesMock).not.toHaveBeenCalled()
+    expect(inbox.unreadCount.value).toBe(0)
+  })
+
   it('refreshes unread count from the service', async () => {
     getOwnMessagesMock.mockResolvedValue([
       message({ id: 1, receiverId: 1, isRead: false }),

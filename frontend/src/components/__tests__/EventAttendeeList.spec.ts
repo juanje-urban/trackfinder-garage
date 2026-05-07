@@ -117,4 +117,32 @@ describe('EventAttendeeList', () => {
     await flushPromises()
     expect(errorWrapper.text()).toContain('No se pudo cargar la lista de asistentes visibles.')
   })
+
+  it('handles attendees without ranking positions', async () => {
+    getVisibleBookingsMock.mockResolvedValue([booking])
+    getTrackRankingMock.mockResolvedValue([])
+
+    const wrapper = mountList()
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('juanje')
+    expect(wrapper.text()).not.toContain('P1')
+    expect(getLapTimesByUserIdMock).not.toHaveBeenCalled()
+  })
+
+  it('reloads attendees when event or track changes', async () => {
+    getVisibleBookingsMock.mockResolvedValue([booking])
+    getTrackRankingMock.mockResolvedValue(ranking)
+    getLapTimesByUserIdMock.mockResolvedValue([lapTime])
+
+    const wrapper = mountList()
+    await flushPromises()
+
+    await wrapper.setProps({ eventId: 100, trackId: 2 })
+    await flushPromises()
+
+    expect(getVisibleBookingsMock).toHaveBeenCalledWith(99)
+    expect(getVisibleBookingsMock).toHaveBeenCalledWith(100)
+    expect(getTrackRankingMock).toHaveBeenCalledWith(2, 200)
+  })
 })
