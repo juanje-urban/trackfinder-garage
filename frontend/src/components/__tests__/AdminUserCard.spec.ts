@@ -40,4 +40,20 @@ describe('AdminUserCard', () => {
     expect(wrapper.get('button').attributes('disabled')).toBeDefined()
     expect(wrapper.find('.admin-user-card__note--warning').text()).toBe('Cuenta demo')
   })
+
+  it('renders enable action and soft note for disabled accounts', () => {
+    const wrapper = mount(AdminUserCard, {
+      props: {
+        displayName: 'maria',
+        summary: 'maria@example.com',
+        enabled: false,
+        noteLabel: 'Pendiente',
+      },
+    })
+
+    expect(wrapper.get('button').text()).toContain('Habilitar')
+    expect(wrapper.get('button').classes()).toContain('admin-user-card__button--success')
+    expect(wrapper.find('.badge--soft').text()).toBe('Pendiente')
+    expect(wrapper.find('.admin-user-card__real-name').exists()).toBe(false)
+  })
 })

@@ -51,6 +51,18 @@ describe('resolveApiErrorMessage', () => {
     expect(message).toBe('No encontrado')
   })
 
+  it('falls back when backend data has no usable text or known status', () => {
+    const message = resolveApiErrorMessage(
+      axiosError({ status: 500, data: { email: '   ' } }),
+      {
+        fallback: 'Error inesperado',
+        statusMessages: { 404: 'No encontrado' },
+      },
+    )
+
+    expect(message).toBe('Error inesperado')
+  })
+
   it('falls back for unknown errors', () => {
     expect(resolveApiErrorMessage(new Error('boom'), { fallback: 'Error genérico' })).toBe(
       'Error genérico',

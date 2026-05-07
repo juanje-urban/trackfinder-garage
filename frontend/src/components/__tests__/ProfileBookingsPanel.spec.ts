@@ -73,4 +73,23 @@ describe('ProfileBookingsPanel', () => {
     expect(wrapper.text()).toContain('...')
     expect(wrapper.get('button[aria-label="Mostrar en perfil público"]').attributes('disabled')).toBeDefined()
   })
+
+  it('renders empty history and busy active booking actions', () => {
+    const wrapper = mountPanel({
+      activeBookings: [
+        {
+          ...activeBooking,
+          isVisible: false,
+        },
+      ],
+      pastBookings: [],
+      bookingCancellingId: activeBooking.id,
+      bookingVisibilityUpdatingId: activeBooking.id,
+    })
+
+    expect(wrapper.text()).toContain('Tu historial todavía no muestra asistencias pasadas.')
+    expect(wrapper.text()).toContain('...')
+    expect(wrapper.get('button[aria-label="Mostrar en perfil público"]').attributes('disabled')).toBeDefined()
+    expect(wrapper.get('button[aria-label="Ver detalle de la reserva"]').attributes('disabled')).toBeDefined()
+  })
 })

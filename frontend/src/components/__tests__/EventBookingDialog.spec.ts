@@ -90,4 +90,20 @@ describe('EventBookingDialog', () => {
     expect(confirmButton.text()).toContain('Anulando...')
     expect(confirmButton.attributes('disabled')).toBeDefined()
   })
+
+  it('renders checkout without services and submitting label', () => {
+    const wrapper = mount(EventBookingDialog, {
+      props: {
+        ...checkoutProps,
+        selectedServices: [],
+        isSubmitting: true,
+      },
+    })
+
+    const confirmButton = wrapper.findAll('.booking-dialog__actions .action-button')[1]
+
+    expect(wrapper.text()).toContain('No has seleccionado servicios adicionales')
+    expect(confirmButton.text()).toContain('Confirmando...')
+    expect(confirmButton.attributes('disabled')).toBeDefined()
+  })
 })

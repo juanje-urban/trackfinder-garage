@@ -13,4 +13,8 @@ describe('getDisplayNameMonogram', () => {
   it('trims whitespace and separators', () => {
     expect(getDisplayNameMonogram('  apex-hunter  ')).toBe('AH')
   })
+
+  it('returns an empty monogram for blank display names', () => {
+    expect(getDisplayNameMonogram('   ')).toBe('')
+  })
 })

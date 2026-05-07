@@ -27,4 +27,11 @@ describe('createVisualStyle', () => {
       backgroundImage: 'linear-gradient(red, blue)',
     })
   })
+
+  it('uses fallback palette when the palette list is empty', () => {
+    expect(createVisualStyle(0, [], '--start', '--end')).toEqual({
+      '--start': '#4c1717',
+      '--end': '#24365a',
+    })
+  })
 })

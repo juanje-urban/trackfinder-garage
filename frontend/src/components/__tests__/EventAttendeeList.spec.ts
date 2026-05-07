@@ -130,6 +130,17 @@ describe('EventAttendeeList', () => {
     expect(getLapTimesByUserIdMock).not.toHaveBeenCalled()
   })
 
+  it('keeps attendees visible when ranking lookup fails', async () => {
+    getVisibleBookingsMock.mockResolvedValue([booking])
+    getTrackRankingMock.mockRejectedValue(new Error('ranking unavailable'))
+
+    const wrapper = mountList()
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('juanje')
+    expect(wrapper.text()).not.toContain('P1')
+  })
+
   it('reloads attendees when event or track changes', async () => {
     getVisibleBookingsMock.mockResolvedValue([booking])
     getTrackRankingMock.mockResolvedValue(ranking)

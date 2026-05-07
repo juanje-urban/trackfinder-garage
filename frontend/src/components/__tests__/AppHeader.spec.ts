@@ -130,4 +130,18 @@ describe('AppHeader', () => {
 
     expect(getOwnMessagesMock.mock.calls.length).toBeGreaterThan(previousRefreshCalls)
   })
+
+  it('removes window and document listeners when unmounted', async () => {
+    const removeWindowListenerSpy = vi.spyOn(window, 'removeEventListener')
+    const removeDocumentListenerSpy = vi.spyOn(document, 'removeEventListener')
+
+    const wrapper = await mountHeader()
+    wrapper.unmount()
+
+    expect(removeWindowListenerSpy).toHaveBeenCalledWith('focus', expect.any(Function))
+    expect(removeDocumentListenerSpy).toHaveBeenCalledWith('visibilitychange', expect.any(Function))
+
+    removeWindowListenerSpy.mockRestore()
+    removeDocumentListenerSpy.mockRestore()
+  })
 })

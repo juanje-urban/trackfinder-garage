@@ -76,4 +76,25 @@ describe('ProfileBookingDetailDialog', () => {
     expect(wrapper.text()).toContain('La anulacion se cierra 14 dias antes del evento.')
     expect(wrapper.find('.profile-booking-detail__cancel').exists()).toBe(false)
   })
+
+  it('renders loading services and cancelling label', () => {
+    const wrapper = mountDialog({
+      services: [],
+      loading: true,
+      isCancelling: true,
+    })
+
+    expect(wrapper.text()).toContain('Cargando servicios contratados...')
+    expect(wrapper.get('.profile-booking-detail__cancel').text()).toContain('Anulando...')
+    expect(wrapper.get('.profile-booking-detail__cancel').attributes('disabled')).toBeDefined()
+  })
+
+  it('renders reservation without extra services', () => {
+    const wrapper = mountDialog({
+      services: [],
+    })
+
+    expect(wrapper.text()).toContain('Esta reserva no tiene servicios adicionales contratados.')
+    expect(wrapper.text()).toContain('125')
+  })
 })

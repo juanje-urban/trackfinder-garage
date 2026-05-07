@@ -48,6 +48,23 @@ function mountBoard() {
   })
 }
 
+function mountBoardWithDefaults() {
+  return mount(TrackRecordBoard, {
+    props: {
+      trackId: 1,
+      trackName: 'Circuito del Jarama',
+    },
+    global: {
+      stubs: {
+        UserProfileLink: {
+          props: ['displayName'],
+          template: '<a><slot /></a>',
+        },
+      },
+    },
+  })
+}
+
 describe('TrackRecordBoard', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -91,5 +108,15 @@ describe('TrackRecordBoard', () => {
 
     expect(getTrackRankingMock).toHaveBeenCalledWith(1, 2)
     expect(getTrackRankingMock).toHaveBeenCalledWith(2, 5)
+  })
+
+  it('uses default limit and hides the eyebrow when it is not provided', async () => {
+    getTrackRankingMock.mockResolvedValue(ranking)
+
+    const wrapper = mountBoardWithDefaults()
+    await flushPromises()
+
+    expect(getTrackRankingMock).toHaveBeenCalledWith(1, 3)
+    expect(wrapper.find('.ui-eyebrow').exists()).toBe(false)
   })
 })

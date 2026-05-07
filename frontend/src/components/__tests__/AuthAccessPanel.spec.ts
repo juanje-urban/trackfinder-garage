@@ -64,6 +64,7 @@ describe('AuthAccessPanel', () => {
     await wrapper.get('input[type="email"]').setValue('juanje@example.com')
     await wrapper.get('input[type="password"]').setValue('secreto')
     await wrapper.get('button[aria-label="Mostrar contraseña"]').trigger('click')
+    await wrapper.findAll('.auth-tab')[0].trigger('click')
     await wrapper.findAll('.auth-tab')[1].trigger('click')
     await wrapper.get('form').trigger('submit')
 
@@ -71,6 +72,7 @@ describe('AuthAccessPanel', () => {
     expect(form.email).toBe('juanje@example.com')
     expect(form.password).toBe('secreto')
     expect(wrapper.emitted('togglePasswordVisibility')).toHaveLength(1)
+    expect(wrapper.emitted('setMode')).toContainEqual(['login'])
     expect(wrapper.emitted('setMode')).toContainEqual(['register'])
     expect(wrapper.emitted('submit')).toHaveLength(1)
   })

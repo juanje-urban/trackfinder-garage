@@ -39,4 +39,15 @@ describe('ContentSection', () => {
       slots: { default: '<article>Contenido</article>' },
     }).text()).toBe('Sin resultados')
   })
+
+  it('renders plain content without heading when no heading data is provided', () => {
+    const wrapper = mount(ContentSection, {
+      slots: {
+        default: '<article>Contenido directo</article>',
+      },
+    })
+
+    expect(wrapper.find('.section-heading').exists()).toBe(false)
+    expect(wrapper.get('article').text()).toBe('Contenido directo')
+  })
 })
