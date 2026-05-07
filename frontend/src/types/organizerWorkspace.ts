@@ -5,7 +5,7 @@ import type { ServiceCatalogItem } from '@/types/serviceCatalog'
 import type { Track } from '@/types/track'
 import type { TrackServiceAssignment } from '@/types/trackService'
 
-// El workspace junta todo lo que necesita el panel del organizador en una sola estructura.
+// El workspace agrupa la información que necesita el panel del organizador en una sola estructura.
 export interface OrganizerCatalogService {
   id: number
   organizerId: number

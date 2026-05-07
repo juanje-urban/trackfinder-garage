@@ -48,8 +48,8 @@ function buildAuthorizationHeader(credentials: AuthCredentials): string {
   let binaryToken = ''
 
   tokenBytes.forEach((byte) => {
-    binaryToken += String.fromCharCode(byte)
+    binaryToken += String.fromCodePoint(byte)
   })
 
-  return `Basic ${window.btoa(binaryToken)}`
+  return `Basic ${globalThis.window.btoa(binaryToken)}`
 }

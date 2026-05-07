@@ -115,7 +115,8 @@ defineEmits<{
           <input
             v-model="profileForm.address"
             type="text"
-            autocomplete="street-address"
+            name="address-line1"
+            autocomplete="address-line1"
           />
         </label>
         <div v-else class="surface-detail-item surface-detail-item--full">

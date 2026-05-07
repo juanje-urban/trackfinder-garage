@@ -8,12 +8,11 @@ import AuthAccessPanel from '@/components/auth/AuthAccessPanel.vue'
 import AuthSessionPanel from '@/components/auth/AuthSessionPanel.vue'
 import { useAuth } from '@/composables/useAuth'
 import { login, register, registerOrganizer } from '@/services/authService'
-import type { AuthOrganizerRegisterPayload } from '@/types/auth'
+import type { AuthCredentials, AuthOrganizerRegisterPayload, AuthSession } from '@/types/auth'
 import type { AuthMode } from '@/types/authDialog'
 import { resolveApiErrorMessage } from '@/utils/apiErrors'
 import { getDisplayNameMonogram } from '@/utils/identity'
 
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const MAX_LONG_FIELD_LENGTH = 255
 const MAX_SHORT_FIELD_LENGTH = 20
 
@@ -148,28 +147,7 @@ async function submit() {
     }
 
     // El mismo botón decide login, registro normal o registro de organizador.
-    const session =
-      mode.value === 'login'
-        ? await login(credentials)
-        : mode.value === 'organizer-register'
-          ? await registerOrganizer({
-              ...credentials,
-              displayName: form.displayName.trim(),
-              name: form.name.trim(),
-              surname: form.surname.trim(),
-              address: form.address.trim(),
-              phone: form.phone.trim(),
-              legalName: form.legalName.trim(),
-              cif: form.cif.trim(),
-            })
-          : await register({
-              ...credentials,
-              displayName: form.displayName.trim(),
-              name: form.name.trim(),
-              surname: form.surname.trim(),
-              address: form.address.trim(),
-              phone: form.phone.trim(),
-            })
+    const session = await authenticate(credentials)
 
     auth.setSession(session)
     auth.closeAuthDialog()
@@ -192,6 +170,35 @@ function togglePasswordVisibility() {
 
 function closeDialog() {
   auth.closeAuthDialog()
+}
+
+async function authenticate(credentials: AuthCredentials): Promise<AuthSession> {
+  // El mismo botón decide login, registro normal o registro de organizador.
+  if (mode.value === 'login') {
+    return login(credentials)
+  }
+
+  if (mode.value === 'organizer-register') {
+    return registerOrganizer({
+      ...credentials,
+      displayName: form.displayName.trim(),
+      name: form.name.trim(),
+      surname: form.surname.trim(),
+      address: form.address.trim(),
+      phone: form.phone.trim(),
+      legalName: form.legalName.trim(),
+      cif: form.cif.trim(),
+    })
+  }
+
+  return register({
+    ...credentials,
+    displayName: form.displayName.trim(),
+    name: form.name.trim(),
+    surname: form.surname.trim(),
+    address: form.address.trim(),
+    phone: form.phone.trim(),
+  })
 }
 
 async function logout() {
@@ -229,18 +236,10 @@ function resetDialog() {
 
 function getErrorMessage(error: unknown, currentMode: AuthMode): string {
   return resolveApiErrorMessage(error, {
-    fallback:
-      currentMode === 'login'
-        ? 'No se pudo iniciar sesión.'
-        : currentMode === 'organizer-register'
-          ? 'No se pudo crear la cuenta de organizador.'
-          : 'No se pudo crear la cuenta.',
+    fallback: getSubmissionFallbackMessage(currentMode),
     statusMessages: {
       401: 'Correo o contraseña incorrectos.',
-      409:
-        currentMode === 'organizer-register'
-          ? 'No se pudo crear la cuenta de organizador porque ya existe un dato duplicado.'
-          : 'No se pudo crear la cuenta porque ya existe un dato duplicado.',
+      409: getDuplicateRegistrationMessage(currentMode),
     },
     matches: [
       { includes: 'display name', message: 'Ese alias ya esta en uso.' },
@@ -250,6 +249,26 @@ function getErrorMessage(error: unknown, currentMode: AuthMode): string {
       { includes: 'cif', message: 'Ya existe un organizador con ese CIF.' },
     ],
   })
+}
+
+function getSubmissionFallbackMessage(currentMode: AuthMode): string {
+  if (currentMode === 'login') {
+    return 'No se pudo iniciar sesión.'
+  }
+
+  if (currentMode === 'organizer-register') {
+    return 'No se pudo crear la cuenta de organizador.'
+  }
+
+  return 'No se pudo crear la cuenta.'
+}
+
+function getDuplicateRegistrationMessage(currentMode: AuthMode): string {
+  if (currentMode === 'organizer-register') {
+    return 'No se pudo crear la cuenta de organizador porque ya existe un dato duplicado.'
+  }
+
+  return 'No se pudo crear la cuenta porque ya existe un dato duplicado.'
 }
 
 function validateForm(currentMode: AuthMode): string {
@@ -264,7 +283,7 @@ function validateForm(currentMode: AuthMode): string {
     return 'El correo electrónico no puede superar 255 caracteres.'
   }
 
-  if (!EMAIL_PATTERN.test(email)) {
+  if (!isValidEmailAddress(email)) {
     return 'Introduce un correo electrónico válido.'
   }
 
@@ -315,6 +334,25 @@ function requireValue(value: string, message: string): string {
 function validateMaxLength(value: string, maxLength: number, label: string): string {
   return value.length > maxLength ? `${label} no puede superar ${maxLength} caracteres.` : ''
 }
+
+function isValidEmailAddress(email: string): boolean {
+  const [localPart, domainPart, unexpectedPart] = email.split('@')
+
+  if (!localPart || !domainPart || unexpectedPart !== undefined) {
+    return false
+  }
+
+  if (hasWhitespace(localPart) || hasWhitespace(domainPart)) {
+    return false
+  }
+
+  const domainSections = domainPart.split('.')
+  return domainSections.length >= 2 && domainSections.every(Boolean)
+}
+
+function hasWhitespace(value: string): boolean {
+  return Array.from(value).some((character) => character.trim() === '')
+}
 </script>
 
 <template>
@@ -331,7 +369,7 @@ function validateMaxLength(value: string, maxLength: number, label: string): str
         @click="closeDialog"
       ></button>
 
-      <section class="auth-dialog" role="dialog" aria-modal="true" aria-labelledby="auth-dialog-title">
+      <dialog class="auth-dialog" open aria-labelledby="auth-dialog-title">
         <div class="auth-dialog__media" :style="{ backgroundImage: `url(${heroImage})` }"></div>
 
         <div class="auth-dialog__panel">
@@ -380,7 +418,7 @@ function validateMaxLength(value: string, maxLength: number, label: string): str
             </template>
           </AuthAccessPanel>
         </div>
-      </section>
+      </dialog>
     </div>
   </Teleport>
 </template>
@@ -407,6 +445,10 @@ function validateMaxLength(value: string, maxLength: number, label: string): str
   position: relative;
   z-index: 1;
   width: min(980px, 100%);
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
   display: grid;
   grid-template-columns: minmax(0, 1.05fr) minmax(360px, 420px);
   overflow: hidden;
@@ -414,6 +456,7 @@ function validateMaxLength(value: string, maxLength: number, label: string): str
   border-radius: 28px;
   background:
     linear-gradient(180deg, rgba(44, 17, 17, 0.98) 0%, rgba(24, 10, 10, 0.98) 100%);
+  color: inherit;
   box-shadow: 0 32px 80px rgba(0, 0, 0, 0.5);
 }
 

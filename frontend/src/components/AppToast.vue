@@ -11,10 +11,8 @@ const { isOpen, message, tone, hideToast } = useToast()
       v-if="isOpen"
       class="app-toast"
       :class="`app-toast--${tone}`"
-      role="status"
-      aria-live="polite"
     >
-      <span class="app-toast__message">{{ message }}</span>
+      <output class="app-toast__message" aria-live="polite">{{ message }}</output>
       <button class="app-toast__close" type="button" @click="hideToast">
         Cerrar
       </button>

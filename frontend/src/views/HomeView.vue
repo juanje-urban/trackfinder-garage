@@ -88,7 +88,7 @@ onMounted(async () => {
       title="Jarama a Fondo"
       description="Prepárate para una jornada brutal de tandas libres en el Circuito del Jarama. Saca todo el potencial de tu coche, rueda al límite en un entorno seguro y vive el auténtico ambiente racing con plazas limitadas."
       :image-url="heroImage"
-      image-alt="Circuito del Jarama"
+      media-alt="Circuito del Jarama"
     >
       <template v-if="featuredEvent" #aside>
         <RouterLink class="home-hero-link" :to="`/events/${featuredEvent.id}`">

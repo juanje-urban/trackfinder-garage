@@ -10,8 +10,8 @@ import { useAuth } from '@/composables/useAuth'
 const auth = useAuth()
 
 // Cuando el componente raíz aparece en pantalla, intento recuperar la sesión guardada.
-onMounted(() => {
-  void auth.refreshSession()
+onMounted(async () => {
+  await auth.refreshSession()
 })
 </script>
 

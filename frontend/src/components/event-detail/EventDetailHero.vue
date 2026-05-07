@@ -5,7 +5,7 @@ import type { Event } from '@/types/event'
 import type { EventAvailabilitySummary } from '@/types/eventDetail'
 import type { Track } from '@/types/track'
 
-// Hero del detalle. Recibe todo ya preparado.
+// Hero del detalle. Recibe los datos ya preparados desde la vista padre.
 defineProps<{
   event: Event
   track: Track

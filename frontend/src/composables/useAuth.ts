@@ -72,11 +72,11 @@ async function refreshSession() {
 
 function loadStoredSession(): AuthSession | null {
   // En tests o renderizados fuera del navegador puede no existir window.
-  if (typeof window === 'undefined') {
+  if (typeof globalThis.window === 'undefined') {
     return null
   }
 
-  const rawValue = window.localStorage.getItem(STORAGE_KEY)
+  const rawValue = globalThis.window.localStorage.getItem(STORAGE_KEY)
 
   if (!rawValue) {
     return null
@@ -110,17 +110,17 @@ function loadStoredSession(): AuthSession | null {
 }
 
 function persistSession(session: AuthSession) {
-  if (typeof window === 'undefined') {
+  if (typeof globalThis.window === 'undefined') {
     return
   }
 
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(session))
+  globalThis.window.localStorage.setItem(STORAGE_KEY, JSON.stringify(session))
 }
 
 function removeStoredSession() {
-  if (typeof window === 'undefined') {
+  if (typeof globalThis.window === 'undefined') {
     return
   }
 
-  window.localStorage.removeItem(STORAGE_KEY)
+  globalThis.window.localStorage.removeItem(STORAGE_KEY)
 }

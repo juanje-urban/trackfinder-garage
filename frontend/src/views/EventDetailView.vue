@@ -185,15 +185,21 @@ const isBookingActionDisabled = computed(
     (auth.isAuthenticated.value && !isUserSession.value),
 )
 
-const bookingButtonLabel = computed(() =>
-  isPastEvent.value
-    ? 'Evento finalizado'
-    : hasConfirmedBooking.value
-      ? 'Anular reserva'
-      : isEventFull.value
-        ? 'Aforo completo'
-      : 'Reservar plaza',
-)
+const bookingButtonLabel = computed(() => {
+  if (isPastEvent.value) {
+    return 'Evento finalizado'
+  }
+
+  if (hasConfirmedBooking.value) {
+    return 'Anular reserva'
+  }
+
+  if (isEventFull.value) {
+    return 'Aforo completo'
+  }
+
+  return 'Reservar plaza'
+})
 
 const bookingDialogServices = computed(() =>
   selectedServices.value.map((service) => ({
@@ -257,7 +263,7 @@ const heroStyle = computed(() => {
 
 onMounted(async () => {
   // Además de cargar datos, registro Escape para cerrar el modal de imágenes.
-  window.addEventListener('keydown', handleMediaDialogKeydown)
+  globalThis.window.addEventListener('keydown', handleMediaDialogKeydown)
 
   if (Number.isNaN(eventId.value)) {
     error.value = 'No se pudo identificar el evento solicitado.'
@@ -270,7 +276,7 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
-  window.removeEventListener('keydown', handleMediaDialogKeydown)
+  globalThis.window.removeEventListener('keydown', handleMediaDialogKeydown)
 })
 
 watch(
@@ -518,7 +524,7 @@ function openCircuitPhotoDialog() {
     eyebrow: 'Circuito',
     title: eventDetail.value.track.name,
     src: secondGalleryImage.value,
-    alt: `Imagen del circuito ${eventDetail.value.track.name}`,
+    alt: `Vista del circuito ${eventDetail.value.track.name}`,
   }
 }
 

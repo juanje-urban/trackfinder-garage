@@ -199,7 +199,7 @@ async function loadProfilePage() {
       return
     }
 
-    // Para el usuario estándar cargo todo de golpe: perfil, reservas, vueltas y circuitos.
+    // Para el usuario estándar cargo perfil, reservas, vueltas y circuitos en paralelo.
     const [profileResult, bookingsResult, lapTimesResult, tracksResult] = await Promise.all([
       getCurrentUserProfile(),
       getCurrentUserEventBookings(),

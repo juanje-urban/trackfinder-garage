@@ -107,16 +107,15 @@ const groupedLapTimes = computed<PublicLapTimeGroup[]>(() => {
   return [...groups.values()]
 })
 
-onMounted(() => {
-  // Uso 'void' porque no necesito esperar en el hook; el propio método gestiona loading/error.
-  void loadPublicProfilePage()
+onMounted(async () => {
+  await loadPublicProfilePage()
 })
 
 watch(
   () => displayName.value,
-  () => {
+  async () => {
     // Si navego de un perfil público a otro, recargo sin destruir la vista.
-    void loadPublicProfilePage()
+    await loadPublicProfilePage()
   },
 )
 
@@ -196,7 +195,7 @@ function resolveLapPosition(lapTime: LapTime): number | null {
   return matchingIndex >= 0 ? matchingIndex + 1 : null
 }
 
-function handleEmailAction() {
+async function handleEmailAction() {
   if (!publicProfile.value) {
     return
   }
@@ -207,7 +206,7 @@ function handleEmailAction() {
     return
   }
 
-  void router.push({
+  await router.push({
     name: 'messages',
     query: {
       receiverId: String(publicProfile.value.id),

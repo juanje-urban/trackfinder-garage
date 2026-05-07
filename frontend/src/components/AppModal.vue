@@ -34,11 +34,10 @@ const panelStyle = computed(() => ({
 </script>
 
 <template>
-  <div
+  <dialog
     v-if="props.isOpen"
+    open
     class="app-modal"
-    role="dialog"
-    aria-modal="true"
     :aria-label="props.ariaLabel"
     @click.self="$emit('close')"
   >
@@ -68,7 +67,7 @@ const panelStyle = computed(() => ({
 
       <slot />
     </section>
-  </div>
+  </dialog>
 </template>
 
 <style scoped>
@@ -76,10 +75,17 @@ const panelStyle = computed(() => ({
   position: fixed;
   inset: 0;
   z-index: 60;
+  width: auto;
+  height: auto;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  border: 0;
   display: grid;
   place-items: center;
   padding: 24px;
   background: rgba(8, 8, 10, 0.74);
+  color: inherit;
   backdrop-filter: blur(10px);
 }
 

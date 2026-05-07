@@ -7,11 +7,11 @@ const props = withDefaults(
     title: string
     description: string
     imageUrl?: string
-    imageAlt?: string
+    mediaAlt?: string
   }>(),
   {
     imageUrl: '',
-    imageAlt: '',
+    mediaAlt: '',
   },
 )
 
@@ -35,7 +35,7 @@ const heroClasses = computed(() => ({
 
       <div class="page-hero__media">
         <div class="page-hero__image">
-          <img :src="props.imageUrl" :alt="props.imageAlt" />
+          <img :src="props.imageUrl" :alt="props.mediaAlt" />
         </div>
 
         <div class="page-hero__copy page-hero__copy--immersive panel-copy">

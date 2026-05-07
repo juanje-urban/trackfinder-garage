@@ -168,7 +168,8 @@ function toggleOrganizerMode() {
           <input
             :value="form.address"
             type="text"
-            autocomplete="street-address"
+            name="address-line1"
+            autocomplete="address-line1"
             placeholder="Tu dirección"
             @input="updateField('address', $event)"
           />

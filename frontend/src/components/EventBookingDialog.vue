@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { X } from 'lucide-vue-next'
 
 // Este componente es "tonto". Recibe datos por props y avisa al padre con eventos.
@@ -26,14 +27,21 @@ defineEmits<{
   confirm: []
   'update:isVisibleOnPublicProfile': [value: boolean]
 }>()
+
+const confirmButtonLabel = computed(() => {
+  if (props.isSubmitting) {
+    return props.mode === 'cancel' ? 'Anulando...' : 'Confirmando...'
+  }
+
+  return props.mode === 'cancel' ? 'Confirmar anulación' : 'Confirmar reserva'
+})
 </script>
 
 <template>
-  <div
+  <dialog
     v-if="props.isOpen"
+    open
     class="booking-dialog"
-    role="dialog"
-    aria-modal="true"
     :aria-label="`${props.mode === 'cancel' ? 'Anular reserva de' : 'Confirmar reserva de'} ${props.trackName}`"
     @click.self="$emit('close')"
   >
@@ -137,19 +145,11 @@ defineEmits<{
           :disabled="props.isSubmitting || !props.canConfirm"
           @click="$emit('confirm')"
         >
-          {{
-            props.isSubmitting
-              ? props.mode === 'cancel'
-                ? 'Anulando...'
-                : 'Confirmando...'
-              : props.mode === 'cancel'
-                ? 'Confirmar anulación'
-                : 'Confirmar reserva'
-          }}
+          {{ confirmButtonLabel }}
         </button>
       </div>
     </section>
-  </div>
+  </dialog>
 </template>
 
 <style scoped>
@@ -157,10 +157,17 @@ defineEmits<{
   position: fixed;
   inset: 0;
   z-index: 55;
+  width: auto;
+  height: auto;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  border: 0;
   display: grid;
   place-items: center;
   padding: 24px;
   background: rgba(8, 8, 10, 0.74);
+  color: inherit;
   backdrop-filter: blur(10px);
 }
 

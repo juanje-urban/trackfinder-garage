@@ -97,9 +97,9 @@ defineEmits<{
 }
 
 .admin-user-card__note--warning {
-  background: rgba(184, 114, 21, 0.24);
-  color: #ffdca7;
-  border: 1px solid rgba(255, 196, 92, 0.34);
+  background: #f7c66c;
+  color: #321700;
+  border: 1px solid #ffdf8a;
 }
 
 .admin-user-card__button {
