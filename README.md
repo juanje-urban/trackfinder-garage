@@ -41,8 +41,9 @@ Este proyecto ha sido desarrollado por Juan Jesús Urbán González como Trabajo
 trackfinder-garage/
 |-- backend/                       API REST, dominio, casos de uso, persistencia y datos demo
 |-- frontend/                      Aplicación Vue, componentes, vistas, servicios HTTP y tests
-|-- docker-compose.registry.yml    Arranque usando imágenes publicadas en GHCR
-|-- docker-compose.local.yml       Arranque compilando imágenes Docker locales
+|-- docker-compose.registry.yml       Arranque usando las imágenes latest publicadas en GHCR
+|-- docker-compose.registry.pec3.yml  Arranque usando las imágenes pec3 publicadas en GHCR
+|-- docker-compose.local.yml          Arranque compilando imágenes Docker locales
 `-- README.md
 ```
 
@@ -65,10 +66,10 @@ El frontend se organiza así:
 
 ## Arranque del software
 
-Recomiendo estas dos formas para arrancar el proyecto completo:
+Hay dos formas de conseguir las imágenes Docker y arrancar el proyecto completo:
 
-- Usar las imágenes Docker publicadas en GitHub Container Registry, que es público.
-- Compilar tus propias imágenes Docker en local.
+- Descargar imágenes ya publicadas desde GitHub Container Registry.
+- Compilar imágenes Docker en local a partir del código fuente.
 
 En ambos modos:
 
@@ -90,16 +91,21 @@ El frontend es la entrada principal de la aplicación. La URL del backend es sol
 
 ### Opción 1: usar imágenes del registry
 
-Esta opción descarga las imágenes ya publicadas. Si hubiese una corrección de última hora, esta sería la mejor opción al encontrarse actualizada:
+Esta opción no compila el código en tu máquina: Docker descarga las imágenes ya publicadas en GitHub Container Registry.
+
+#### 1A. Última versión de `main`
+
+Esta opción usa la versión más reciente publicada desde la rama `main`, por si hubiese una corrección de última hora:
 
 - `ghcr.io/juanje-urban/trackfinder-garage-backend:latest`
 - `ghcr.io/juanje-urban/trackfinder-garage-frontend:latest`
 
-Arrancar desde cero:
+Descargar y arrancar desde cero:
 
 ```powershell
 docker compose -f docker-compose.registry.yml down --remove-orphans
-docker compose -f docker-compose.registry.yml up -d --pull always
+docker compose -f docker-compose.registry.yml pull
+docker compose -f docker-compose.registry.yml up -d
 ```
 
 Ver logs:
@@ -112,6 +118,33 @@ Parar:
 
 ```powershell
 docker compose -f docker-compose.registry.yml down --remove-orphans
+```
+
+#### 1B. Release de la PEC3
+
+Esta opción usa las imágenes congeladas para la entrega de la PEC3:
+
+- `ghcr.io/juanje-urban/trackfinder-garage-backend:pec3`
+- `ghcr.io/juanje-urban/trackfinder-garage-frontend:pec3`
+
+Descargar y arrancar desde cero:
+
+```powershell
+docker compose -f docker-compose.registry.pec3.yml down --remove-orphans
+docker compose -f docker-compose.registry.pec3.yml pull
+docker compose -f docker-compose.registry.pec3.yml up -d
+```
+
+Ver logs:
+
+```powershell
+docker compose -f docker-compose.registry.pec3.yml logs -f
+```
+
+Parar:
+
+```powershell
+docker compose -f docker-compose.registry.pec3.yml down --remove-orphans
 ```
 
 ### Opción 2: compilar imágenes Docker en local
