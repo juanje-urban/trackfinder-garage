@@ -5,6 +5,8 @@ on:
     branches:
       - "main"
       - "feature/**"
+    tags:
+      - "pec3"
 
 permissions:
   contents: read
@@ -23,11 +25,22 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push
+      - name: Build and push branch image
+        if: github.ref_type == 'branch'
         uses: docker/build-push-action@v6
         with:
           context: ./backend
           push: true
           tags: |
             ghcr.io/${{ github.repository }}-backend:latest
+            ghcr.io/${{ github.repository }}-backend:${{ github.sha }}
+
+      - name: Build and push release image
+        if: github.ref_type == 'tag'
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}-backend:${{ github.ref_name }}
             ghcr.io/${{ github.repository }}-backend:${{ github.sha }}

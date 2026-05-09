@@ -5,6 +5,8 @@ on:
     branches:
       - "main"
       - "feature/**"
+    tags:
+      - "pec3"
 
 permissions:
   contents: read
@@ -23,7 +25,8 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push
+      - name: Build and push branch image
+        if: github.ref_type == 'branch'
         uses: docker/build-push-action@v6
         with:
           context: ./frontend
@@ -32,4 +35,16 @@ jobs:
             VITE_API_BASE_URL=http://localhost:8080
           tags: |
             ghcr.io/${{ github.repository }}-frontend:latest
+            ghcr.io/${{ github.repository }}-frontend:${{ github.sha }}
+
+      - name: Build and push release image
+        if: github.ref_type == 'tag'
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          push: true
+          build-args: |
+            VITE_API_BASE_URL=http://localhost:8080
+          tags: |
+            ghcr.io/${{ github.repository }}-frontend:${{ github.ref_name }}
             ghcr.io/${{ github.repository }}-frontend:${{ github.sha }}
