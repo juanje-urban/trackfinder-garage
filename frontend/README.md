@@ -1,48 +1,52 @@
-# .
+# TrackFinder Garage Frontend
 
-This template should help get you started developing with Vue 3 in Vite.
+Frontend de TrackFinder Garage, construido con Vue 3, TypeScript y Vite.
 
-## Recommended IDE Setup
+Este README existe solo como guía rápida para quien entre directamente en la carpeta `frontend/`. La documentación principal del proyecto, las credenciales demo y las dos formas oficiales de arranque con Docker están en el README de la raíz.
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+## Stack
 
-## Recommended Browser Setup
+- Vue 3 con Composition API y `<script setup>`.
+- TypeScript.
+- Vite.
+- Vue Router.
+- Axios.
+- Vitest y Vue Test Utils.
+- ESLint y Oxlint.
+- Nginx para servir el build Docker.
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+## Estructura
 
-## Type Support for `.vue` Imports in TS
-
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
-
-```sh
-npm install
+```text
+src/
+|-- App.vue          Shell principal de la aplicación
+|-- main.ts          Punto de entrada de Vue
+|-- router/          Rutas y guards de navegación
+|-- views/           Páginas principales
+|-- components/      Componentes reutilizables
+|-- composables/     Estado y lógica reutilizable
+|-- services/        Clientes HTTP hacia el backend
+|-- types/           Tipos TypeScript compartidos
+|-- utils/           Funciones auxiliares
+|-- styles/          Estilos globales y tokens visuales
+`-- assets/          Imágenes, logos y trazados de circuitos
 ```
 
-### Compile and Hot-Reload for Development
+## Configuración
 
-```sh
-npm run dev
+El frontend necesita conocer la URL base del backend:
+
+```text
+VITE_API_BASE_URL=http://localhost:8080
 ```
 
-### Type-Check, Compile and Minify for Production
+En desarrollo se define en `.env.development`.
 
-```sh
-npm run build
-```
+## Nota de uso
 
-### Lint with [ESLint](https://eslint.org/)
+El arranque completo de la aplicación no se documenta aquí para evitar duplicidades. Usa el README de la raíz y elige uno de estos dos modos:
 
-```sh
-npm run lint
-```
+- `docker-compose.registry.yml`: usa imágenes publicadas.
+- `docker-compose.local.yml`: compila imágenes Docker locales.
+
+La imagen final del frontend usa Nginx y sirve la aplicación como SPA. La configuración está en `nginx.conf` y redirige las rutas de Vue Router hacia `index.html`.

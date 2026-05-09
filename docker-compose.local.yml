@@ -1,14 +1,13 @@
 services:
   db:
     image: mariadb:11
-    container_name: trackfinder-db
     environment:
       MARIADB_DATABASE: trackfinder
       MARIADB_USER: trackuser
       MARIADB_PASSWORD: trackpass
       MARIADB_ROOT_PASSWORD: rootpass
-    volumes:
-      - mariadb_data:/var/lib/mysql
+    tmpfs:
+      - /var/lib/mysql
     healthcheck:
       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       interval: 10s
@@ -17,8 +16,8 @@ services:
       start_period: 20s
 
   backend:
-    image: ghcr.io/juanje-urban/trackfinder-garage-backend:latest
-    container_name: trackfinder-backend
+    build:
+      context: ./backend
     environment:
       SPRING_PROFILES_ACTIVE: demo
       SPRING_DATASOURCE_URL: jdbc:mariadb://db:3306/trackfinder
@@ -31,13 +30,11 @@ services:
         condition: service_healthy
 
   frontend:
-    image: ghcr.io/juanje-urban/trackfinder-garage-frontend:latest
-    container_name: trackfinder-frontend
+    build:
+      context: ./frontend
+      args:
+        VITE_API_BASE_URL: http://localhost:8080
     ports:
       - "5173:80"
     depends_on:
       - backend
-
-
-volumes:
-  mariadb_data:
