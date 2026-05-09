@@ -41,7 +41,7 @@ public class SecurityConfig {
      * <ul>
      *     <li>Desactiva CSRF al tratarse de una API consumida por frontend separado.</li>
      *     <li>Activa CORS con la configuración declarada en {@link #corsConfigurationSource()}.</li>
-     *     <li>Permite peticiones públicas a autenticación, catálogo, perfiles públicos y rankings.</li>
+     *     <li>Permite peticiones públicas a autenticación, catálogo, perfiles públicos, rankings y documentación OpenAPI.</li>
      *     <li>Exige autenticación para cualquier endpoint no incluido en la lista pública.</li>
      *     <li>Utiliza autenticación HTTP Basic como mecanismo de acceso a la API.</li>
      * </ul>
@@ -58,6 +58,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs", "/v3/api-docs/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register", "/auth/register/organizer").permitAll()
                         .requestMatchers(HttpMethod.GET, "/tracks", "/tracks/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/events/*").permitAll()

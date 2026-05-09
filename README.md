@@ -82,9 +82,11 @@ Servicios publicados:
 | Servicio | URL |
 | --- | --- |
 | Frontend | http://localhost:5173 |
-| Backend | http://localhost:8080 |
+| Backend API | http://localhost:8080 |
 | Swagger UI | http://localhost:8080/swagger-ui.html |
 | OpenAPI JSON | http://localhost:8080/v3/api-docs |
+
+El frontend es la entrada principal de la aplicación. La URL del backend es solo la raíz técnica de la API; no muestra una pantalla propia. Swagger UI y OpenAPI JSON se exponen sin iniciar sesión para poder revisar la documentación técnica. Las rutas privadas de la API sí piden las credenciales demo indicadas más abajo.
 
 ### Opción 1: usar imágenes del registry
 
@@ -155,6 +157,7 @@ Los pipelines de GitHub Actions ejecutan los tests, generan cobertura y publican
 - Spring Security está configurado como API stateless mediante `SessionCreationPolicy.STATELESS`.
 - CSRF está desactivado porque no se usan cookies de sesión ni sesión HTTP de servidor.
 - CORS permite los orígenes locales esperados del frontend: `http://localhost:5173` y `http://127.0.0.1:5173`.
+- Swagger UI y OpenAPI JSON se exponen sin autenticación para facilitar la revisión técnica.
 - Los endpoints públicos permiten consultar eventos futuros, circuitos, perfiles públicos, rankings y servicios de eventos sin iniciar sesión.
 
 ## Credenciales demo
