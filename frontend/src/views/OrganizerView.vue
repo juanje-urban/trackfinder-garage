@@ -445,7 +445,7 @@ async function saveEvent() {
     )
     hideEventModal()
   } catch (requestError) {
-    eventError.value = resolveApiErrorMessage(requestError, {
+    const errorMessage = resolveApiErrorMessage(requestError, {
       fallback: 'No se pudo guardar el evento.',
       matches: [
         {
@@ -466,6 +466,10 @@ async function saveEvent() {
           message: 'No puedes cambiar la fecha de un evento que ya existe.',
         },
         {
+          includes: 'Ya existe un evento para el circuito',
+          message: 'Ya existe un evento para ese circuito en la misma fecha.',
+        },
+        {
           includes: 'track id',
           message: 'Ya existe un evento para ese circuito en la misma fecha.',
         },
@@ -475,6 +479,8 @@ async function saveEvent() {
         },
       ],
     })
+    eventError.value = ''
+    toast.showToast(errorMessage, { tone: 'error', durationMs: 5000 })
   } finally {
     eventSaving.value = false
   }

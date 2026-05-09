@@ -51,8 +51,8 @@ const todayIso = computed(() => {
 const orderedBookings = computed(() =>
   // Primero muestro eventos futuros y después historial, ambos ordenados de forma útil.
   [...publicBookings.value].sort((left, right) => {
-    const leftIsFuture = left.eventDate >= todayIso.value
-    const rightIsFuture = right.eventDate >= todayIso.value
+    const leftIsFuture = isFutureBooking(left)
+    const rightIsFuture = isFutureBooking(right)
 
     if (leftIsFuture && rightIsFuture) {
       return left.eventDate.localeCompare(right.eventDate)
@@ -65,6 +65,10 @@ const orderedBookings = computed(() =>
     return right.eventDate.localeCompare(left.eventDate)
   }),
 )
+
+function isFutureBooking(booking: EventBooking): boolean {
+  return booking.eventDate >= todayIso.value
+}
 
 const groupedLapTimes = computed<PublicLapTimeGroup[]>(() => {
   // Agrupo vueltas por circuito para que el perfil se lea como historial deportivo.
@@ -259,7 +263,12 @@ async function handleEmailAction() {
                 :to="`/events/${booking.eventId}`"
               >
                 <div class="panel-copy">
-                  <p class="ui-eyebrow">{{ formatDisplayDate(booking.eventDate) }}</p>
+                  <div class="public-profile-booking-card__header">
+                    <p class="ui-eyebrow">{{ formatDisplayDate(booking.eventDate) }}</p>
+                    <span v-if="isFutureBooking(booking)" class="badge badge--success">
+                      Evento próximo
+                    </span>
+                  </div>
                   <strong class="public-profile-booking-card__title">{{ booking.trackName }}</strong>
                   <p class="ui-copy-muted">{{ booking.organizerLegalName }}</p>
                 </div>
@@ -352,6 +361,18 @@ async function handleEmailAction() {
 
 .public-profile-booking-card__title {
   color: var(--text-strong);
+}
+
+.public-profile-booking-card__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-xs);
+}
+
+.public-profile-booking-card__header .ui-eyebrow {
+  margin: 0;
 }
 
 .public-profile-lap-group {

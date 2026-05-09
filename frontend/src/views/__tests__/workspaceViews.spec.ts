@@ -304,8 +304,8 @@ const globalStubs = {
   },
   EventDetailHero: {
     emits: ['open-layout'],
-    props: ['event'],
-    template: '<section>{{ event.trackName }}<button data-test="open-layout" type="button" @click="$emit(\'open-layout\')">Mapa</button></section>',
+    props: ['event', 'availability'],
+    template: '<section>{{ event.trackName }} {{ availability.label }} {{ availability.remainingLabel }}<button data-test="open-layout" type="button" @click="$emit(\'open-layout\')">Mapa</button></section>',
   },
   EventDetailCircuitOverview: {
     emits: ['open-photo'],
@@ -712,6 +712,39 @@ describe('workspace views', () => {
     expect(wrapper.text()).toContain('Stats 1')
   })
 
+  it('shows a clean toast when an organizer tries to duplicate an event date and track', async () => {
+    mocks.auth.session.value = { ...mocks.auth.session.value!, roleName: 'ORGANIZER' }
+    vi.mocked(getOrganizerWorkspace).mockResolvedValue(workspace())
+    vi.mocked(createOrganizerEvent).mockRejectedValue({
+      isAxiosError: true,
+      response: {
+        data: {
+          error: 'Ya existe un evento para el circuito con id 1 en la fecha 2026-07-12',
+        },
+      },
+    })
+
+    const wrapper = mountView(OrganizerView)
+    await flushPromises()
+
+    await wrapper.findAll('.pill-tab')[0].trigger('click')
+    await wrapper.get('[data-test="create-event"]').trigger('click')
+    await wrapper.get('select').setValue('1')
+    await wrapper.get('input[type="date"]').setValue('2026-07-12')
+    const numberInputs = wrapper.findAll('input[type="number"]')
+    await numberInputs[0].setValue('120')
+    await numberInputs[1].setValue('20')
+    await wrapper.get('textarea').setValue('Evento duplicado')
+    await wrapper.get('form').trigger('submit')
+    await flushPromises()
+
+    expect(mocks.toast.showToast).toHaveBeenCalledWith(
+      'Ya existe un evento para ese circuito en la misma fecha.',
+      { tone: 'error', durationMs: 5000 },
+    )
+    expect(wrapper.text()).not.toContain('circuito con id 1')
+  })
+
   it('loads the standard user profile and delegates booking/profile/lap actions', async () => {
     vi.mocked(getCurrentUserProfile).mockResolvedValue(user())
     vi.mocked(getCurrentUserEventBookings).mockResolvedValue([booking()])
@@ -785,13 +818,18 @@ describe('workspace views', () => {
       topFiveLapTimes: 1,
       poleCount: 1,
     })
-    vi.mocked(getEventBookingsByUserId).mockResolvedValue([booking()])
+    vi.mocked(getEventBookingsByUserId).mockResolvedValue([
+      booking({ eventDate: '2099-07-12' }),
+      booking({ id: 10, eventId: 2, eventDate: '2020-01-01', trackName: 'Cheste' }),
+    ])
     vi.mocked(getLapTimesByUserId).mockResolvedValue([lapTime()])
     vi.mocked(getTrackRanking).mockResolvedValue([trackRecord()])
 
     mocks.auth.isAuthenticated.value = false
     const anonymousWrapper = mountView(PublicUserProfileView)
     await flushPromises()
+    expect(anonymousWrapper.findAll('.badge--success')).toHaveLength(1)
+    expect(anonymousWrapper.text()).toContain('Evento próximo')
     await anonymousWrapper.get('[data-test="email-action"]').trigger('click')
     expect(mocks.auth.openAuthDialog).toHaveBeenCalled()
 
@@ -872,6 +910,22 @@ describe('workspace views', () => {
       eventServiceIds: [1],
       isVisible: false,
     })
+  })
+
+  it('shows closed availability for a past event detail', async () => {
+    mocks.route.params = { id: '1' }
+    vi.mocked(getEventById).mockResolvedValue(event({ eventDate: '2026-01-01', remainingCapacity: 20 }))
+    vi.mocked(getTrackById).mockResolvedValue(track())
+    vi.mocked(getEventServicesByEventId).mockResolvedValue([])
+    vi.mocked(getCurrentUserEventBookings).mockResolvedValue([])
+    vi.mocked(getCurrentUserBookedServicesByEventId).mockResolvedValue([])
+
+    const wrapper = mountView(EventDetailView)
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('Evento finalizado')
+    expect(wrapper.text()).toContain('Reservas cerradas para este evento')
+    expect(wrapper.text()).not.toContain('Reservas abiertas')
   })
 
   it('loads an existing event booking and confirms cancellation when allowed', async () => {

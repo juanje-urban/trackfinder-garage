@@ -5,17 +5,20 @@ import {
   getEventAvailabilityState,
 } from '@/utils/eventAvailability'
 
-// Badge puramente visual. Recibe plazas restantes y decide color + texto.
-const props = defineProps<{
+// Badge puramente visual. Recibe plazas restantes y fecha pasada para decidir color + texto.
+const props = withDefaults(defineProps<{
   remainingCapacity: number
-}>()
+  isPastEvent?: boolean
+}>(), {
+  isPastEvent: false,
+})
 
 const availabilityState = computed(() =>
-  getEventAvailabilityState(props.remainingCapacity),
+  getEventAvailabilityState(props.remainingCapacity, props.isPastEvent),
 )
 
 const availabilityLabel = computed(() =>
-  getEventAvailabilityLabel(props.remainingCapacity),
+  getEventAvailabilityLabel(props.remainingCapacity, props.isPastEvent),
 )
 </script>
 
@@ -53,6 +56,13 @@ const availabilityLabel = computed(() =>
   --availability-border: rgba(255, 119, 119, 0.62);
   --availability-text: #fff1ef;
   --availability-glow: rgba(255, 45, 32, 0.34);
+}
+
+.event-availability-badge--closed {
+  --availability-surface: rgba(48, 41, 40, 0.9);
+  --availability-border: rgba(230, 213, 207, 0.36);
+  --availability-text: #f3e7e1;
+  --availability-glow: rgba(12, 10, 10, 0.22);
 }
 
 .event-availability-badge--limited {

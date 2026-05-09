@@ -29,4 +29,13 @@ describe('EventAvailabilityBadge', () => {
     expect(wrapper.text()).toBe('Reservas abiertas')
     expect(wrapper.classes()).toContain('event-availability-badge--open')
   })
+
+  it('renders the closed state for past events', () => {
+    const wrapper = mount(EventAvailabilityBadge, {
+      props: { remainingCapacity: 30, isPastEvent: true },
+    })
+
+    expect(wrapper.text()).toBe('Evento finalizado')
+    expect(wrapper.classes()).toContain('event-availability-badge--closed')
+  })
 })

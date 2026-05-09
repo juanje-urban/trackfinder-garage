@@ -77,6 +77,10 @@ const eventDetail = computed(() => {
   }
 })
 
+const isPastEvent = computed(() =>
+  eventDetail.value ? eventDetail.value.event.eventDate < todayIso : false,
+)
+
 const formattedDate = computed(() =>
   eventDetail.value ? formatDisplayDate(eventDetail.value.event.eventDate) : '',
 )
@@ -93,9 +97,9 @@ const availability = computed<EventAvailabilitySummary | null>(() => {
 
   const remainingCapacity = eventDetail.value.event.remainingCapacity
   return {
-    state: getEventAvailabilityState(remainingCapacity),
-    label: getEventAvailabilityLabel(remainingCapacity),
-    remainingLabel: getEventRemainingLabel(remainingCapacity),
+    state: getEventAvailabilityState(remainingCapacity, isPastEvent.value),
+    label: getEventAvailabilityLabel(remainingCapacity, isPastEvent.value),
+    remainingLabel: getEventRemainingLabel(remainingCapacity, isPastEvent.value),
   }
 })
 
@@ -158,9 +162,6 @@ const totalPrice = computed(() =>
 )
 
 const hasConfirmedBooking = computed(() => existingBooking.value !== null)
-const isPastEvent = computed(() =>
-  eventDetail.value ? eventDetail.value.event.eventDate < todayIso : false,
-)
 const cancellationCutoffIso = computed(() => {
   const date = new Date()
   date.setDate(date.getDate() + 14)
@@ -571,6 +572,7 @@ function handleMediaDialogKeydown(event: KeyboardEvent) {
         :formatted-date="formattedDate"
         :hero-style="heroStyle"
         :layout-image="layoutImage"
+        :is-past-event="isPastEvent"
         @open-layout="openTrackMapDialog"
       />
 

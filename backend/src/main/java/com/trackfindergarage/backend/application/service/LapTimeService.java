@@ -160,11 +160,11 @@ public class LapTimeService implements LapTimeUseCase {
         }
         // Impide registrar vueltas con fecha futura.
         if (lapTime.getLapDate().isAfter(LocalDate.now())) {
-            throw new IllegalArgumentException("Lap date cannot be in the future");
+            throw new IllegalArgumentException("La fecha de la vuelta no puede ser posterior a la fecha actual");
         }
         // Rechaza tiempos vacíos o no positivos.
         if (lapTime.getLapTimeMs() == null || lapTime.getLapTimeMs() <= 0) {
-            throw new IllegalArgumentException("Lap time must be greater than 0");
+            throw new IllegalArgumentException("El tiempo de vuelta no puede ser menor que 0");
         }
     }
 

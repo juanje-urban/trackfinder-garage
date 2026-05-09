@@ -6,6 +6,10 @@ import {
 } from '@/utils/eventAvailability'
 
 describe('getEventAvailabilityState', () => {
+  it('marks past events as closed before checking seats', () => {
+    expect(getEventAvailabilityState(20, true)).toBe('closed')
+  })
+
   it.each([
     [-1, 'full'],
     [0, 'full'],
@@ -18,6 +22,10 @@ describe('getEventAvailabilityState', () => {
 })
 
 describe('getEventAvailabilityLabel', () => {
+  it('explains that past events are finished', () => {
+    expect(getEventAvailabilityLabel(20, true)).toBe('Evento finalizado')
+  })
+
   it.each([
     [0, 'Aforo completo'],
     [2, 'Últimas plazas'],
@@ -29,6 +37,10 @@ describe('getEventAvailabilityLabel', () => {
 })
 
 describe('getEventRemainingLabel', () => {
+  it('explains that past events no longer accept bookings', () => {
+    expect(getEventRemainingLabel(20, true)).toBe('Reservas cerradas para este evento')
+  })
+
   it('explains when the event is full', () => {
     expect(getEventRemainingLabel(0)).toBe('No quedan plazas disponibles para este evento')
   })

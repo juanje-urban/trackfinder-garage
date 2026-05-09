@@ -24,7 +24,7 @@ defineEmits<{
 </script>
 
 <template>
-  <form class="panel panel-pad-lg panel-stack-md" @submit.prevent="$emit('submit')">
+  <form class="messages-compose panel panel-pad-lg panel-stack-md" @submit.prevent="$emit('submit')">
     <p v-if="sendError" class="status-message status-message--error">{{ sendError }}</p>
 
     <label class="surface-field">
@@ -71,3 +71,20 @@ defineEmits<{
     </div>
   </form>
 </template>
+
+<style scoped>
+.messages-compose {
+  min-width: 0;
+}
+
+.messages-compose input,
+.messages-compose select,
+.messages-compose textarea {
+  min-width: 0;
+}
+
+.messages-compose textarea {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+</style>

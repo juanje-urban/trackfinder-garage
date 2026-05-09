@@ -26,7 +26,9 @@ defineEmits<{
         <div class="panel-copy">
           <h3 class="ui-title-card">Catálogo de servicios</h3>
           <p class="ui-copy-muted">
-            Crea servicios nuevos, ajusta su alcance y activa o desactiva su disponibilidad.
+            Crea servicios nuevos, ajusta su alcance y activa o desactiva su disponibilidad. Si
+            deshabilitas un servicio, dejará de estar disponible para nuevas configuraciones de
+            eventos, pero no se retirará de eventos ya publicados ni de servicios ya contratados.
           </p>
         </div>
 

@@ -1,9 +1,14 @@
-export type EventAvailabilityState = 'full' | 'urgent' | 'limited' | 'open'
+export type EventAvailabilityState = 'closed' | 'full' | 'urgent' | 'limited' | 'open'
 
-// Traduzco el número de plazas a un estado visual fácil de pintar en tarjetas y badges.
+// Traduzco plazas y fecha a un estado visual fácil de pintar en tarjetas y badges.
 export function getEventAvailabilityState(
   remainingCapacity: number,
+  isPastEvent = false,
 ): EventAvailabilityState {
+  if (isPastEvent) {
+    return 'closed'
+  }
+
   if (remainingCapacity <= 0) {
     return 'full'
   }
@@ -18,9 +23,12 @@ export function getEventAvailabilityState(
   return 'open'
 }
 
-export function getEventAvailabilityLabel(remainingCapacity: number): string {
-  const state = getEventAvailabilityState(remainingCapacity)
+export function getEventAvailabilityLabel(remainingCapacity: number, isPastEvent = false): string {
+  const state = getEventAvailabilityState(remainingCapacity, isPastEvent)
 
+  if (state === 'closed') {
+    return 'Evento finalizado'
+  }
   if (state === 'full') {
     return 'Aforo completo'
   }
@@ -34,7 +42,11 @@ export function getEventAvailabilityLabel(remainingCapacity: number): string {
   return 'Reservas abiertas'
 }
 
-export function getEventRemainingLabel(remainingCapacity: number): string {
+export function getEventRemainingLabel(remainingCapacity: number, isPastEvent = false): string {
+  if (isPastEvent) {
+    return 'Reservas cerradas para este evento'
+  }
+
   if (remainingCapacity <= 0) {
     return 'No quedan plazas disponibles para este evento'
   }

@@ -5,7 +5,7 @@ withDefaults(
     eyebrow: string
     title: string
     subtitle?: string
-    tone?: 'default' | 'accent' | 'success' | 'full' | 'urgent' | 'limited' | 'open'
+    tone?: 'default' | 'accent' | 'success' | 'closed' | 'full' | 'urgent' | 'limited' | 'open'
   }>(),
   {
     subtitle: '',
@@ -56,6 +56,13 @@ withDefaults(
     var(--surface-panel-gradient);
 }
 
+.detail-info-card--closed {
+  border-color: rgba(230, 213, 207, 0.28);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%),
+    var(--surface-panel-gradient);
+}
+
 .detail-info-card--success {
   background:
     linear-gradient(180deg, rgba(58, 215, 134, 0.12) 0%, rgba(58, 215, 134, 0.04) 100%),
@@ -79,6 +86,10 @@ withDefaults(
   color: #ffb0a9;
 }
 
+.detail-info-card--closed .ui-eyebrow {
+  color: var(--text-muted);
+}
+
 .detail-info-card--success .ui-title-detail,
 .detail-info-card--open .ui-title-detail {
   color: var(--success-text);
@@ -94,5 +105,9 @@ withDefaults(
 
 .detail-info-card--urgent .ui-title-detail {
   color: #fff0ed;
+}
+
+.detail-info-card--closed .ui-title-detail {
+  color: var(--text-body);
 }
 </style>

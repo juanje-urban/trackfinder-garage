@@ -6,14 +6,21 @@ import type { EventAvailabilitySummary } from '@/types/eventDetail'
 import type { Track } from '@/types/track'
 
 // Hero del detalle. Recibe los datos ya preparados desde la vista padre.
-defineProps<{
-  event: Event
-  track: Track
-  availability: EventAvailabilitySummary
-  formattedDate: string
-  heroStyle: Record<string, string>
-  layoutImage?: string
-}>()
+withDefaults(
+  defineProps<{
+    event: Event
+    track: Track
+    availability: EventAvailabilitySummary
+    formattedDate: string
+    heroStyle: Record<string, string>
+    layoutImage?: string
+    isPastEvent?: boolean
+  }>(),
+  {
+    layoutImage: undefined,
+    isPastEvent: false,
+  },
+)
 
 defineEmits<{
   // Abre el mapa ampliado desde EventDetailView.
@@ -26,7 +33,10 @@ defineEmits<{
     <article class="event-detail__hero panel">
       <div class="event-detail__hero-media" :style="heroStyle">
         <div class="media-card__badges">
-          <EventAvailabilityBadge :remaining-capacity="event.remainingCapacity" />
+          <EventAvailabilityBadge
+            :remaining-capacity="event.remainingCapacity"
+            :is-past-event="isPastEvent"
+          />
         </div>
 
         <div class="event-detail__hero-copy">

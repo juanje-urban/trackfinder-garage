@@ -83,6 +83,7 @@ function isOutgoingMessage(senderId: number): boolean {
 
 .messages-bubble {
   max-width: min(88%, 720px);
+  min-width: 0;
   display: grid;
   gap: var(--space-xs);
   padding: var(--space-md);
@@ -98,10 +99,16 @@ function isOutgoingMessage(senderId: number): boolean {
 }
 
 .messages-bubble__meta {
+  min-width: 0;
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: var(--space-sm);
+}
+
+.messages-bubble__meta strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .messages-bubble__meta span {
@@ -112,7 +119,14 @@ function isOutgoingMessage(senderId: number): boolean {
   margin: 0;
   color: var(--text-body);
   line-height: 1.6;
+  overflow-wrap: anywhere;
   white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.messages-reply textarea {
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 @media (max-width: 720px) {
